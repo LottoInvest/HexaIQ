@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../test/application/test_session_controller.dart';
+import '../../../test/domain/models/test_session.dart';
 import '../../domain/hexaiq_models.dart';
 import '../../domain/hexaiq_repository.dart';
 
@@ -17,6 +19,7 @@ class HexaIQAppState extends ChangeNotifier {
   TestType selectedTestType = TestType.basic;
   List<TestQuestion> questions = [];
   List<QuestionResponse> responses = [];
+  TestSessionController? testSessionController;
   ReportSummary? report;
   List<GrowthPoint> growth = [];
   CognitiveDomain? lastCompletedDomain;
@@ -26,18 +29,64 @@ class HexaIQAppState extends ChangeNotifier {
   bool isBusy = false;
 
   TestQuestion? get currentQuestion {
-    if (questionIndex < questions.length) {
-      return questions[questionIndex];
-    }
-    return null;
+    return testSessionController?.session.currentQuestion;
   }
 
   double get testProgress {
-    if (questions.isEmpty) {
+    final total = testSessionController?.session.questions.length ?? 0;
+    if (total == 0) {
       return 0;
     }
-    return responses.length / questions.length;
+    return (questionIndex + 1) / total;
   }
+
+  TestSession? get testSession => testSessionController?.session;
+
+  int? get selectedAnswerForCurrentQuestion {
+    final question = currentQuestion;
+    if (question == null) {
+      return null;
+    }
+    return testSession?.selectedAnswerFor(question.id);
+  }
+
+  bool get isLastQuestion {
+    final session = testSession;
+    if (session == null || session.questions.isEmpty) {
+      return false;
+    }
+    return session.currentQuestionIndex == session.questions.length - 1;
+  }
+
+  int get correctCount {
+    final session = testSession;
+    if (session == null) {
+      return 0;
+    }
+    return session.questions.where((question) {
+      return session.selectedAnswerFor(question.id) == question.answerIndex;
+    }).length;
+  }
+
+  int get wrongCount {
+    final session = testSession;
+    if (session == null) {
+      return 0;
+    }
+    return session.questions.length - correctCount;
+  }
+
+  int get totalQuestionCount =>
+      testSession?.questions.length ?? questions.length;
+
+  double get accuracy {
+    if (totalQuestionCount == 0) {
+      return 0;
+    }
+    return correctCount / totalQuestionCount;
+  }
+
+  int get totalElapsedSeconds => testSession?.totalElapsedSeconds ?? 0;
 
   int get requiredAds => switch (selectedTestType) {
     TestType.basic => 2,
@@ -97,6 +146,14 @@ class HexaIQAppState extends ChangeNotifier {
       selectedTestType,
       profile: selectedProfile,
     );
+    final startedAt = DateTime.now();
+    testSessionController = TestSessionController(
+      TestSession(
+        sessionId: 'session-${startedAt.millisecondsSinceEpoch}',
+        startedAt: startedAt,
+        questions: questions,
+      ),
+    );
     responses = [];
     report = null;
     questionIndex = 0;
@@ -127,6 +184,45 @@ class HexaIQAppState extends ChangeNotifier {
 
     notifyListeners();
     return SubmitResult.nextQuestion;
+  }
+
+  void selectAnswer(int selectedIndex) {
+    testSessionController?.selectAnswer(selectedIndex);
+    notifyListeners();
+  }
+
+  void recordElapsedTime(int seconds) {
+    testSessionController?.recordElapsedTime(seconds);
+  }
+
+  void nextQuestion() {
+    testSessionController?.nextQuestion();
+    questionIndex = testSessionController?.session.currentQuestionIndex ?? 0;
+    notifyListeners();
+  }
+
+  void previousQuestion() {
+    testSessionController?.previousQuestion();
+    questionIndex = testSessionController?.session.currentQuestionIndex ?? 0;
+    notifyListeners();
+  }
+
+  Future<void> submitTest() async {
+    final controller = testSessionController;
+    if (controller == null) {
+      return;
+    }
+    controller.submit();
+    final session = controller.session;
+    responses = [
+      for (final question in session.questions)
+        QuestionResponse(
+          question: question,
+          selectedIndex: session.selectedAnswerFor(question.id) ?? -1,
+        ),
+    ];
+    report = await repository.buildReport(responses);
+    notifyListeners();
   }
 
   Future<void> completeRewardAd() async {

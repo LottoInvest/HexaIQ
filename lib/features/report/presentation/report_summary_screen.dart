@@ -12,13 +12,14 @@ class ReportSummaryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final report = context.watch<HexaIQAppState>().report;
+    final state = context.watch<HexaIQAppState>();
+    final report = state.report;
     if (report == null) {
-      return const Scaffold(body: Center(child: Text('리포트가 아직 없습니다.')));
+      return const Scaffold(body: Center(child: Text('Report is not ready.')));
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('검사 리포트')),
+      appBar: AppBar(title: const Text('Test Report')),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -30,8 +31,34 @@ class ReportSummaryScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '종합 참고 점수 ${report.overallScore}',
+                      'Overall score ${report.overallScore}',
                       style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MetricTile(
+                            label: 'Correct',
+                            value:
+                                '${state.correctCount} / ${state.totalQuestionCount}',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _MetricTile(
+                            label: 'Accuracy',
+                            value: '${(state.accuracy * 100).round()}%',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _MetricTile(
+                            label: 'Elapsed',
+                            value: _formatElapsed(state.totalElapsedSeconds),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     Center(
@@ -49,7 +76,7 @@ class ReportSummaryScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
                       icon: const Icon(Icons.radar),
-                      label: const Text('육각형 상세 보기'),
+                      label: const Text('Hexagon detail'),
                       onPressed: () => Navigator.of(
                         context,
                       ).pushNamed(AppRoutes.hexagonDetail),
@@ -63,18 +90,53 @@ class ReportSummaryScreen extends StatelessWidget {
               ActionCard(
                 icon: Icons.analytics_outlined,
                 title: domainLabel(score.domain),
-                body: '점수 ${score.score} · 참고 백분위 ${score.percentile}',
+                body: 'Score ${score.score} · Percentile ${score.percentile}',
                 onTap: () =>
                     Navigator.of(context).pushNamed(AppRoutes.domainDetail),
               ),
             const SizedBox(height: 12),
             FilledButton.icon(
               icon: const Icon(Icons.home),
-              label: const Text('홈으로'),
+              label: const Text('Home'),
               onPressed: () => Navigator.of(
                 context,
               ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatElapsed(int seconds) {
+    final minutes = seconds ~/ 60;
+    final remaining = seconds % 60;
+    return '${minutes}m ${remaining.toString().padLeft(2, '0')}s';
+  }
+}
+
+class _MetricTile extends StatelessWidget {
+  const _MetricTile({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: theme.textTheme.labelMedium),
+            const SizedBox(height: 4),
+            Text(value, style: theme.textTheme.titleMedium),
           ],
         ),
       ),
