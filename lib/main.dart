@@ -24,12 +24,18 @@ class HexaIQApp extends StatelessWidget {
               HexaIQAppState(repository: context.read<MockHexaIQRepository>()),
         ),
       ],
-      child: MaterialApp(
-        title: 'HexaIQ',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light(),
-        initialRoute: AppRoutes.splash,
-        onGenerateRoute: AppRouter.onGenerateRoute,
+      child: Consumer<HexaIQAppState>(
+        builder: (context, state, _) {
+          return MaterialApp(
+            title: 'HexaIQ',
+            debugShowCheckedModeBanner: false,
+            themeMode: state.themeMode,
+            theme: AppTheme.light(),
+            darkTheme: AppTheme.dark(),
+            initialRoute: AppRoutes.splash,
+            onGenerateRoute: AppRouter.onGenerateRoute,
+          );
+        },
       ),
     );
   }

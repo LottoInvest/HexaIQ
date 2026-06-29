@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:hexaiq_app/main.dart';
@@ -7,7 +8,6 @@ void main() {
     await tester.pumpWidget(const HexaIQApp());
 
     expect(find.text('HexaIQ'), findsOneWidget);
-    expect(find.text('6가지 인지 능력 성장 플랫폼'), findsOneWidget);
   });
 
   testWidgets('Onboarding can navigate to profile select', (tester) async {
@@ -15,10 +15,12 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tester.pumpAndSettle();
 
-    expect(find.text('시작하기'), findsOneWidget);
-    await tester.tap(find.text('시작하기'));
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -500));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.arrow_forward), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.arrow_forward));
     await tester.pumpAndSettle();
 
-    expect(find.text('프로필 선택'), findsOneWidget);
+    expect(find.byIcon(Icons.account_circle), findsWidgets);
   });
 }

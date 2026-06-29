@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+enum ScratchPadMode { text, drawing }
+
 class ScratchPadConfig {
   const ScratchPadConfig({this.extraEnabledTypeCodes = const {}});
 
@@ -26,9 +28,16 @@ class ScratchPadConfig {
 }
 
 class ScratchPadWidget extends StatefulWidget {
-  const ScratchPadWidget({super.key, required this.resetToken});
+  const ScratchPadWidget({
+    super.key,
+    required this.resetToken,
+    this.compact = false,
+    this.mode = ScratchPadMode.text,
+  });
 
   final Object resetToken;
+  final bool compact;
+  final ScratchPadMode mode;
 
   @override
   State<ScratchPadWidget> createState() => _ScratchPadWidgetState();
@@ -36,18 +45,22 @@ class ScratchPadWidget extends StatefulWidget {
 
 class _ScratchPadWidgetState extends State<ScratchPadWidget> {
   late final TextEditingController _controller;
+  late ScratchPadMode _mode;
+  final List<List<Offset>> _strokes = [];
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController();
+    _mode = widget.mode;
   }
 
   @override
   void didUpdateWidget(covariant ScratchPadWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.resetToken != widget.resetToken) {
-      _controller.clear();
+      _clearAll();
+      _mode = widget.mode;
     }
   }
 
@@ -57,33 +70,200 @@ class _ScratchPadWidgetState extends State<ScratchPadWidget> {
     super.dispose();
   }
 
+  void _clearAll() {
+    _controller.clear();
+    _strokes.clear();
+  }
+
+  void _clearAndRebuild() {
+    setState(_clearAll);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final padding = widget.compact ? 10.0 : 16.0;
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(padding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Scratch Work', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 10),
-            Expanded(
-              child: TextField(
-                controller: _controller,
-                expands: true,
-                minLines: null,
-                maxLines: null,
-                textAlignVertical: TextAlignVertical.top,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.all(12),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Scratch Work',
+                    style: widget.compact
+                        ? theme.textTheme.labelLarge
+                        : theme.textTheme.titleMedium,
+                  ),
                 ),
+                _ModeButton(
+                  label: 'Text',
+                  selected: _mode == ScratchPadMode.text,
+                  compact: widget.compact,
+                  onPressed: () => setState(() => _mode = ScratchPadMode.text),
+                ),
+                _ModeButton(
+                  label: 'Draw',
+                  selected: _mode == ScratchPadMode.drawing,
+                  compact: widget.compact,
+                  onPressed: () =>
+                      setState(() => _mode = ScratchPadMode.drawing),
+                ),
+                IconButton(
+                  tooltip: 'Clear',
+                  visualDensity: widget.compact
+                      ? VisualDensity.compact
+                      : VisualDensity.standard,
+                  onPressed: _clearAndRebuild,
+                  icon: const Icon(Icons.clear),
+                ),
+              ],
+            ),
+            SizedBox(height: widget.compact ? 6 : 10),
+            Expanded(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 96),
+                child: _mode == ScratchPadMode.text
+                    ? TextField(
+                        controller: _controller,
+                        expands: true,
+                        minLines: null,
+                        maxLines: null,
+                        textAlignVertical: TextAlignVertical.top,
+                        style: widget.compact
+                            ? theme.textTheme.bodySmall
+                            : null,
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          contentPadding: EdgeInsets.all(
+                            widget.compact ? 8 : 12,
+                          ),
+                        ),
+                      )
+                    : _DrawingPad(
+                        strokes: _strokes,
+                        onStart: (point) {
+                          setState(() => _strokes.add([point]));
+                        },
+                        onAppend: (point) {
+                          if (_strokes.isEmpty) {
+                            setState(() => _strokes.add([point]));
+                            return;
+                          }
+                          setState(() => _strokes.last.add(point));
+                        },
+                      ),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+}
+
+class _ModeButton extends StatelessWidget {
+  const _ModeButton({
+    required this.label,
+    required this.selected,
+    required this.compact,
+    required this.onPressed,
+  });
+
+  final String label;
+  final bool selected;
+  final bool compact;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return TextButton(
+      style: TextButton.styleFrom(
+        visualDensity: compact ? VisualDensity.compact : VisualDensity.standard,
+        padding: EdgeInsets.symmetric(horizontal: compact ? 6 : 10),
+        foregroundColor: selected ? colorScheme.primary : colorScheme.onSurface,
+        textStyle: TextStyle(
+          fontSize: compact ? 12 : 14,
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+        ),
+      ),
+      onPressed: onPressed,
+      child: Text(label),
+    );
+  }
+}
+
+class _DrawingPad extends StatelessWidget {
+  const _DrawingPad({
+    required this.strokes,
+    required this.onStart,
+    required this.onAppend,
+  });
+
+  final List<List<Offset>> strokes;
+  final ValueChanged<Offset> onStart;
+  final ValueChanged<Offset> onAppend;
+
+  @override
+  Widget build(BuildContext context) {
+    final borderColor = Theme.of(context).colorScheme.outline;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border.all(color: borderColor),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Listener(
+        behavior: HitTestBehavior.opaque,
+        onPointerDown: (event) => onStart(event.localPosition),
+        onPointerMove: (event) => onAppend(event.localPosition),
+        child: CustomPaint(
+          painter: _ScratchPainter(
+            strokes: strokes,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          child: const SizedBox.expand(),
+        ),
+      ),
+    );
+  }
+}
+
+class _ScratchPainter extends CustomPainter {
+  const _ScratchPainter({required this.strokes, required this.color});
+
+  final List<List<Offset>> strokes;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = 2.5
+      ..style = PaintingStyle.stroke;
+
+    for (final stroke in strokes) {
+      if (stroke.length < 2) {
+        if (stroke.isNotEmpty) {
+          canvas.drawCircle(stroke.first, 1.25, paint);
+        }
+        continue;
+      }
+      final path = Path()..moveTo(stroke.first.dx, stroke.first.dy);
+      for (final point in stroke.skip(1)) {
+        path.lineTo(point.dx, point.dy);
+      }
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ScratchPainter oldDelegate) {
+    return oldDelegate.strokes != strokes || oldDelegate.color != color;
   }
 }

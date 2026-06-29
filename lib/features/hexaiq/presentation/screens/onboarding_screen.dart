@@ -1,47 +1,41 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/app_routes.dart';
+import '../../../settings/presentation/widgets/theme_mode_selector.dart';
+import '../widgets/hexa_iq_intro_card.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isLandscape = size.width > size.height;
+    final isCompact = isLandscape && size.shortestSide < 600;
+
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 760),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'HexaIQ',
-                    style: Theme.of(context).textTheme.displaySmall,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    '검사, 분석, 훈련 추천, 성장 기록을 하나의 흐름으로 연결합니다.',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 28),
-                  const Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      _Pill(label: '수리 추론'),
-                      _Pill(label: '공간 지각'),
-                      _Pill(label: '논리 추론'),
-                      _Pill(label: '언어 추론'),
-                      _Pill(label: '작업 기억'),
-                      _Pill(label: '추상 패턴'),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-                  FilledButton.icon(
+            child: ListView(
+              padding: EdgeInsets.all(isCompact ? 16 : 24),
+              shrinkWrap: true,
+              children: [
+                Text('HexaIQ', style: Theme.of(context).textTheme.displaySmall),
+                const SizedBox(height: 12),
+                Text(
+                  '검사 분석, 훈련 추천, 성장 기록을 하나의 흐름으로 연결합니다.',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                SizedBox(height: isCompact ? 12 : 20),
+                ThemeModeSelector(compact: isCompact),
+                SizedBox(height: isCompact ? 12 : 20),
+                HexaIQIntroCard(compact: isCompact),
+                SizedBox(height: isCompact ? 16 : 24),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: FilledButton.icon(
                     onPressed: () {
                       Navigator.of(
                         context,
@@ -50,23 +44,12 @@ class OnboardingScreen extends StatelessWidget {
                     icon: const Icon(Icons.arrow_forward),
                     label: const Text('시작하기'),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
-  }
-}
-
-class _Pill extends StatelessWidget {
-  const _Pill({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Chip(label: Text(label));
   }
 }

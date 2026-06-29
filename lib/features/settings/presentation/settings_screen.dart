@@ -5,6 +5,7 @@ import '../../../app/app_routes.dart';
 import '../../../core/responsive/responsive_page.dart';
 import '../../hexaiq/presentation/state/hexaiq_app_state.dart';
 import '../../hexaiq/presentation/widgets/dashboard_nav.dart';
+import 'widgets/theme_mode_selector.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -30,21 +31,26 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const Divider(),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: ThemeModeSelector(),
+          ),
+          const Divider(),
           SwitchListTile(
             value: true,
             onChanged: (_) {},
             title: const Text('학습 알림'),
             subtitle: const Text('MVP mock 설정입니다.'),
           ),
-          ListTile(
-            leading: const Icon(Icons.privacy_tip_outlined),
-            title: const Text('개인정보 처리방침'),
-            subtitle: const Text('출시 전 문서 연결 예정'),
+          const ListTile(
+            leading: Icon(Icons.privacy_tip_outlined),
+            title: Text('개인정보 처리방침'),
+            subtitle: Text('출시 전 문서 연결 예정'),
           ),
-          ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: const Text('앱 버전'),
-            subtitle: const Text('1.0.0 MVP'),
+          const ListTile(
+            leading: Icon(Icons.info_outline),
+            title: Text('앱 버전'),
+            subtitle: Text('1.0.0 MVP'),
           ),
         ],
       ),

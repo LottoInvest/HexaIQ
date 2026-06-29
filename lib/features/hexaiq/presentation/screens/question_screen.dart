@@ -75,7 +75,12 @@ class _QuestionScreenState extends State<QuestionScreen> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final showSplitLayout = constraints.maxWidth >= 700;
+            final size = MediaQuery.of(context).size;
+            final isLandscape = size.width > size.height;
+            final shortestSide = size.shortestSide;
+            final isTablet = shortestSide >= 600;
+            final isPhoneLandscape = isLandscape && !isTablet;
+            final showSplitLayout = isPhoneLandscape || isTablet;
             final showScratchPad = _scratchPadConfig.isEnabledFor(
               question.typeCode,
             );
@@ -83,6 +88,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
               state: state,
               question: question,
               displaySeconds: _displaySeconds,
+              compact: isPhoneLandscape,
+              useChoiceGrid: isPhoneLandscape,
+              isTablet: isTablet,
+              scrollable: showSplitLayout,
               onSelectAnswer: (index) =>
                   context.read<HexaIQAppState>().selectAnswer(index),
               onPrevious: state.questionIndex == 0
@@ -110,16 +119,21 @@ class _QuestionScreenState extends State<QuestionScreen> {
             );
 
             if (showSplitLayout && showScratchPad) {
+              final horizontalPadding = isPhoneLandscape ? 8.0 : 16.0;
+              final gap = isPhoneLandscape ? 8.0 : 16.0;
               return Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(horizontalPadding),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(flex: 3, child: content),
-                    const SizedBox(width: 16),
+                    Expanded(flex: isPhoneLandscape ? 7 : 3, child: content),
+                    SizedBox(width: gap),
                     Expanded(
-                      flex: 2,
-                      child: ScratchPadWidget(resetToken: question.id),
+                      flex: isPhoneLandscape ? 3 : 2,
+                      child: ScratchPadWidget(
+                        resetToken: question.id,
+                        compact: isPhoneLandscape,
+                      ),
                     ),
                   ],
                 ),
@@ -155,6 +169,10 @@ class _QuestionContent extends StatelessWidget {
     required this.state,
     required this.question,
     required this.displaySeconds,
+    required this.compact,
+    required this.useChoiceGrid,
+    required this.isTablet,
+    required this.scrollable,
     required this.onSelectAnswer,
     required this.onNext,
     required this.onSubmit,
@@ -164,6 +182,10 @@ class _QuestionContent extends StatelessWidget {
   final HexaIQAppState state;
   final TestQuestion question;
   final int displaySeconds;
+  final bool compact;
+  final bool useChoiceGrid;
+  final bool isTablet;
+  final bool scrollable;
   final ValueChanged<int> onSelectAnswer;
   final VoidCallback? onPrevious;
   final VoidCallback onNext;
@@ -176,10 +198,13 @@ class _QuestionContent extends StatelessWidget {
     final isLastQuestion = state.isLastQuestion;
     return ListView(
       shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+      physics: scrollable
+          ? const ClampingScrollPhysics()
+          : const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
       children: [
-        LinearProgressIndicator(value: state.testProgress),
-        const SizedBox(height: 16),
+        LinearProgressIndicator(value: state.testProgress, minHeight: 3),
+        SizedBox(height: compact ? 8 : 16),
         Row(
           children: [
             Expanded(
@@ -193,42 +218,56 @@ class _QuestionContent extends StatelessWidget {
             Text(_formatElapsed(displaySeconds)),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: compact ? 8 : 12),
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(18),
+            padding: EdgeInsets.all(compact ? 12 : 18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   question.prompt,
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: compact
+                      ? Theme.of(context).textTheme.titleMedium
+                      : Theme.of(context).textTheme.titleLarge,
                 ),
-                const SizedBox(height: 20),
-                for (var i = 0; i < question.choices.length; i++)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: selectedAnswer == i
-                        ? FilledButton(
-                            onPressed: () => onSelectAnswer(i),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(question.choices[i]),
-                            ),
-                          )
-                        : OutlinedButton(
-                            onPressed: () => onSelectAnswer(i),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(question.choices[i]),
-                            ),
-                          ),
-                  ),
+                SizedBox(height: compact ? 12 : 20),
+                if (useChoiceGrid)
+                  GridView.count(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childAspectRatio: 5.8,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      for (var i = 0; i < question.choices.length; i++)
+                        _ChoiceButton(
+                          text: question.choices[i],
+                          selected: selectedAnswer == i,
+                          compact: compact,
+                          isTablet: isTablet,
+                          onPressed: () => onSelectAnswer(i),
+                        ),
+                    ],
+                  )
+                else
+                  for (var i = 0; i < question.choices.length; i++)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: compact ? 6 : 10),
+                      child: _ChoiceButton(
+                        text: question.choices[i],
+                        selected: selectedAnswer == i,
+                        compact: compact,
+                        isTablet: isTablet,
+                        onPressed: () => onSelectAnswer(i),
+                      ),
+                    ),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: compact ? 8 : 12),
         Row(
           children: [
             OutlinedButton.icon(
@@ -252,6 +291,67 @@ class _QuestionContent extends StatelessWidget {
     final minutes = seconds ~/ 60;
     final remaining = seconds % 60;
     return '${minutes}m ${remaining.toString().padLeft(2, '0')}s';
+  }
+}
+
+class _ChoiceButton extends StatelessWidget {
+  const _ChoiceButton({
+    required this.text,
+    required this.selected,
+    required this.compact,
+    required this.isTablet,
+    required this.onPressed,
+  });
+
+  final String text;
+  final bool selected;
+  final bool compact;
+  final bool isTablet;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final fontSize = isTablet
+        ? 20.0
+        : compact
+        ? 16.0
+        : 18.0;
+    final textStyle = TextStyle(
+      fontSize: fontSize,
+      fontWeight: FontWeight.w700,
+      color: selected ? colorScheme.onPrimary : colorScheme.onSurface,
+    );
+    final style = ButtonStyle(
+      visualDensity: compact ? VisualDensity.compact : VisualDensity.standard,
+      minimumSize: WidgetStatePropertyAll(Size(40, compact ? 40 : 52)),
+      padding: WidgetStatePropertyAll(
+        EdgeInsets.symmetric(horizontal: compact ? 12 : 16, vertical: 8),
+      ),
+      side: WidgetStatePropertyAll(
+        BorderSide(
+          color: selected ? colorScheme.primary : colorScheme.outline,
+          width: selected ? 2 : 1.2,
+        ),
+      ),
+      textStyle: WidgetStatePropertyAll(textStyle),
+    );
+
+    final child = Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        text,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: textStyle,
+      ),
+    );
+
+    if (selected) {
+      return FilledButton(style: style, onPressed: onPressed, child: child);
+    }
+    return OutlinedButton(style: style, onPressed: onPressed, child: child);
   }
 }
 

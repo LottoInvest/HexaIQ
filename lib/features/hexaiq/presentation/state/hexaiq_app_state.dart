@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 import '../../../test/application/test_session_controller.dart';
 import '../../../test/domain/models/test_session.dart';
@@ -27,6 +27,7 @@ class HexaIQAppState extends ChangeNotifier {
   int rewardedAdsCompleted = 0;
   bool hasProfessionalAccess = false;
   bool isBusy = false;
+  ThemeMode themeMode = ThemeMode.system;
 
   TestQuestion? get currentQuestion {
     return testSessionController?.session.currentQuestion;
@@ -97,6 +98,11 @@ class HexaIQAppState extends ChangeNotifier {
   bool get hasMoreQuestions => currentQuestion != null;
 
   bool get canCreateProfile => profiles.length < 3;
+
+  void setThemeMode(ThemeMode mode) {
+    themeMode = mode;
+    notifyListeners();
+  }
 
   Future<void> loadInitialData() async {
     profiles = await repository.loadProfiles();
