@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HexaIQ Question DTO",
+  "type": "object",
+  "required": [
+    "id",
+    "domain",
+    "typeCode",
+    "level",
+    "ageGroup",
+    "questionText",
+    "choices",
+    "answerKey",
+    "explanation",
+    "seed",
+    "estimatedTimeSec",
+    "metadata"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "domain": {
+      "type": "string",
+      "enum": ["numerical", "spatial", "logical", "verbal", "memory", "pattern"]
+    },
+    "typeCode": { "type": "string" },
+    "level": { "type": "integer", "minimum": 1, "maximum": 10 },
+    "ageGroup": {
+      "type": "string",
+      "enum": ["kindergarten", "grade1_2", "grade3_4", "grade5_6", "middle", "high", "adult"]
+    },
+    "questionText": { "type": "string" },
+    "choices": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "required": ["key", "text"],
+        "properties": {
+          "key": { "type": "string", "enum": ["A", "B", "C", "D"] },
+          "text": { "type": "string" }
+        }
+      }
+    },
+    "answerKey": { "type": "string", "enum": ["A", "B", "C", "D"] },
+    "explanation": { "type": "string" },
+    "seed": { "type": "integer" },
+    "estimatedTimeSec": { "type": "integer", "minimum": 1 },
+    "metadata": {
+      "type": "object",
+      "required": ["rule", "difficultyFactors", "version"],
+      "properties": {
+        "rule": { "type": "string" },
+        "difficultyFactors": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "version": { "type": "string" }
+      }
+    }
+  }
+}

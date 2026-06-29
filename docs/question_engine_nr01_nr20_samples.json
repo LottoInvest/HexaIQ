@@ -1,0 +1,2842 @@
+{
+  "NR01": [
+    {
+      "typeCode": "NR01",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 5, 10, 15, 20, ?",
+      "choices": [
+        "25",
+        "20",
+        "30",
+        "26"
+      ],
+      "answer": "25",
+      "explanation": "각 항이 5씩 증가하므로 다음 값은 25입니다."
+    },
+    {
+      "typeCode": "NR01",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 9, 13, 17, 21, ?",
+      "choices": [
+        "26",
+        "21",
+        "29",
+        "25"
+      ],
+      "answer": "25",
+      "explanation": "각 항이 4씩 증가하므로 다음 값은 25입니다."
+    },
+    {
+      "typeCode": "NR01",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 4, 8, 12, 16, ?",
+      "choices": [
+        "16",
+        "24",
+        "21",
+        "20"
+      ],
+      "answer": "20",
+      "explanation": "각 항이 4씩 증가하므로 다음 값은 20입니다."
+    },
+    {
+      "typeCode": "NR01",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 1, 4, 7, 10, ?",
+      "choices": [
+        "10",
+        "13",
+        "14",
+        "16"
+      ],
+      "answer": "13",
+      "explanation": "각 항이 3씩 증가하므로 다음 값은 13입니다."
+    },
+    {
+      "typeCode": "NR01",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 13, 20, 27, 34, ?",
+      "choices": [
+        "34",
+        "42",
+        "48",
+        "41"
+      ],
+      "answer": "41",
+      "explanation": "각 항이 7씩 증가하므로 다음 값은 41입니다."
+    },
+    {
+      "typeCode": "NR01",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 15, 19, 23, 27, ?",
+      "choices": [
+        "31",
+        "35",
+        "27",
+        "32"
+      ],
+      "answer": "31",
+      "explanation": "각 항이 4씩 증가하므로 다음 값은 31입니다."
+    },
+    {
+      "typeCode": "NR01",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 2, 10, 18, 26, ?",
+      "choices": [
+        "42",
+        "26",
+        "34",
+        "35"
+      ],
+      "answer": "34",
+      "explanation": "각 항이 8씩 증가하므로 다음 값은 34입니다."
+    },
+    {
+      "typeCode": "NR01",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 6, 12, 18, 24, ?",
+      "choices": [
+        "24",
+        "31",
+        "36",
+        "30"
+      ],
+      "answer": "30",
+      "explanation": "각 항이 6씩 증가하므로 다음 값은 30입니다."
+    },
+    {
+      "typeCode": "NR01",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 11, 19, 27, 35, ?",
+      "choices": [
+        "35",
+        "51",
+        "44",
+        "43"
+      ],
+      "answer": "43",
+      "explanation": "각 항이 8씩 증가하므로 다음 값은 43입니다."
+    },
+    {
+      "typeCode": "NR01",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 22, 30, 38, 46, ?",
+      "choices": [
+        "46",
+        "62",
+        "55",
+        "54"
+      ],
+      "answer": "54",
+      "explanation": "각 항이 8씩 증가하므로 다음 값은 54입니다."
+    }
+  ],
+  "NR02": [
+    {
+      "typeCode": "NR02",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 2, 4, 8, 16, ?",
+      "choices": [
+        "18",
+        "32",
+        "34",
+        "16"
+      ],
+      "answer": "32",
+      "explanation": "앞 항에 2를 곱하는 규칙이므로 다음 값은 32입니다."
+    },
+    {
+      "typeCode": "NR02",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 3, 6, 12, 24, ?",
+      "choices": [
+        "26",
+        "24",
+        "50",
+        "48"
+      ],
+      "answer": "48",
+      "explanation": "앞 항에 2를 곱하는 규칙이므로 다음 값은 48입니다."
+    },
+    {
+      "typeCode": "NR02",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 6, 12, 24, 48, ?",
+      "choices": [
+        "98",
+        "48",
+        "96",
+        "50"
+      ],
+      "answer": "96",
+      "explanation": "앞 항에 2를 곱하는 규칙이므로 다음 값은 96입니다."
+    },
+    {
+      "typeCode": "NR02",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 2, 4, 8, 16, ?",
+      "choices": [
+        "32",
+        "16",
+        "34",
+        "18"
+      ],
+      "answer": "32",
+      "explanation": "앞 항에 2를 곱하는 규칙이므로 다음 값은 32입니다."
+    },
+    {
+      "typeCode": "NR02",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 8, 32, 128, 512, ?",
+      "choices": [
+        "2048",
+        "2052",
+        "512",
+        "516"
+      ],
+      "answer": "2048",
+      "explanation": "앞 항에 4를 곱하는 규칙이므로 다음 값은 2048입니다."
+    },
+    {
+      "typeCode": "NR02",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 3, 15, 75, 375, ?",
+      "choices": [
+        "375",
+        "1880",
+        "380",
+        "1875"
+      ],
+      "answer": "1875",
+      "explanation": "앞 항에 5를 곱하는 규칙이므로 다음 값은 1875입니다."
+    },
+    {
+      "typeCode": "NR02",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 5, 10, 20, 40, ?",
+      "choices": [
+        "82",
+        "40",
+        "42",
+        "80"
+      ],
+      "answer": "80",
+      "explanation": "앞 항에 2를 곱하는 규칙이므로 다음 값은 80입니다."
+    },
+    {
+      "typeCode": "NR02",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 4, 16, 64, 256, ?",
+      "choices": [
+        "1024",
+        "256",
+        "260",
+        "1028"
+      ],
+      "answer": "1024",
+      "explanation": "앞 항에 4를 곱하는 규칙이므로 다음 값은 1024입니다."
+    },
+    {
+      "typeCode": "NR02",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 5, 25, 125, 625, ?",
+      "choices": [
+        "3130",
+        "630",
+        "3125",
+        "625"
+      ],
+      "answer": "3125",
+      "explanation": "앞 항에 5를 곱하는 규칙이므로 다음 값은 3125입니다."
+    },
+    {
+      "typeCode": "NR02",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 9, 27, 81, 243, ?",
+      "choices": [
+        "732",
+        "243",
+        "246",
+        "729"
+      ],
+      "answer": "729",
+      "explanation": "앞 항에 3를 곱하는 규칙이므로 다음 값은 729입니다."
+    }
+  ],
+  "NR03": [
+    {
+      "typeCode": "NR03",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 23, 28, 24, 29, 25, ?",
+      "choices": [
+        "30",
+        "28",
+        "29",
+        "31"
+      ],
+      "answer": "30",
+      "explanation": "+5, -4 연산이 번갈아 반복됩니다."
+    },
+    {
+      "typeCode": "NR03",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 26, 33, 29, 36, 32, ?",
+      "choices": [
+        "36",
+        "39",
+        "38",
+        "40"
+      ],
+      "answer": "39",
+      "explanation": "+7, -4 연산이 번갈아 반복됩니다."
+    },
+    {
+      "typeCode": "NR03",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 20, 27, 22, 29, 24, ?",
+      "choices": [
+        "32",
+        "30",
+        "31",
+        "29"
+      ],
+      "answer": "31",
+      "explanation": "+7, -5 연산이 번갈아 반복됩니다."
+    },
+    {
+      "typeCode": "NR03",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 10, 17, 13, 20, 16, ?",
+      "choices": [
+        "24",
+        "23",
+        "20",
+        "22"
+      ],
+      "answer": "23",
+      "explanation": "+7, -4 연산이 번갈아 반복됩니다."
+    },
+    {
+      "typeCode": "NR03",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 22, 30, 26, 34, 30, ?",
+      "choices": [
+        "37",
+        "34",
+        "39",
+        "38"
+      ],
+      "answer": "38",
+      "explanation": "+8, -4 연산이 번갈아 반복됩니다."
+    },
+    {
+      "typeCode": "NR03",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 17, 24, 21, 28, 25, ?",
+      "choices": [
+        "33",
+        "32",
+        "31",
+        "28"
+      ],
+      "answer": "32",
+      "explanation": "+7, -3 연산이 번갈아 반복됩니다."
+    },
+    {
+      "typeCode": "NR03",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 34, 37, 29, 32, 24, ?",
+      "choices": [
+        "28",
+        "27",
+        "26",
+        "32"
+      ],
+      "answer": "27",
+      "explanation": "+3, -8 연산이 번갈아 반복됩니다."
+    },
+    {
+      "typeCode": "NR03",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 23, 34, 24, 35, 25, ?",
+      "choices": [
+        "36",
+        "37",
+        "35",
+        "34"
+      ],
+      "answer": "36",
+      "explanation": "+11, -10 연산이 번갈아 반복됩니다."
+    },
+    {
+      "typeCode": "NR03",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 42, 44, 36, 38, 30, ?",
+      "choices": [
+        "33",
+        "32",
+        "31",
+        "38"
+      ],
+      "answer": "32",
+      "explanation": "+2, -8 연산이 번갈아 반복됩니다."
+    },
+    {
+      "typeCode": "NR03",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "다음 수열의 빈칸에 들어갈 수는? 16, 24, 19, 27, 22, ?",
+      "choices": [
+        "31",
+        "29",
+        "27",
+        "30"
+      ],
+      "answer": "30",
+      "explanation": "+8, -5 연산이 번갈아 반복됩니다."
+    }
+  ],
+  "NR04": [
+    {
+      "typeCode": "NR04",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "두 연산이 반복됩니다. 2, 4, 7, 14, 17, ?",
+      "choices": [
+        "31",
+        "33",
+        "20",
+        "34"
+      ],
+      "answer": "34",
+      "explanation": "×2, +3가 한 묶음으로 반복됩니다."
+    },
+    {
+      "typeCode": "NR04",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "두 연산이 반복됩니다. 6, 24, 31, 124, 131, ?",
+      "choices": [
+        "517",
+        "524",
+        "138",
+        "523"
+      ],
+      "answer": "524",
+      "explanation": "×4, +7가 한 묶음으로 반복됩니다."
+    },
+    {
+      "typeCode": "NR04",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "두 연산이 반복됩니다. 6, 12, 19, 38, 45, ?",
+      "choices": [
+        "89",
+        "90",
+        "52",
+        "83"
+      ],
+      "answer": "90",
+      "explanation": "×2, +7가 한 묶음으로 반복됩니다."
+    },
+    {
+      "typeCode": "NR04",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "두 연산이 반복됩니다. 4, 12, 18, 54, 60, ?",
+      "choices": [
+        "179",
+        "66",
+        "180",
+        "174"
+      ],
+      "answer": "180",
+      "explanation": "×3, +6가 한 묶음으로 반복됩니다."
+    },
+    {
+      "typeCode": "NR04",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "두 연산이 반복됩니다. 10, 40, 42, 168, 170, ?",
+      "choices": [
+        "680",
+        "679",
+        "678",
+        "172"
+      ],
+      "answer": "680",
+      "explanation": "×4, +2가 한 묶음으로 반복됩니다."
+    },
+    {
+      "typeCode": "NR04",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "두 연산이 반복됩니다. 11, 33, 43, 129, 139, ?",
+      "choices": [
+        "416",
+        "417",
+        "149",
+        "407"
+      ],
+      "answer": "417",
+      "explanation": "×3, +10가 한 묶음으로 반복됩니다."
+    },
+    {
+      "typeCode": "NR04",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "두 연산이 반복됩니다. 14, 56, 64, 256, 264, ?",
+      "choices": [
+        "1055",
+        "1048",
+        "272",
+        "1056"
+      ],
+      "answer": "1056",
+      "explanation": "×4, +8가 한 묶음으로 반복됩니다."
+    },
+    {
+      "typeCode": "NR04",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "두 연산이 반복됩니다. 9, 18, 20, 40, 42, ?",
+      "choices": [
+        "82",
+        "84",
+        "44",
+        "83"
+      ],
+      "answer": "84",
+      "explanation": "×2, +2가 한 묶음으로 반복됩니다."
+    },
+    {
+      "typeCode": "NR04",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "두 연산이 반복됩니다. 15, 30, 40, 80, 90, ?",
+      "choices": [
+        "170",
+        "179",
+        "100",
+        "180"
+      ],
+      "answer": "180",
+      "explanation": "×2, +10가 한 묶음으로 반복됩니다."
+    },
+    {
+      "typeCode": "NR04",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "두 연산이 반복됩니다. 8, 16, 18, 36, 38, ?",
+      "choices": [
+        "76",
+        "75",
+        "40",
+        "74"
+      ],
+      "answer": "76",
+      "explanation": "×2, +2가 한 묶음으로 반복됩니다."
+    }
+  ],
+  "NR05": [
+    {
+      "typeCode": "NR05",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "항 사이의 차이가 변합니다. 6, 9, 15, 24, 36, ?",
+      "choices": [
+        "51",
+        "36",
+        "54",
+        "48"
+      ],
+      "answer": "51",
+      "explanation": "차이가 3, 6, 9, 12처럼 3씩 커지므로 다음 차이는 15입니다."
+    },
+    {
+      "typeCode": "NR05",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "항 사이의 차이가 변합니다. 12, 14, 18, 24, 32, ?",
+      "choices": [
+        "32",
+        "42",
+        "44",
+        "40"
+      ],
+      "answer": "42",
+      "explanation": "차이가 2, 4, 6, 8처럼 2씩 커지므로 다음 차이는 10입니다."
+    },
+    {
+      "typeCode": "NR05",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "항 사이의 차이가 변합니다. 3, 5, 10, 18, 29, ?",
+      "choices": [
+        "29",
+        "40",
+        "46",
+        "43"
+      ],
+      "answer": "43",
+      "explanation": "차이가 2, 5, 8, 11처럼 3씩 커지므로 다음 차이는 14입니다."
+    },
+    {
+      "typeCode": "NR05",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "항 사이의 차이가 변합니다. 8, 11, 16, 23, 32, ?",
+      "choices": [
+        "32",
+        "41",
+        "43",
+        "45"
+      ],
+      "answer": "43",
+      "explanation": "차이가 3, 5, 7, 9처럼 2씩 커지므로 다음 차이는 11입니다."
+    },
+    {
+      "typeCode": "NR05",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "항 사이의 차이가 변합니다. 8, 13, 20, 29, 40, ?",
+      "choices": [
+        "53",
+        "55",
+        "40",
+        "51"
+      ],
+      "answer": "53",
+      "explanation": "차이가 5, 7, 9, 11처럼 2씩 커지므로 다음 차이는 13입니다."
+    },
+    {
+      "typeCode": "NR05",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "항 사이의 차이가 변합니다. 9, 10, 12, 15, 19, ?",
+      "choices": [
+        "24",
+        "19",
+        "25",
+        "23"
+      ],
+      "answer": "24",
+      "explanation": "차이가 1, 2, 3, 4처럼 1씩 커지므로 다음 차이는 5입니다."
+    },
+    {
+      "typeCode": "NR05",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "항 사이의 차이가 변합니다. 4, 7, 14, 25, 40, ?",
+      "choices": [
+        "59",
+        "55",
+        "40",
+        "63"
+      ],
+      "answer": "59",
+      "explanation": "차이가 3, 7, 11, 15처럼 4씩 커지므로 다음 차이는 19입니다."
+    },
+    {
+      "typeCode": "NR05",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "항 사이의 차이가 변합니다. 11, 17, 24, 32, 41, ?",
+      "choices": [
+        "51",
+        "52",
+        "50",
+        "41"
+      ],
+      "answer": "51",
+      "explanation": "차이가 6, 7, 8, 9처럼 1씩 커지므로 다음 차이는 10입니다."
+    },
+    {
+      "typeCode": "NR05",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "항 사이의 차이가 변합니다. 18, 29, 43, 60, 80, ?",
+      "choices": [
+        "80",
+        "100",
+        "103",
+        "106"
+      ],
+      "answer": "103",
+      "explanation": "차이가 11, 14, 17, 20처럼 3씩 커지므로 다음 차이는 23입니다."
+    },
+    {
+      "typeCode": "NR05",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "항 사이의 차이가 변합니다. 8, 13, 19, 26, 34, ?",
+      "choices": [
+        "42",
+        "34",
+        "44",
+        "43"
+      ],
+      "answer": "43",
+      "explanation": "차이가 5, 6, 7, 8처럼 1씩 커지므로 다음 차이는 9입니다."
+    }
+  ],
+  "NR06": [
+    {
+      "typeCode": "NR06",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "빈칸에 들어갈 수는? 15, 20, 25, ?, 35",
+      "choices": [
+        "35",
+        "31",
+        "30",
+        "25"
+      ],
+      "answer": "30",
+      "explanation": "전체 수열이 5씩 증가하므로 빈칸의 값은 30입니다."
+    },
+    {
+      "typeCode": "NR06",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "빈칸에 들어갈 수는? 15, 17, 19, ?, 23",
+      "choices": [
+        "19",
+        "22",
+        "23",
+        "21"
+      ],
+      "answer": "21",
+      "explanation": "전체 수열이 2씩 증가하므로 빈칸의 값은 21입니다."
+    },
+    {
+      "typeCode": "NR06",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "빈칸에 들어갈 수는? 7, 11, 15, ?, 23",
+      "choices": [
+        "15",
+        "20",
+        "19",
+        "23"
+      ],
+      "answer": "19",
+      "explanation": "전체 수열이 4씩 증가하므로 빈칸의 값은 19입니다."
+    },
+    {
+      "typeCode": "NR06",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "빈칸에 들어갈 수는? 6, 13, ?, 27, 34",
+      "choices": [
+        "13",
+        "20",
+        "21",
+        "27"
+      ],
+      "answer": "20",
+      "explanation": "전체 수열이 7씩 증가하므로 빈칸의 값은 20입니다."
+    },
+    {
+      "typeCode": "NR06",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "빈칸에 들어갈 수는? 4, ?, 24, 34, 44",
+      "choices": [
+        "15",
+        "24",
+        "14",
+        "4"
+      ],
+      "answer": "14",
+      "explanation": "전체 수열이 10씩 증가하므로 빈칸의 값은 14입니다."
+    },
+    {
+      "typeCode": "NR06",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "빈칸에 들어갈 수는? 9, 15, 21, ?, 33",
+      "choices": [
+        "27",
+        "33",
+        "21",
+        "28"
+      ],
+      "answer": "27",
+      "explanation": "전체 수열이 6씩 증가하므로 빈칸의 값은 27입니다."
+    },
+    {
+      "typeCode": "NR06",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "빈칸에 들어갈 수는? 18, 21, ?, 27, 30",
+      "choices": [
+        "21",
+        "24",
+        "25",
+        "27"
+      ],
+      "answer": "24",
+      "explanation": "전체 수열이 3씩 증가하므로 빈칸의 값은 24입니다."
+    },
+    {
+      "typeCode": "NR06",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "빈칸에 들어갈 수는? 5, ?, 19, 26, 33",
+      "choices": [
+        "5",
+        "19",
+        "13",
+        "12"
+      ],
+      "answer": "12",
+      "explanation": "전체 수열이 7씩 증가하므로 빈칸의 값은 12입니다."
+    },
+    {
+      "typeCode": "NR06",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "빈칸에 들어갈 수는? 13, 17, ?, 25, 29",
+      "choices": [
+        "25",
+        "22",
+        "21",
+        "17"
+      ],
+      "answer": "21",
+      "explanation": "전체 수열이 4씩 증가하므로 빈칸의 값은 21입니다."
+    },
+    {
+      "typeCode": "NR06",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "빈칸에 들어갈 수는? 8, 20, ?, 44, 56",
+      "choices": [
+        "20",
+        "32",
+        "44",
+        "33"
+      ],
+      "answer": "32",
+      "explanation": "전체 수열이 12씩 증가하므로 빈칸의 값은 32입니다."
+    }
+  ],
+  "NR07": [
+    {
+      "typeCode": "NR07",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "x + 8 = 14 일 때, x는?",
+      "choices": [
+        "6",
+        "8",
+        "14",
+        "5"
+      ],
+      "answer": "6",
+      "explanation": "14에서 8를 빼면 x = 6입니다."
+    },
+    {
+      "typeCode": "NR07",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "x + 5 = 11 일 때, x는?",
+      "choices": [
+        "7",
+        "6",
+        "5",
+        "11"
+      ],
+      "answer": "6",
+      "explanation": "11에서 5를 빼면 x = 6입니다."
+    },
+    {
+      "typeCode": "NR07",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "x + 8 = 15 일 때, x는?",
+      "choices": [
+        "15",
+        "7",
+        "8",
+        "6"
+      ],
+      "answer": "7",
+      "explanation": "15에서 8를 빼면 x = 7입니다."
+    },
+    {
+      "typeCode": "NR07",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "x + 5 = 15 일 때, x는?",
+      "choices": [
+        "5",
+        "10",
+        "9",
+        "15"
+      ],
+      "answer": "10",
+      "explanation": "15에서 5를 빼면 x = 10입니다."
+    },
+    {
+      "typeCode": "NR07",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "x + 9 = 16 일 때, x는?",
+      "choices": [
+        "6",
+        "16",
+        "7",
+        "9"
+      ],
+      "answer": "7",
+      "explanation": "16에서 9를 빼면 x = 7입니다."
+    },
+    {
+      "typeCode": "NR07",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "x + 4 = 20 일 때, x는?",
+      "choices": [
+        "20",
+        "16",
+        "15",
+        "4"
+      ],
+      "answer": "16",
+      "explanation": "20에서 4를 빼면 x = 16입니다."
+    },
+    {
+      "typeCode": "NR07",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "x + 6 = 19 일 때, x는?",
+      "choices": [
+        "6",
+        "19",
+        "12",
+        "13"
+      ],
+      "answer": "13",
+      "explanation": "19에서 6를 빼면 x = 13입니다."
+    },
+    {
+      "typeCode": "NR07",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "x + 14 = 38 일 때, x는?",
+      "choices": [
+        "24",
+        "23",
+        "14",
+        "38"
+      ],
+      "answer": "24",
+      "explanation": "38에서 14를 빼면 x = 24입니다."
+    },
+    {
+      "typeCode": "NR07",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "x + 5 = 23 일 때, x는?",
+      "choices": [
+        "23",
+        "18",
+        "17",
+        "5"
+      ],
+      "answer": "18",
+      "explanation": "23에서 5를 빼면 x = 18입니다."
+    },
+    {
+      "typeCode": "NR07",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "x + 12 = 16 일 때, x는?",
+      "choices": [
+        "16",
+        "4",
+        "3",
+        "12"
+      ],
+      "answer": "4",
+      "explanation": "16에서 12를 빼면 x = 4입니다."
+    }
+  ],
+  "NR08": [
+    {
+      "typeCode": "NR08",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "3 × x + 7 = 16 일 때, x는?",
+      "choices": [
+        "3",
+        "10",
+        "5",
+        "2"
+      ],
+      "answer": "3",
+      "explanation": "먼저 7를 빼서 9를 만들고, 3로 나누면 x = 3입니다."
+    },
+    {
+      "typeCode": "NR08",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "3 × x + 8 = 35 일 때, x는?",
+      "choices": [
+        "8",
+        "17",
+        "9",
+        "11"
+      ],
+      "answer": "9",
+      "explanation": "먼저 8를 빼서 27를 만들고, 3로 나누면 x = 9입니다."
+    },
+    {
+      "typeCode": "NR08",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "4 × x + 3 = 31 일 때, x는?",
+      "choices": [
+        "7",
+        "10",
+        "8",
+        "6"
+      ],
+      "answer": "7",
+      "explanation": "먼저 3를 빼서 28를 만들고, 4로 나누면 x = 7입니다."
+    },
+    {
+      "typeCode": "NR08",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "4 × x + 12 = 20 일 때, x는?",
+      "choices": [
+        "2",
+        "5",
+        "16",
+        "14"
+      ],
+      "answer": "2",
+      "explanation": "먼저 12를 빼서 8를 만들고, 4로 나누면 x = 2입니다."
+    },
+    {
+      "typeCode": "NR08",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "3 × x + 1 = 10 일 때, x는?",
+      "choices": [
+        "2",
+        "1",
+        "4",
+        "3"
+      ],
+      "answer": "3",
+      "explanation": "먼저 1를 빼서 9를 만들고, 3로 나누면 x = 3입니다."
+    },
+    {
+      "typeCode": "NR08",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "7 × x + 11 = 109 일 때, x는?",
+      "choices": [
+        "15",
+        "25",
+        "18",
+        "14"
+      ],
+      "answer": "14",
+      "explanation": "먼저 11를 빼서 98를 만들고, 7로 나누면 x = 14입니다."
+    },
+    {
+      "typeCode": "NR08",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "5 × x + 8 = 23 일 때, x는?",
+      "choices": [
+        "13",
+        "3",
+        "4",
+        "11"
+      ],
+      "answer": "3",
+      "explanation": "먼저 8를 빼서 15를 만들고, 5로 나누면 x = 3입니다."
+    },
+    {
+      "typeCode": "NR08",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "6 × x + 7 = 79 일 때, x는?",
+      "choices": [
+        "19",
+        "13",
+        "11",
+        "12"
+      ],
+      "answer": "12",
+      "explanation": "먼저 7를 빼서 72를 만들고, 6로 나누면 x = 12입니다."
+    },
+    {
+      "typeCode": "NR08",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "7 × x + 10 = 24 일 때, x는?",
+      "choices": [
+        "17",
+        "12",
+        "2",
+        "3"
+      ],
+      "answer": "2",
+      "explanation": "먼저 10를 빼서 14를 만들고, 7로 나누면 x = 2입니다."
+    },
+    {
+      "typeCode": "NR08",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "7 × x + 16 = 58 일 때, x는?",
+      "choices": [
+        "23",
+        "8",
+        "22",
+        "6"
+      ],
+      "answer": "6",
+      "explanation": "먼저 16를 빼서 42를 만들고, 7로 나누면 x = 6입니다."
+    }
+  ],
+  "NR09": [
+    {
+      "typeCode": "NR09",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "4:6 = 8:? 일 때, ?에 들어갈 수는?",
+      "choices": [
+        "12",
+        "48",
+        "10",
+        "11"
+      ],
+      "answer": "12",
+      "explanation": "4에 2를 곱해 8가 되었으므로 6에도 2를 곱합니다."
+    },
+    {
+      "typeCode": "NR09",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "5:10 = 10:? 일 때, ?에 들어갈 수는?",
+      "choices": [
+        "15",
+        "100",
+        "20",
+        "18"
+      ],
+      "answer": "20",
+      "explanation": "5에 2를 곱해 10가 되었으므로 10에도 2를 곱합니다."
+    },
+    {
+      "typeCode": "NR09",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "2:7 = 6:? 일 때, ?에 들어갈 수는?",
+      "choices": [
+        "18",
+        "42",
+        "21",
+        "11"
+      ],
+      "answer": "21",
+      "explanation": "2에 3를 곱해 6가 되었으므로 7에도 3를 곱합니다."
+    },
+    {
+      "typeCode": "NR09",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "3:7 = 12:? 일 때, ?에 들어갈 수는?",
+      "choices": [
+        "16",
+        "84",
+        "28",
+        "24"
+      ],
+      "answer": "28",
+      "explanation": "3에 4를 곱해 12가 되었으므로 7에도 4를 곱합니다."
+    },
+    {
+      "typeCode": "NR09",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "7:11 = 28:? 일 때, ?에 들어갈 수는?",
+      "choices": [
+        "308",
+        "40",
+        "32",
+        "44"
+      ],
+      "answer": "44",
+      "explanation": "7에 4를 곱해 28가 되었으므로 11에도 4를 곱합니다."
+    },
+    {
+      "typeCode": "NR09",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "2:5 = 6:? 일 때, ?에 들어갈 수는?",
+      "choices": [
+        "9",
+        "15",
+        "12",
+        "30"
+      ],
+      "answer": "15",
+      "explanation": "2에 3를 곱해 6가 되었으므로 5에도 3를 곱합니다."
+    },
+    {
+      "typeCode": "NR09",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "6:14 = 24:? 일 때, ?에 들어갈 수는?",
+      "choices": [
+        "336",
+        "32",
+        "52",
+        "56"
+      ],
+      "answer": "56",
+      "explanation": "6에 4를 곱해 24가 되었으므로 14에도 4를 곱합니다."
+    },
+    {
+      "typeCode": "NR09",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "5:10 = 35:? 일 때, ?에 들어갈 수는?",
+      "choices": [
+        "63",
+        "350",
+        "70",
+        "40"
+      ],
+      "answer": "70",
+      "explanation": "5에 7를 곱해 35가 되었으므로 10에도 7를 곱합니다."
+    },
+    {
+      "typeCode": "NR09",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "2:7 = 4:? 일 때, ?에 들어갈 수는?",
+      "choices": [
+        "28",
+        "9",
+        "14",
+        "12"
+      ],
+      "answer": "14",
+      "explanation": "2에 2를 곱해 4가 되었으므로 7에도 2를 곱합니다."
+    },
+    {
+      "typeCode": "NR09",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "8:11 = 64:? 일 때, ?에 들어갈 수는?",
+      "choices": [
+        "88",
+        "67",
+        "80",
+        "704"
+      ],
+      "answer": "88",
+      "explanation": "8에 8를 곱해 64가 되었으므로 11에도 8를 곱합니다."
+    }
+  ],
+  "NR10": [
+    {
+      "typeCode": "NR10",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "80의 10%는 얼마인가요?",
+      "choices": [
+        "10",
+        "80",
+        "70",
+        "8"
+      ],
+      "answer": "8",
+      "explanation": "10%는 10/100이므로 80 × 10/100 = 8입니다."
+    },
+    {
+      "typeCode": "NR10",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "220의 20%는 얼마인가요?",
+      "choices": [
+        "440",
+        "20",
+        "44",
+        "200"
+      ],
+      "answer": "44",
+      "explanation": "20%는 20/100이므로 220 × 20/100 = 44입니다."
+    },
+    {
+      "typeCode": "NR10",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "140의 20%는 얼마인가요?",
+      "choices": [
+        "28",
+        "20",
+        "120",
+        "280"
+      ],
+      "answer": "28",
+      "explanation": "20%는 20/100이므로 140 × 20/100 = 28입니다."
+    },
+    {
+      "typeCode": "NR10",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "220의 25%는 얼마인가요?",
+      "choices": [
+        "550",
+        "55",
+        "195",
+        "25"
+      ],
+      "answer": "55",
+      "explanation": "25%는 25/100이므로 220 × 25/100 = 55입니다."
+    },
+    {
+      "typeCode": "NR10",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "180의 20%는 얼마인가요?",
+      "choices": [
+        "360",
+        "20",
+        "160",
+        "36"
+      ],
+      "answer": "36",
+      "explanation": "20%는 20/100이므로 180 × 20/100 = 36입니다."
+    },
+    {
+      "typeCode": "NR10",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "220의 20%는 얼마인가요?",
+      "choices": [
+        "440",
+        "44",
+        "200",
+        "20"
+      ],
+      "answer": "44",
+      "explanation": "20%는 20/100이므로 220 × 20/100 = 44입니다."
+    },
+    {
+      "typeCode": "NR10",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "80의 20%는 얼마인가요?",
+      "choices": [
+        "160",
+        "16",
+        "20",
+        "60"
+      ],
+      "answer": "16",
+      "explanation": "20%는 20/100이므로 80 × 20/100 = 16입니다."
+    },
+    {
+      "typeCode": "NR10",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "120의 10%는 얼마인가요?",
+      "choices": [
+        "10",
+        "12",
+        "110",
+        "120"
+      ],
+      "answer": "12",
+      "explanation": "10%는 10/100이므로 120 × 10/100 = 12입니다."
+    },
+    {
+      "typeCode": "NR10",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "200의 25%는 얼마인가요?",
+      "choices": [
+        "50",
+        "175",
+        "25",
+        "500"
+      ],
+      "answer": "50",
+      "explanation": "25%는 25/100이므로 200 × 25/100 = 50입니다."
+    },
+    {
+      "typeCode": "NR10",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "80의 20%는 얼마인가요?",
+      "choices": [
+        "60",
+        "20",
+        "16",
+        "160"
+      ],
+      "answer": "16",
+      "explanation": "20%는 20/100이므로 80 × 20/100 = 16입니다."
+    }
+  ],
+  "NR11": [
+    {
+      "typeCode": "NR11",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "6, 4, 17의 평균은?",
+      "choices": [
+        "9",
+        "8",
+        "11",
+        "27"
+      ],
+      "answer": "9",
+      "explanation": "전체 합 27을 3개로 나누면 평균은 9입니다."
+    },
+    {
+      "typeCode": "NR11",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "8, 16, 10, 14의 평균은?",
+      "choices": [
+        "12",
+        "14",
+        "48",
+        "11"
+      ],
+      "answer": "12",
+      "explanation": "전체 합 48을 4개로 나누면 평균은 12입니다."
+    },
+    {
+      "typeCode": "NR11",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "15, 18, 12의 평균은?",
+      "choices": [
+        "14",
+        "15",
+        "17",
+        "45"
+      ],
+      "answer": "15",
+      "explanation": "전체 합 45을 3개로 나누면 평균은 15입니다."
+    },
+    {
+      "typeCode": "NR11",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "15, 5, 4의 평균은?",
+      "choices": [
+        "10",
+        "7",
+        "8",
+        "24"
+      ],
+      "answer": "8",
+      "explanation": "전체 합 24을 3개로 나누면 평균은 8입니다."
+    },
+    {
+      "typeCode": "NR11",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "5, 11, 16, 8의 평균은?",
+      "choices": [
+        "10",
+        "40",
+        "12",
+        "9"
+      ],
+      "answer": "10",
+      "explanation": "전체 합 40을 4개로 나누면 평균은 10입니다."
+    },
+    {
+      "typeCode": "NR11",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "12, 14, 18, 16의 평균은?",
+      "choices": [
+        "17",
+        "15",
+        "60",
+        "14"
+      ],
+      "answer": "15",
+      "explanation": "전체 합 60을 4개로 나누면 평균은 15입니다."
+    },
+    {
+      "typeCode": "NR11",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "16, 8, 14, 18, 4의 평균은?",
+      "choices": [
+        "11",
+        "60",
+        "12",
+        "14"
+      ],
+      "answer": "12",
+      "explanation": "전체 합 60을 5개로 나누면 평균은 12입니다."
+    },
+    {
+      "typeCode": "NR11",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "4, 11, 6, 19의 평균은?",
+      "choices": [
+        "10",
+        "40",
+        "12",
+        "9"
+      ],
+      "answer": "10",
+      "explanation": "전체 합 40을 4개로 나누면 평균은 10입니다."
+    },
+    {
+      "typeCode": "NR11",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "8, 12, 19의 평균은?",
+      "choices": [
+        "15",
+        "12",
+        "39",
+        "13"
+      ],
+      "answer": "13",
+      "explanation": "전체 합 39을 3개로 나누면 평균은 13입니다."
+    },
+    {
+      "typeCode": "NR11",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "8, 13, 17, 9, 8의 평균은?",
+      "choices": [
+        "11",
+        "10",
+        "55",
+        "13"
+      ],
+      "answer": "11",
+      "explanation": "전체 합 55을 5개로 나누면 평균은 11입니다."
+    }
+  ],
+  "NR12": [
+    {
+      "typeCode": "NR12",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "빨강 → 파랑 → 노랑 → 초록 순서가 반복될 때, 39번째 색은?",
+      "choices": [
+        "빨강",
+        "파랑",
+        "노랑",
+        "초록"
+      ],
+      "answer": "노랑",
+      "explanation": "반복 길이가 4이므로 39번째 위치를 나머지로 찾으면 노랑입니다."
+    },
+    {
+      "typeCode": "NR12",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "빨강 → 파랑 → 노랑 → 초록 순서가 반복될 때, 32번째 색은?",
+      "choices": [
+        "빨강",
+        "파랑",
+        "초록",
+        "노랑"
+      ],
+      "answer": "초록",
+      "explanation": "반복 길이가 4이므로 32번째 위치를 나머지로 찾으면 초록입니다."
+    },
+    {
+      "typeCode": "NR12",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "빨강 → 파랑 → 노랑 → 초록 순서가 반복될 때, 34번째 색은?",
+      "choices": [
+        "파랑",
+        "빨강",
+        "노랑",
+        "초록"
+      ],
+      "answer": "파랑",
+      "explanation": "반복 길이가 4이므로 34번째 위치를 나머지로 찾으면 파랑입니다."
+    },
+    {
+      "typeCode": "NR12",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "빨강 → 파랑 → 노랑 순서가 반복될 때, 16번째 색은?",
+      "choices": [
+        "빨강",
+        "보기 A",
+        "파랑",
+        "노랑"
+      ],
+      "answer": "빨강",
+      "explanation": "반복 길이가 3이므로 16번째 위치를 나머지로 찾으면 빨강입니다."
+    },
+    {
+      "typeCode": "NR12",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "빨강 → 파랑 → 노랑 순서가 반복될 때, 20번째 색은?",
+      "choices": [
+        "보기 A",
+        "파랑",
+        "빨강",
+        "노랑"
+      ],
+      "answer": "파랑",
+      "explanation": "반복 길이가 3이므로 20번째 위치를 나머지로 찾으면 파랑입니다."
+    },
+    {
+      "typeCode": "NR12",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "빨강 → 파랑 → 노랑 순서가 반복될 때, 44번째 색은?",
+      "choices": [
+        "보기 A",
+        "파랑",
+        "노랑",
+        "빨강"
+      ],
+      "answer": "파랑",
+      "explanation": "반복 길이가 3이므로 44번째 위치를 나머지로 찾으면 파랑입니다."
+    },
+    {
+      "typeCode": "NR12",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "빨강 → 파랑 → 노랑 → 초록 순서가 반복될 때, 45번째 색은?",
+      "choices": [
+        "파랑",
+        "빨강",
+        "초록",
+        "노랑"
+      ],
+      "answer": "빨강",
+      "explanation": "반복 길이가 4이므로 45번째 위치를 나머지로 찾으면 빨강입니다."
+    },
+    {
+      "typeCode": "NR12",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "빨강 → 파랑 → 노랑 순서가 반복될 때, 8번째 색은?",
+      "choices": [
+        "보기 A",
+        "빨강",
+        "파랑",
+        "노랑"
+      ],
+      "answer": "파랑",
+      "explanation": "반복 길이가 3이므로 8번째 위치를 나머지로 찾으면 파랑입니다."
+    },
+    {
+      "typeCode": "NR12",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "빨강 → 파랑 → 노랑 순서가 반복될 때, 51번째 색은?",
+      "choices": [
+        "파랑",
+        "보기 A",
+        "빨강",
+        "노랑"
+      ],
+      "answer": "노랑",
+      "explanation": "반복 길이가 3이므로 51번째 위치를 나머지로 찾으면 노랑입니다."
+    },
+    {
+      "typeCode": "NR12",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "빨강 → 파랑 → 노랑 순서가 반복될 때, 17번째 색은?",
+      "choices": [
+        "노랑",
+        "보기 A",
+        "파랑",
+        "빨강"
+      ],
+      "answer": "파랑",
+      "explanation": "반복 길이가 3이므로 17번째 위치를 나머지로 찾으면 파랑입니다."
+    }
+  ],
+  "NR13": [
+    {
+      "typeCode": "NR13",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "13m는 몇 cm인가요?",
+      "choices": [
+        "1300",
+        "1299",
+        "13",
+        "130"
+      ],
+      "answer": "1300",
+      "explanation": "1m는 100cm이므로 13 × 100 = 1300입니다."
+    },
+    {
+      "typeCode": "NR13",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "5m는 몇 cm인가요?",
+      "choices": [
+        "499",
+        "50",
+        "500",
+        "5"
+      ],
+      "answer": "500",
+      "explanation": "1m는 100cm이므로 5 × 100 = 500입니다."
+    },
+    {
+      "typeCode": "NR13",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "2m는 몇 cm인가요?",
+      "choices": [
+        "20",
+        "2",
+        "199",
+        "200"
+      ],
+      "answer": "200",
+      "explanation": "1m는 100cm이므로 2 × 100 = 200입니다."
+    },
+    {
+      "typeCode": "NR13",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "28kg는 몇 g인가요?",
+      "choices": [
+        "280",
+        "28000",
+        "2800",
+        "28"
+      ],
+      "answer": "28000",
+      "explanation": "1kg는 1000g이므로 28 × 1000 = 28000입니다."
+    },
+    {
+      "typeCode": "NR13",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "10m는 몇 cm인가요?",
+      "choices": [
+        "999",
+        "1000",
+        "10",
+        "100"
+      ],
+      "answer": "1000",
+      "explanation": "1m는 100cm이므로 10 × 100 = 1000입니다."
+    },
+    {
+      "typeCode": "NR13",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "7m는 몇 cm인가요?",
+      "choices": [
+        "700",
+        "699",
+        "7",
+        "70"
+      ],
+      "answer": "700",
+      "explanation": "1m는 100cm이므로 7 × 100 = 700입니다."
+    },
+    {
+      "typeCode": "NR13",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "19kg는 몇 g인가요?",
+      "choices": [
+        "1900",
+        "19",
+        "19000",
+        "190"
+      ],
+      "answer": "19000",
+      "explanation": "1kg는 1000g이므로 19 × 1000 = 19000입니다."
+    },
+    {
+      "typeCode": "NR13",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "15kg는 몇 g인가요?",
+      "choices": [
+        "15000",
+        "15",
+        "1500",
+        "150"
+      ],
+      "answer": "15000",
+      "explanation": "1kg는 1000g이므로 15 × 1000 = 15000입니다."
+    },
+    {
+      "typeCode": "NR13",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "18m는 몇 cm인가요?",
+      "choices": [
+        "180",
+        "18",
+        "1800",
+        "1799"
+      ],
+      "answer": "1800",
+      "explanation": "1m는 100cm이므로 18 × 100 = 1800입니다."
+    },
+    {
+      "typeCode": "NR13",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "30m는 몇 cm인가요?",
+      "choices": [
+        "30",
+        "300",
+        "3000",
+        "2999"
+      ],
+      "answer": "3000",
+      "explanation": "1m는 100cm이므로 30 × 100 = 3000입니다."
+    }
+  ],
+  "NR14": [
+    {
+      "typeCode": "NR14",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "3:00에서 60분 뒤의 시각은?",
+      "choices": [
+        "보기 A",
+        "4:00",
+        "3:00",
+        "5:00"
+      ],
+      "answer": "4:00",
+      "explanation": "분을 더한 뒤 60분이 넘는 부분을 시간으로 올리면 4:00입니다."
+    },
+    {
+      "typeCode": "NR14",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "2:45에서 90분 뒤의 시각은?",
+      "choices": [
+        "3:45",
+        "4:15",
+        "5:15",
+        "2:15"
+      ],
+      "answer": "4:15",
+      "explanation": "분을 더한 뒤 60분이 넘는 부분을 시간으로 올리면 4:15입니다."
+    },
+    {
+      "typeCode": "NR14",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "9:20에서 90분 뒤의 시각은?",
+      "choices": [
+        "11:50",
+        "9:50",
+        "10:20",
+        "10:50"
+      ],
+      "answer": "10:50",
+      "explanation": "분을 더한 뒤 60분이 넘는 부분을 시간으로 올리면 10:50입니다."
+    },
+    {
+      "typeCode": "NR14",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "7:30에서 75분 뒤의 시각은?",
+      "choices": [
+        "8:30",
+        "7:45",
+        "8:45",
+        "9:45"
+      ],
+      "answer": "8:45",
+      "explanation": "분을 더한 뒤 60분이 넘는 부분을 시간으로 올리면 8:45입니다."
+    },
+    {
+      "typeCode": "NR14",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "6:30에서 20분 뒤의 시각은?",
+      "choices": [
+        "7:30",
+        "6:50",
+        "7:50",
+        "보기 A"
+      ],
+      "answer": "6:50",
+      "explanation": "분을 더한 뒤 60분이 넘는 부분을 시간으로 올리면 6:50입니다."
+    },
+    {
+      "typeCode": "NR14",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "9:20에서 20분 뒤의 시각은?",
+      "choices": [
+        "10:20",
+        "보기 A",
+        "9:40",
+        "10:40"
+      ],
+      "answer": "9:40",
+      "explanation": "분을 더한 뒤 60분이 넘는 부분을 시간으로 올리면 9:40입니다."
+    },
+    {
+      "typeCode": "NR14",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "2:10에서 75분 뒤의 시각은?",
+      "choices": [
+        "3:25",
+        "4:25",
+        "2:25",
+        "3:10"
+      ],
+      "answer": "3:25",
+      "explanation": "분을 더한 뒤 60분이 넘는 부분을 시간으로 올리면 3:25입니다."
+    },
+    {
+      "typeCode": "NR14",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "2:45에서 30분 뒤의 시각은?",
+      "choices": [
+        "3:15",
+        "4:15",
+        "2:15",
+        "3:45"
+      ],
+      "answer": "3:15",
+      "explanation": "분을 더한 뒤 60분이 넘는 부분을 시간으로 올리면 3:15입니다."
+    },
+    {
+      "typeCode": "NR14",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "3:30에서 30분 뒤의 시각은?",
+      "choices": [
+        "5:00",
+        "4:30",
+        "3:00",
+        "4:00"
+      ],
+      "answer": "4:00",
+      "explanation": "분을 더한 뒤 60분이 넘는 부분을 시간으로 올리면 4:00입니다."
+    },
+    {
+      "typeCode": "NR14",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "6:30에서 60분 뒤의 시각은?",
+      "choices": [
+        "8:30",
+        "6:30",
+        "7:30",
+        "보기 A"
+      ],
+      "answer": "7:30",
+      "explanation": "분을 더한 뒤 60분이 넘는 부분을 시간으로 올리면 7:30입니다."
+    }
+  ],
+  "NR15": [
+    {
+      "typeCode": "NR15",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "1900원짜리 물건 6개를 사고 12000원을 냈습니다. 거스름돈은?",
+      "choices": [
+        "10100",
+        "700",
+        "600",
+        "11400"
+      ],
+      "answer": "600",
+      "explanation": "총액은 11400원이고, 12000원에서 빼면 600원입니다."
+    },
+    {
+      "typeCode": "NR15",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "900원짜리 물건 2개를 사고 2000원을 냈습니다. 거스름돈은?",
+      "choices": [
+        "200",
+        "1800",
+        "1100",
+        "300"
+      ],
+      "answer": "200",
+      "explanation": "총액은 1800원이고, 2000원에서 빼면 200원입니다."
+    },
+    {
+      "typeCode": "NR15",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "500원짜리 물건 6개를 사고 3000원을 냈습니다. 거스름돈은?",
+      "choices": [
+        "3000",
+        "0",
+        "2500",
+        "100"
+      ],
+      "answer": "0",
+      "explanation": "총액은 3000원이고, 3000원에서 빼면 0원입니다."
+    },
+    {
+      "typeCode": "NR15",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "400원짜리 물건 4개를 사고 2000원을 냈습니다. 거스름돈은?",
+      "choices": [
+        "400",
+        "399",
+        "500",
+        "1600"
+      ],
+      "answer": "400",
+      "explanation": "총액은 1600원이고, 2000원에서 빼면 400원입니다."
+    },
+    {
+      "typeCode": "NR15",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "500원짜리 물건 4개를 사고 2000원을 냈습니다. 거스름돈은?",
+      "choices": [
+        "0",
+        "100",
+        "1500",
+        "2000"
+      ],
+      "answer": "0",
+      "explanation": "총액은 2000원이고, 2000원에서 빼면 0원입니다."
+    },
+    {
+      "typeCode": "NR15",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "1000원짜리 물건 4개를 사고 4000원을 냈습니다. 거스름돈은?",
+      "choices": [
+        "0",
+        "100",
+        "3000",
+        "4000"
+      ],
+      "answer": "0",
+      "explanation": "총액은 4000원이고, 4000원에서 빼면 0원입니다."
+    },
+    {
+      "typeCode": "NR15",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "1900원짜리 물건 4개를 사고 8000원을 냈습니다. 거스름돈은?",
+      "choices": [
+        "500",
+        "6100",
+        "7600",
+        "400"
+      ],
+      "answer": "400",
+      "explanation": "총액은 7600원이고, 8000원에서 빼면 400원입니다."
+    },
+    {
+      "typeCode": "NR15",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "500원짜리 물건 3개를 사고 2000원을 냈습니다. 거스름돈은?",
+      "choices": [
+        "499",
+        "500",
+        "600",
+        "1500"
+      ],
+      "answer": "500",
+      "explanation": "총액은 1500원이고, 2000원에서 빼면 500원입니다."
+    },
+    {
+      "typeCode": "NR15",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "1600원짜리 물건 4개를 사고 7000원을 냈습니다. 거스름돈은?",
+      "choices": [
+        "700",
+        "5400",
+        "600",
+        "6400"
+      ],
+      "answer": "600",
+      "explanation": "총액은 6400원이고, 7000원에서 빼면 600원입니다."
+    },
+    {
+      "typeCode": "NR15",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "300원짜리 물건 6개를 사고 2000원을 냈습니다. 거스름돈은?",
+      "choices": [
+        "1800",
+        "1700",
+        "300",
+        "200"
+      ],
+      "answer": "200",
+      "explanation": "총액은 1800원이고, 2000원에서 빼면 200원입니다."
+    }
+  ],
+  "NR16": [
+    {
+      "typeCode": "NR16",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 가장 큰 수는?",
+      "choices": [
+        "107",
+        "64",
+        "65",
+        "96"
+      ],
+      "answer": "107",
+      "explanation": "각 수의 크기를 비교하면 가장 큰 값은 107입니다."
+    },
+    {
+      "typeCode": "NR16",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 가장 큰 수는?",
+      "choices": [
+        "36",
+        "39",
+        "59",
+        "71"
+      ],
+      "answer": "71",
+      "explanation": "각 수의 크기를 비교하면 가장 큰 값은 71입니다."
+    },
+    {
+      "typeCode": "NR16",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 가장 큰 수는?",
+      "choices": [
+        "27",
+        "53",
+        "52",
+        "71"
+      ],
+      "answer": "71",
+      "explanation": "각 수의 크기를 비교하면 가장 큰 값은 71입니다."
+    },
+    {
+      "typeCode": "NR16",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 가장 큰 수는?",
+      "choices": [
+        "146",
+        "31",
+        "171",
+        "134"
+      ],
+      "answer": "171",
+      "explanation": "각 수의 크기를 비교하면 가장 큰 값은 171입니다."
+    },
+    {
+      "typeCode": "NR16",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 가장 큰 수는?",
+      "choices": [
+        "198",
+        "120",
+        "112",
+        "194"
+      ],
+      "answer": "198",
+      "explanation": "각 수의 크기를 비교하면 가장 큰 값은 198입니다."
+    },
+    {
+      "typeCode": "NR16",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 가장 큰 수는?",
+      "choices": [
+        "43",
+        "64",
+        "120",
+        "200"
+      ],
+      "answer": "200",
+      "explanation": "각 수의 크기를 비교하면 가장 큰 값은 200입니다."
+    },
+    {
+      "typeCode": "NR16",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 가장 큰 수는?",
+      "choices": [
+        "121",
+        "29",
+        "175",
+        "48"
+      ],
+      "answer": "175",
+      "explanation": "각 수의 크기를 비교하면 가장 큰 값은 175입니다."
+    },
+    {
+      "typeCode": "NR16",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 가장 큰 수는?",
+      "choices": [
+        "234",
+        "14",
+        "103",
+        "75"
+      ],
+      "answer": "234",
+      "explanation": "각 수의 크기를 비교하면 가장 큰 값은 234입니다."
+    },
+    {
+      "typeCode": "NR16",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 가장 큰 수는?",
+      "choices": [
+        "205",
+        "234",
+        "60",
+        "114"
+      ],
+      "answer": "234",
+      "explanation": "각 수의 크기를 비교하면 가장 큰 값은 234입니다."
+    },
+    {
+      "typeCode": "NR16",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 가장 큰 수는?",
+      "choices": [
+        "71",
+        "92",
+        "186",
+        "157"
+      ],
+      "answer": "186",
+      "explanation": "각 수의 크기를 비교하면 가장 큰 값은 186입니다."
+    }
+  ],
+  "NR17": [
+    {
+      "typeCode": "NR17",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 2의 배수는?",
+      "choices": [
+        "17",
+        "19",
+        "15",
+        "16"
+      ],
+      "answer": "16",
+      "explanation": "16는 2 × 8이므로 2의 배수입니다."
+    },
+    {
+      "typeCode": "NR17",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 6의 배수는?",
+      "choices": [
+        "29",
+        "37",
+        "31",
+        "30"
+      ],
+      "answer": "30",
+      "explanation": "30는 6 × 5이므로 6의 배수입니다."
+    },
+    {
+      "typeCode": "NR17",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 9의 배수는?",
+      "choices": [
+        "28",
+        "26",
+        "27",
+        "37"
+      ],
+      "answer": "27",
+      "explanation": "27는 9 × 3이므로 9의 배수입니다."
+    },
+    {
+      "typeCode": "NR17",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 9의 배수는?",
+      "choices": [
+        "54",
+        "55",
+        "64",
+        "53"
+      ],
+      "answer": "54",
+      "explanation": "54는 9 × 6이므로 9의 배수입니다."
+    },
+    {
+      "typeCode": "NR17",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 9의 배수는?",
+      "choices": [
+        "55",
+        "46",
+        "44",
+        "45"
+      ],
+      "answer": "45",
+      "explanation": "45는 9 × 5이므로 9의 배수입니다."
+    },
+    {
+      "typeCode": "NR17",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 6의 배수는?",
+      "choices": [
+        "43",
+        "41",
+        "42",
+        "49"
+      ],
+      "answer": "42",
+      "explanation": "42는 6 × 7이므로 6의 배수입니다."
+    },
+    {
+      "typeCode": "NR17",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 7의 배수는?",
+      "choices": [
+        "48",
+        "57",
+        "49",
+        "50"
+      ],
+      "answer": "49",
+      "explanation": "49는 7 × 7이므로 7의 배수입니다."
+    },
+    {
+      "typeCode": "NR17",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 8의 배수는?",
+      "choices": [
+        "24",
+        "23",
+        "33",
+        "25"
+      ],
+      "answer": "24",
+      "explanation": "24는 8 × 3이므로 8의 배수입니다."
+    },
+    {
+      "typeCode": "NR17",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 6의 배수는?",
+      "choices": [
+        "41",
+        "49",
+        "43",
+        "42"
+      ],
+      "answer": "42",
+      "explanation": "42는 6 × 7이므로 6의 배수입니다."
+    },
+    {
+      "typeCode": "NR17",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "다음 중 4의 배수는?",
+      "choices": [
+        "31",
+        "32",
+        "33",
+        "37"
+      ],
+      "answer": "32",
+      "explanation": "32는 4 × 8이므로 4의 배수입니다."
+    }
+  ],
+  "NR18": [
+    {
+      "typeCode": "NR18",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "상자 4개에 사과가 각각 9개씩 있습니다. 10개를 먹었다면 남은 사과는?",
+      "choices": [
+        "26",
+        "25",
+        "3",
+        "36"
+      ],
+      "answer": "26",
+      "explanation": "전체 36개에서 10개를 빼면 26개가 남습니다."
+    },
+    {
+      "typeCode": "NR18",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "상자 8개에 사과가 각각 9개씩 있습니다. 2개를 먹었다면 남은 사과는?",
+      "choices": [
+        "70",
+        "69",
+        "72",
+        "15"
+      ],
+      "answer": "70",
+      "explanation": "전체 72개에서 2개를 빼면 70개가 남습니다."
+    },
+    {
+      "typeCode": "NR18",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "상자 4개에 사과가 각각 8개씩 있습니다. 2개를 먹었다면 남은 사과는?",
+      "choices": [
+        "30",
+        "32",
+        "29",
+        "10"
+      ],
+      "answer": "30",
+      "explanation": "전체 32개에서 2개를 빼면 30개가 남습니다."
+    },
+    {
+      "typeCode": "NR18",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "상자 5개에 사과가 각각 9개씩 있습니다. 7개를 먹었다면 남은 사과는?",
+      "choices": [
+        "38",
+        "45",
+        "37",
+        "7"
+      ],
+      "answer": "38",
+      "explanation": "전체 45개에서 7개를 빼면 38개가 남습니다."
+    },
+    {
+      "typeCode": "NR18",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "상자 3개에 사과가 각각 4개씩 있습니다. 8개를 먹었다면 남은 사과는?",
+      "choices": [
+        "3",
+        "12",
+        "5",
+        "4"
+      ],
+      "answer": "4",
+      "explanation": "전체 12개에서 8개를 빼면 4개가 남습니다."
+    },
+    {
+      "typeCode": "NR18",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "상자 3개에 사과가 각각 12개씩 있습니다. 5개를 먹었다면 남은 사과는?",
+      "choices": [
+        "10",
+        "30",
+        "31",
+        "36"
+      ],
+      "answer": "31",
+      "explanation": "전체 36개에서 5개를 빼면 31개가 남습니다."
+    },
+    {
+      "typeCode": "NR18",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "상자 8개에 사과가 각각 7개씩 있습니다. 10개를 먹었다면 남은 사과는?",
+      "choices": [
+        "5",
+        "46",
+        "45",
+        "56"
+      ],
+      "answer": "46",
+      "explanation": "전체 56개에서 10개를 빼면 46개가 남습니다."
+    },
+    {
+      "typeCode": "NR18",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "상자 4개에 사과가 각각 7개씩 있습니다. 6개를 먹었다면 남은 사과는?",
+      "choices": [
+        "28",
+        "21",
+        "5",
+        "22"
+      ],
+      "answer": "22",
+      "explanation": "전체 28개에서 6개를 빼면 22개가 남습니다."
+    },
+    {
+      "typeCode": "NR18",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "상자 5개에 사과가 각각 10개씩 있습니다. 3개를 먹었다면 남은 사과는?",
+      "choices": [
+        "12",
+        "46",
+        "50",
+        "47"
+      ],
+      "answer": "47",
+      "explanation": "전체 50개에서 3개를 빼면 47개가 남습니다."
+    },
+    {
+      "typeCode": "NR18",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "상자 8개에 사과가 각각 11개씩 있습니다. 9개를 먹었다면 남은 사과는?",
+      "choices": [
+        "78",
+        "10",
+        "79",
+        "88"
+      ],
+      "answer": "79",
+      "explanation": "전체 88개에서 9개를 빼면 79개가 남습니다."
+    }
+  ],
+  "NR19": [
+    {
+      "typeCode": "NR19",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "표를 보고 가장 많은 값을 가진 항목을 고르세요.\nA: 20, B: 20, C: 26",
+      "choices": [
+        "C",
+        "B",
+        "A",
+        "모두 같음"
+      ],
+      "answer": "C",
+      "explanation": "A=20, B=20, C=26 중 가장 큰 값은 26이므로 C입니다."
+    },
+    {
+      "typeCode": "NR19",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "표를 보고 가장 많은 값을 가진 항목을 고르세요.\nA: 6, B: 25, C: 13",
+      "choices": [
+        "A",
+        "B",
+        "C",
+        "모두 같음"
+      ],
+      "answer": "B",
+      "explanation": "A=6, B=25, C=13 중 가장 큰 값은 25이므로 B입니다."
+    },
+    {
+      "typeCode": "NR19",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "표를 보고 가장 많은 값을 가진 항목을 고르세요.\nA: 30, B: 6, C: 30",
+      "choices": [
+        "B",
+        "A",
+        "C",
+        "모두 같음"
+      ],
+      "answer": "A",
+      "explanation": "A=30, B=6, C=30 중 가장 큰 값은 30이므로 A입니다."
+    },
+    {
+      "typeCode": "NR19",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "표를 보고 가장 많은 값을 가진 항목을 고르세요.\nA: 25, B: 18, C: 10",
+      "choices": [
+        "A",
+        "C",
+        "B",
+        "모두 같음"
+      ],
+      "answer": "A",
+      "explanation": "A=25, B=18, C=10 중 가장 큰 값은 25이므로 A입니다."
+    },
+    {
+      "typeCode": "NR19",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "표를 보고 가장 많은 값을 가진 항목을 고르세요.\nA: 21, B: 5, C: 12",
+      "choices": [
+        "A",
+        "C",
+        "B",
+        "모두 같음"
+      ],
+      "answer": "A",
+      "explanation": "A=21, B=5, C=12 중 가장 큰 값은 21이므로 A입니다."
+    },
+    {
+      "typeCode": "NR19",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "표를 보고 가장 많은 값을 가진 항목을 고르세요.\nA: 13, B: 6, C: 29",
+      "choices": [
+        "C",
+        "B",
+        "모두 같음",
+        "A"
+      ],
+      "answer": "C",
+      "explanation": "A=13, B=6, C=29 중 가장 큰 값은 29이므로 C입니다."
+    },
+    {
+      "typeCode": "NR19",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "표를 보고 가장 많은 값을 가진 항목을 고르세요.\nA: 12, B: 11, C: 25",
+      "choices": [
+        "B",
+        "A",
+        "모두 같음",
+        "C"
+      ],
+      "answer": "C",
+      "explanation": "A=12, B=11, C=25 중 가장 큰 값은 25이므로 C입니다."
+    },
+    {
+      "typeCode": "NR19",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "표를 보고 가장 많은 값을 가진 항목을 고르세요.\nA: 24, B: 19, C: 5",
+      "choices": [
+        "C",
+        "모두 같음",
+        "B",
+        "A"
+      ],
+      "answer": "A",
+      "explanation": "A=24, B=19, C=5 중 가장 큰 값은 24이므로 A입니다."
+    },
+    {
+      "typeCode": "NR19",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "표를 보고 가장 많은 값을 가진 항목을 고르세요.\nA: 27, B: 14, C: 8",
+      "choices": [
+        "A",
+        "C",
+        "B",
+        "모두 같음"
+      ],
+      "answer": "A",
+      "explanation": "A=27, B=14, C=8 중 가장 큰 값은 27이므로 A입니다."
+    },
+    {
+      "typeCode": "NR19",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "표를 보고 가장 많은 값을 가진 항목을 고르세요.\nA: 21, B: 21, C: 24",
+      "choices": [
+        "B",
+        "A",
+        "C",
+        "모두 같음"
+      ],
+      "answer": "C",
+      "explanation": "A=21, B=21, C=24 중 가장 큰 값은 24이므로 C입니다."
+    }
+  ],
+  "NR20": [
+    {
+      "typeCode": "NR20",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "12에 먼저 3를 곱하고, 그 결과에 4를 더하면?",
+      "choices": [
+        "40",
+        "19",
+        "36",
+        "84"
+      ],
+      "answer": "40",
+      "explanation": "먼저 12 × 3 = 36, 여기에 4를 더해 40입니다."
+    },
+    {
+      "typeCode": "NR20",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "11에 먼저 4를 곱하고, 그 결과에 7를 더하면?",
+      "choices": [
+        "44",
+        "121",
+        "51",
+        "22"
+      ],
+      "answer": "51",
+      "explanation": "먼저 11 × 4 = 44, 여기에 7를 더해 51입니다."
+    },
+    {
+      "typeCode": "NR20",
+      "level": 3,
+      "ageGroup": "초등 5-6",
+      "question": "7에 먼저 3를 곱하고, 그 결과에 8를 더하면?",
+      "choices": [
+        "77",
+        "21",
+        "29",
+        "18"
+      ],
+      "answer": "29",
+      "explanation": "먼저 7 × 3 = 21, 여기에 8를 더해 29입니다."
+    },
+    {
+      "typeCode": "NR20",
+      "level": 4,
+      "ageGroup": "초등 5-6",
+      "question": "8에 먼저 3를 곱하고, 그 결과에 8를 더하면?",
+      "choices": [
+        "19",
+        "32",
+        "24",
+        "88"
+      ],
+      "answer": "32",
+      "explanation": "먼저 8 × 3 = 24, 여기에 8를 더해 32입니다."
+    },
+    {
+      "typeCode": "NR20",
+      "level": 5,
+      "ageGroup": "초등 5-6",
+      "question": "5에 먼저 4를 곱하고, 그 결과에 11를 더하면?",
+      "choices": [
+        "20",
+        "75",
+        "31",
+        "30"
+      ],
+      "answer": "31",
+      "explanation": "먼저 5 × 4 = 20, 여기에 11를 더해 31입니다."
+    },
+    {
+      "typeCode": "NR20",
+      "level": 6,
+      "ageGroup": "초등 5-6",
+      "question": "8에 먼저 4를 곱하고, 그 결과에 10를 더하면?",
+      "choices": [
+        "42",
+        "112",
+        "22",
+        "32"
+      ],
+      "answer": "42",
+      "explanation": "먼저 8 × 4 = 32, 여기에 10를 더해 42입니다."
+    },
+    {
+      "typeCode": "NR20",
+      "level": 7,
+      "ageGroup": "초등 5-6",
+      "question": "4에 먼저 3를 곱하고, 그 결과에 3를 더하면?",
+      "choices": [
+        "12",
+        "10",
+        "15",
+        "24"
+      ],
+      "answer": "15",
+      "explanation": "먼저 4 × 3 = 12, 여기에 3를 더해 15입니다."
+    },
+    {
+      "typeCode": "NR20",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "9에 먼저 3를 곱하고, 그 결과에 4를 더하면?",
+      "choices": [
+        "63",
+        "31",
+        "27",
+        "16"
+      ],
+      "answer": "31",
+      "explanation": "먼저 9 × 3 = 27, 여기에 4를 더해 31입니다."
+    },
+    {
+      "typeCode": "NR20",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "9에 먼저 3를 곱하고, 그 결과에 7를 더하면?",
+      "choices": [
+        "34",
+        "90",
+        "19",
+        "27"
+      ],
+      "answer": "34",
+      "explanation": "먼저 9 × 3 = 27, 여기에 7를 더해 34입니다."
+    },
+    {
+      "typeCode": "NR20",
+      "level": 8,
+      "ageGroup": "초등 5-6",
+      "question": "4에 먼저 2를 곱하고, 그 결과에 4를 더하면?",
+      "choices": [
+        "8",
+        "24",
+        "12",
+        "10"
+      ],
+      "answer": "12",
+      "explanation": "먼저 4 × 2 = 8, 여기에 4를 더해 12입니다."
+    }
+  ]
+}
