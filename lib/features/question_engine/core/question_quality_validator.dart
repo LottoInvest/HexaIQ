@@ -1,6 +1,22 @@
+import 'package:flutter/foundation.dart';
+
 import '../domain/question_engine_models.dart';
 import 'age_mapper.dart';
 import 'difficulty_manager.dart';
+
+class ValidationResult {
+  const ValidationResult._({required this.isValid, this.reason, this.warning});
+
+  final bool isValid;
+  final String? reason;
+  final String? warning;
+
+  const ValidationResult.valid({String? warning})
+    : this._(isValid: true, warning: warning);
+
+  const ValidationResult.invalid(String reason, {String? warning})
+    : this._(isValid: false, reason: reason, warning: warning);
+}
 
 class QuestionQualityValidator {
   const QuestionQualityValidator({
@@ -11,16 +27,36 @@ class QuestionQualityValidator {
   final AgeMapper ageMapper;
   final DifficultyManager difficultyManager;
 
-  void validate(GeneratedQuestionDto question) {
-    _validateEstimatedTime(question);
-    _validateAgeNumberRange(question);
-    _validateNumericChoiceDistance(question);
+  ValidationResult validate(GeneratedQuestionDto question) {
+    try {
+      _validateEstimatedTime(question);
+      _validateAgeNumberRange(question);
+      _validateNumericChoiceDistance(question);
+      return const ValidationResult.valid();
+    } on Object catch (error, stackTrace) {
+      debugPrint(
+        '[Validator] invalid '
+        'type=${question.typeCode} '
+        'id=${question.id} '
+        'seed=${question.seed} '
+        'reason=$error',
+      );
+      debugPrint('[Validator] stackTrace=$stackTrace');
+      return ValidationResult.invalid(error.toString());
+    }
   }
 
   void _validateEstimatedTime(GeneratedQuestionDto question) {
     final expected = difficultyManager.estimatedTimeSec(question.level);
-    if ((question.estimatedTimeSec - expected).abs() > 20) {
-      throw StateError('estimatedTimeSec is not aligned with difficulty.');
+    final diff = (question.estimatedTimeSec - expected).abs();
+    if (diff > 20) {
+      throw StateError(
+        'estimatedTimeSec mismatch: '
+        'actual=${question.estimatedTimeSec}, '
+        'expected=$expected, '
+        'diff=$diff, '
+        'level=${question.level}.',
+      );
     }
   }
 
@@ -33,7 +69,11 @@ class QuestionQualityValidator {
     for (final value in values) {
       if (value.abs() > maxAllowed) {
         throw StateError(
-          'Question number $value is too large for ${age.code}.',
+          'number range exceeded: '
+          'value=$value, '
+          'maxAllowed=$maxAllowed, '
+          'ageGroup=${question.ageGroup}, '
+          'resolvedAge=${age.code}.',
         );
       }
     }
@@ -51,7 +91,13 @@ class QuestionQualityValidator {
     for (final value in choiceNumbers) {
       if (value != answer &&
           (value - answer).abs() > answer.abs() * 20 + 10000) {
-        throw StateError('Distractor $value is too far from answer $answer.');
+        throw StateError(
+          'numeric choice distance too large: '
+          'choice=$value, '
+          'answer=$answer, '
+          'distance=${(value - answer).abs()}, '
+          'allowed=${answer.abs() * 20 + 10000}.',
+        );
       }
     }
   }

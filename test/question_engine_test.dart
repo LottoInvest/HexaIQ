@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hexaiq_app/features/hexaiq/domain/hexaiq_models.dart';
 import 'package:hexaiq_app/features/question_engine/question_engine.dart';
 
 void main() {
@@ -145,4 +146,120 @@ void main() {
       expect(question.choices, contains(question.answer));
     }
   });
+
+  test('QuestionQualityValidator returns invalid instead of throwing', () {
+    final ageMapper = AgeMapper();
+    final validator = QuestionQualityValidator(
+      ageMapper: ageMapper,
+      difficultyManager: DifficultyManager(ageMapper),
+    );
+
+    final result = validator.validate(
+      GeneratedQuestionDto.fromLegacyChoices(
+        id: 'invalid-time',
+        domain: QuestionDomain.numerical,
+        typeCode: 'NR01',
+        level: 5,
+        ageGroup: 'grade5_6',
+        seed: 1,
+        questionText: '2, 5, 8, ?',
+        choices: const ['11', '12', '13', '14'],
+        answer: '11',
+        explanation: 'Add 3 each time.',
+        estimatedTimeSec: 999,
+        metadata: const QuestionMetadataDto(
+          rule: 'NR01',
+          difficultyFactors: ['test'],
+        ),
+      ),
+    );
+
+    expect(result.isValid, isFalse);
+    expect(result.reason, isNotNull);
+  });
+
+  test(
+    'QuestionEngine falls back to a valid NR01 after validation failures',
+    () {
+      final engine = QuestionEngine(
+        qualityValidator: _AlwaysInvalidValidator(),
+      );
+
+      final question = engine.generate(
+        const GenerateQuestionRequest(
+          profileId: 'profile-fallback',
+          testId: 'test-fallback',
+          domain: QuestionDomain.numerical,
+          ageGroup: 'grade5_6',
+          index: 0,
+          typeCode: 'NR20',
+          level: 5,
+        ),
+      );
+
+      expect(question.typeCode, 'NR01');
+      expect(question.metadata.status, 'fallback');
+      expect(question.choices, contains(question.answer));
+      expect(question.answerIndex, question.choices.indexOf(question.answer));
+    },
+  );
+
+  test('QuestionEngine returns the requested five-item domain batch', () {
+    final engine = QuestionEngine(qualityValidator: _AlwaysInvalidValidator());
+
+    final questions = engine.generateDomainBatch(
+      profileId: 'profile-batch',
+      testId: 'test-batch',
+      domain: QuestionDomain.numerical,
+      ageGroup: 'grade5_6',
+      count: 5,
+      level: 5,
+    );
+
+    expect(questions.length, 5);
+    expect(questions.every((question) => question.typeCode == 'NR01'), isTrue);
+    expect(questions.every((question) => question.choices.length == 4), isTrue);
+  });
+
+  test('MockQuestionApi always returns five generated questions', () async {
+    final api = MockQuestionApi();
+
+    for (final testType in TestType.values) {
+      final questions = await api.generateTestQuestions(
+        profile: const UserProfile(
+          id: 'profile-mock',
+          name: 'Mock',
+          ageGroup: 'grade5_6',
+          grade: 'grade5',
+          avatar: 'M',
+        ),
+        testType: testType,
+      );
+
+      expect(questions.length, 5);
+      expect(
+        questions.every(
+          (question) => question.domain == QuestionDomain.numerical,
+        ),
+        isTrue,
+      );
+      expect(
+        questions.every((question) => question.choices.length == 4),
+        isTrue,
+      );
+    }
+  });
+}
+
+class _AlwaysInvalidValidator extends QuestionQualityValidator {
+  _AlwaysInvalidValidator()
+    : super(
+        ageMapper: AgeMapper(),
+        difficultyManager: DifficultyManager(AgeMapper()),
+      );
+
+  @override
+  ValidationResult validate(GeneratedQuestionDto question) {
+    return const ValidationResult.invalid('forced invalid for test');
+  }
 }

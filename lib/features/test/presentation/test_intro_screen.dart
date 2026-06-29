@@ -12,11 +12,7 @@ class TestIntroScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<HexaIQAppState>();
     final type = state.selectedTestType;
-    final itemCount = switch (type) {
-      TestType.basic => 30,
-      TestType.advanced => 36,
-      TestType.professional => 48,
-    };
+    const itemCount = 5;
     return Scaffold(
       appBar: AppBar(title: Text('${testTypeLabel(type)} 검사 안내')),
       body: SafeArea(
@@ -30,7 +26,7 @@ class TestIntroScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$itemCount문항 · 6개 영역',
+                      '$itemCount문항',
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 12),
