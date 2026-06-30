@@ -211,6 +211,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
     if (question.hint != null && question.hint!.trim().isNotEmpty) {
       return question.hint!;
     }
+    return fallbackHintForType(question.typeCode);
+    // ignore: dead_code
     return switch (question.typeCode) {
       'NR01' => '등차수열 문제입니다. 차이를 비교해보세요.',
       'NR02' => '등비수열 문제입니다. 곱해지는 비율을 찾아보세요.',
@@ -479,6 +481,21 @@ class _ChoiceButton extends StatelessWidget {
     }
     return OutlinedButton(style: style, onPressed: onPressed, child: child);
   }
+}
+
+String fallbackHintForType(String typeCode) {
+  return switch (typeCode) {
+    'NR01' => '등차수열입니다. 앞뒤 숫자의 차이가 일정한지 확인해보세요.',
+    'NR02' => '등비수열입니다. 앞 숫자에 같은 수를 곱하는 규칙인지 확인해보세요.',
+    'NR08' => '제곱수 규칙입니다. 2², 3², 4²처럼 생각해보세요.',
+    'NR09' => '세제곱수 규칙입니다. 2³, 3³, 4³처럼 생각해보세요.',
+    'NR15' => '행렬 문제입니다. 같은 행이나 같은 열에 반복되는 차이를 찾아보세요.',
+    'NR16' => '행 합 규칙입니다. 각 행의 오른쪽 수가 왼쪽 두 수의 합인지 확인해보세요.',
+    'NR17' => '숫자퍼즐입니다. 행, 열, 대각선 중 반복되는 합계를 찾아보세요.',
+    'NR18' => '방정식 문제입니다. 양쪽에서 같은 수를 빼거나 나누어 x를 구해보세요.',
+    'NR20' => '숫자퍼즐입니다. 곱하기와 더하기가 어떤 순서로 적용되는지 확인해보세요.',
+    _ => '문제 유형의 규칙을 먼저 찾고, 보기와 하나씩 비교해보세요.',
+  };
 }
 
 class DomainCompleteScreenRedirect extends StatelessWidget {

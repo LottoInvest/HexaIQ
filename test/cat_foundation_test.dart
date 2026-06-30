@@ -101,6 +101,120 @@ void main() {
     expect(lower.theta, -3);
   });
 
+  test('LikelihoodCalculator calculates finite 2PL probability', () {
+    const calculator = LikelihoodCalculator();
+
+    final probability = calculator.probability(
+      theta: 0,
+      difficultyIndex: 0,
+      discrimination: 1,
+    );
+    final lowerAbility = calculator.probability(
+      theta: -1,
+      difficultyIndex: 1,
+      discrimination: 1.2,
+    );
+    final higherAbility = calculator.probability(
+      theta: 2,
+      difficultyIndex: 1,
+      discrimination: 1.2,
+    );
+
+    expect(probability, closeTo(0.5, 0.0001));
+    expect(higherAbility, greaterThan(lowerAbility));
+    expect(
+      calculator.probability(
+        theta: double.infinity,
+        difficultyIndex: 0,
+        discrimination: 1,
+      ),
+      0.5,
+    );
+    expect(
+      calculator
+          .probability(theta: 10000, difficultyIndex: -10000, discrimination: 2)
+          .isFinite,
+      isTrue,
+    );
+  });
+
+  test('ThetaEstimator raises and lowers theta from response history', () {
+    const estimator = ThetaEstimator();
+    final initial = ThetaEstimate.initial(updatedAt: DateTime(2026));
+
+    final correct = estimator.estimate(
+      history: [
+        _record(correct: true, difficultyIndex: 0, discrimination: 1),
+        _record(correct: true, difficultyIndex: 0.5, discrimination: 1),
+      ],
+      current: initial,
+      updatedAt: DateTime(2026, 1, 2),
+    );
+    final wrong = estimator.estimate(
+      history: [
+        _record(correct: false, difficultyIndex: 0, discrimination: 1),
+        _record(correct: false, difficultyIndex: -0.5, discrimination: 1),
+      ],
+      current: initial,
+    );
+
+    expect(correct.theta, greaterThan(initial.theta));
+    expect(wrong.theta, lessThan(initial.theta));
+    expect(correct.answeredCount, 2);
+  });
+
+  test('ThetaEstimator clamps theta and prevents NaN or Infinity', () {
+    const estimator = ThetaEstimator();
+    final initial = ThetaEstimate.initial(updatedAt: DateTime(2026));
+
+    final upper = estimator.estimate(
+      history: List.generate(
+        8,
+        (_) => _record(correct: true, difficultyIndex: 3, discrimination: 2),
+      ),
+      current: initial,
+    );
+    final lower = estimator.estimate(
+      history: List.generate(
+        8,
+        (_) => _record(correct: false, difficultyIndex: -3, discrimination: 2),
+      ),
+      current: initial,
+    );
+    final failed = estimator.estimate(
+      history: [_record(correct: true, difficultyIndex: double.nan)],
+      current: initial.copyWith(theta: 0.4, standardError: 0.9),
+    );
+
+    expect(upper.theta, 3);
+    expect(lower.theta, -3);
+    expect(upper.standardError.isFinite, isTrue);
+    expect(lower.standardError.isFinite, isTrue);
+    expect(upper.standardError, lessThanOrEqualTo(1));
+    expect(lower.standardError, lessThanOrEqualTo(1));
+    expect(failed.theta, 0.4);
+    expect(failed.standardError, 0.9);
+  });
+
+  test('ThetaEstimator standardError uses total information', () {
+    const estimator = ThetaEstimator();
+    final initial = ThetaEstimate.initial(updatedAt: DateTime(2026));
+
+    final estimate = estimator.estimate(
+      history: [
+        _record(correct: true, difficultyIndex: 0, discrimination: 2),
+        _record(correct: true, difficultyIndex: 0, discrimination: 2),
+        _record(correct: false, difficultyIndex: 0, discrimination: 2),
+        _record(correct: false, difficultyIndex: 0, discrimination: 2),
+      ],
+      current: initial,
+    );
+
+    expect(estimate.theta, closeTo(0, 0.0001));
+    expect(estimate.standardError, lessThan(initial.standardError));
+    expect(estimate.standardError, greaterThanOrEqualTo(0.25));
+  });
+
   test(
     'CATItemSelectionStrategy excludes used ids and prefers information',
     () {
@@ -194,9 +308,33 @@ void main() {
     expect(record.thetaAfter, 0.15);
     expect(record.itemInformation, 0.23);
     expect(record.catSelectionScore, 0.71);
+    expect(record.expectedProbability, 0.5);
+    expect(record.likelihood, 1);
+    expect(record.residual, 0);
+    expect(record.totalInformation, 0);
   });
 
-  testWidgets('Report CAT summary builds', (tester) async {
+  test('TestSessionController stores theta history and psychometrics', () {
+    final question = _question(discrimination: 1.5);
+    final controller = TestSessionController(
+      TestSession(
+        sessionId: 'session-theta',
+        startedAt: DateTime(2026),
+        questions: [question],
+        generatedQuestions: [question],
+      ),
+    )..selectAnswer(question.answerIndex);
+
+    final session = controller.submit(completedAt: DateTime(2026, 1, 2));
+
+    expect(session.thetaHistory, hasLength(1));
+    expect(session.thetaEstimate.theta, greaterThan(0));
+    expect(session.questionHistory.single.expectedProbability, greaterThan(0));
+    expect(session.questionHistory.single.likelihood, greaterThan(0));
+    expect(session.questionHistory.single.totalInformation, greaterThan(0));
+  });
+
+  testWidgets('Report question history is localized for users', (tester) async {
     final question = _question(itemInformation: 0.23, catSelectionScore: 0.71);
     final session = TestSession(
       sessionId: 'session-cat',
@@ -220,7 +358,7 @@ void main() {
       ..testSessionController = TestSessionController(session)
       ..report = const ReportSummary(
         overallScore: 80,
-        summary: 'CAT report',
+        summary: '검사 결과 요약',
         domainScores: [
           DomainScore(
             domain: IntelligenceDomain.numerical,
@@ -241,15 +379,24 @@ void main() {
     );
 
     await tester.scrollUntilVisible(
-      find.text('CAT Debug Summary'),
+      find.text('문항 기록'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
 
-    expect(find.text('CAT Debug Summary'), findsOneWidget);
-    expect(find.textContaining('Average Item Information'), findsOneWidget);
-    expect(find.textContaining('Average CAT Selection Score'), findsOneWidget);
-    expect(find.textContaining('Theta Estimate'), findsWidgets);
+    expect(find.text('문항 기록'), findsOneWidget);
+    expect(find.textContaining('1번 문항'), findsOneWidget);
+    expect(find.textContaining('수리논리'), findsWidgets);
+    expect(find.textContaining('정답'), findsWidgets);
+    expect(find.textContaining('10초'), findsWidgets);
+    expect(find.text('능력 추정값'), findsOneWidget);
+    expect(find.text('추정 안정도'), findsOneWidget);
+    expect(find.text('평균 정보량'), findsOneWidget);
+    expect(find.textContaining('NR-'), findsNothing);
+    expect(find.textContaining('numerical'), findsNothing);
+    expect(find.textContaining('theta'), findsNothing);
+    expect(find.textContaining('CAT'), findsNothing);
+    expect(find.textContaining('info='), findsNothing);
   });
 }
 
@@ -280,6 +427,8 @@ Item _item({
 TestQuestion _question({
   double itemInformation = 0,
   double catSelectionScore = 0,
+  double difficultyIndex = 0,
+  double discrimination = 1,
 }) {
   return TestQuestion(
     id: 'q1',
@@ -291,10 +440,27 @@ TestQuestion _question({
     answerIndex: 1,
     explanation: 'Add one.',
     difficulty: QuestionDifficulty.normal,
+    difficultyIndex: difficultyIndex,
+    discrimination: discrimination,
     itemId: 'NR-001',
     selectionScore: catSelectionScore,
     itemInformation: itemInformation,
     catSelectionScore: catSelectionScore,
+  );
+}
+
+QuestionRecord _record({
+  required bool correct,
+  double difficultyIndex = 0,
+  double discrimination = 1,
+}) {
+  return QuestionRecord.fromQuestion(
+    question: _question(
+      difficultyIndex: difficultyIndex,
+      discrimination: discrimination,
+    ),
+    correct: correct,
+    elapsedSeconds: 10,
   );
 }
 

@@ -14,6 +14,9 @@ class OnboardingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isCompact = size.shortestSide < 600 || size.height < 760;
+    final headline = size.width < 520
+        ? '검사 분석, 훈련 추천,\n성장 기록을 하나의 흐름으로 연결합니다.'
+        : '검사 분석, 훈련 추천, 성장 기록을 하나의 흐름으로 연결합니다.';
 
     return Scaffold(
       body: SafeArea(
@@ -33,8 +36,13 @@ class OnboardingScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        '검사 분석, 훈련 추천, 성장 기록을 하나의 흐름으로 연결합니다.',
-                        style: Theme.of(context).textTheme.titleLarge,
+                        headline,
+                        style: Theme.of(context).textTheme.titleLarge
+                            ?.copyWith(
+                              fontSize: isCompact ? 18 : 20,
+                              height: 1.35,
+                              fontWeight: FontWeight.normal,
+                            ),
                       ),
                       SizedBox(height: isCompact ? 12 : 20),
                       ThemeModeSelector(compact: isCompact),

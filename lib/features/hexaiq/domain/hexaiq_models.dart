@@ -120,6 +120,8 @@ class TestQuestion {
     this.itemInformation = 0,
     this.catSelectionScore = 0,
     this.hint,
+    this.ruleName,
+    this.solution,
   });
 
   final IntelligenceDomain domain;
@@ -141,6 +143,8 @@ class TestQuestion {
   final double itemInformation;
   final double catSelectionScore;
   final String? hint;
+  final String? ruleName;
+  final String? solution;
 
   TestQuestion copyWith({
     QuestionDifficulty? difficulty,
@@ -154,6 +158,8 @@ class TestQuestion {
     double? itemInformation,
     double? catSelectionScore,
     String? hint,
+    String? ruleName,
+    String? solution,
   }) {
     return TestQuestion(
       id: id,
@@ -175,6 +181,8 @@ class TestQuestion {
       itemInformation: itemInformation ?? this.itemInformation,
       catSelectionScore: catSelectionScore ?? this.catSelectionScore,
       hint: hint ?? this.hint,
+      ruleName: ruleName ?? this.ruleName,
+      solution: solution ?? this.solution,
     );
   }
 }

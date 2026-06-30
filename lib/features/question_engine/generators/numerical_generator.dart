@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
+
 import '../../../core/domain/question_difficulty.dart';
 import '../../item_bank/domain/item.dart';
 import '../core/distractor_generator.dart';
@@ -77,9 +79,16 @@ class NumericalGenerator implements QuestionGenerator {
     required String answer,
     required String explanation,
     required List<String> factors,
+    String? hint,
+    String? ruleName,
+    String? solution,
     Map<String, Object?> variables = const {},
   }) {
     final level = request.level ?? 1;
+    final resolvedRuleName = ruleName ?? _ruleNameFor(typeCode);
+    final resolvedHint = hint ?? _hintFor(typeCode, resolvedRuleName);
+    final resolvedSolution = solution ?? answer;
+    debugPrint('[Hint] Rule=$resolvedRuleName Hint=$resolvedHint');
     return GeneratedQuestionDto.fromLegacyChoices(
       id: '${request.testId}-$typeCode-${request.seed}-${request.index}',
       domain: QuestionDomain.numerical,
@@ -93,15 +102,23 @@ class NumericalGenerator implements QuestionGenerator {
       explanation: explanation,
       estimatedTimeSec: 12 + level * 4,
       difficulty: request.difficulty,
+      hint: resolvedHint,
+      ruleName: resolvedRuleName,
+      solution: resolvedSolution,
       metadata: QuestionMetadataDto(
         rule: typeCode,
+        ruleName: resolvedRuleName,
         difficultyFactors: [
           'level_$level',
           'difficulty_${request.difficulty.name}',
           ...factors,
         ],
       ),
-      variables: variables,
+      variables: {
+        ...variables,
+        'ruleName': resolvedRuleName,
+        'solution': resolvedSolution,
+      },
     );
   }
 
@@ -123,6 +140,7 @@ class NumericalGenerator implements QuestionGenerator {
       answer: '$answer',
       explanation: '각 항이 $diff씩 증가하므로 다음 값은 $answer입니다.',
       factors: const ['arithmetic_sequence'],
+      hint: '등차수열입니다. 앞뒤 숫자의 차이가 일정한지 확인해보세요.',
       variables: {'terms': terms, 'diff': diff},
     );
   }
@@ -145,6 +163,7 @@ class NumericalGenerator implements QuestionGenerator {
       answer: '$answer',
       explanation: '앞 항에 $ratio를 곱하는 규칙입니다.',
       factors: const ['geometric_sequence'],
+      hint: '등비수열입니다. 앞 숫자에 같은 수를 곱하는 규칙인지 확인해보세요.',
       variables: {'terms': terms, 'ratio': ratio},
     );
   }
@@ -291,6 +310,7 @@ class NumericalGenerator implements QuestionGenerator {
       answer: '$answer',
       explanation: '연속된 자연수의 제곱입니다.',
       factors: const ['squares'],
+      hint: '제곱수 규칙입니다. 2², 3², 4²처럼 생각해보세요.',
       variables: {'start': n},
     );
   }
@@ -311,6 +331,7 @@ class NumericalGenerator implements QuestionGenerator {
       answer: '$answer',
       explanation: '연속된 자연수의 세제곱입니다.',
       factors: const ['cubes'],
+      hint: '세제곱수 규칙입니다. 2³, 3³, 4³처럼 생각해보세요.',
       variables: {'start': n},
     );
   }
@@ -429,6 +450,7 @@ class NumericalGenerator implements QuestionGenerator {
       explanation:
           '윗줄은 $left에서 $topRight로 ${diff >= 0 ? '+' : ''}$diff만큼 변합니다. 아랫줄에도 같은 차이를 적용하면 $answer입니다.',
       factors: const ['matrix_2x2'],
+      hint: '행렬 문제입니다. 같은 행이나 같은 열에 반복되는 차이를 찾아보세요.',
       variables: {
         'left': left,
         'topRight': topRight,
@@ -459,6 +481,7 @@ class NumericalGenerator implements QuestionGenerator {
       explanation:
           '각 행에서 첫 번째 수와 두 번째 수를 더하면 오른쪽 수가 됩니다. ${row3[0]} + ${row3[1]} = $answer입니다.',
       factors: const ['matrix_3x3'],
+      hint: '행 합 규칙입니다. 각 행의 오른쪽 수가 왼쪽 두 수의 합인지 확인해보세요.',
       variables: {'row1': row1, 'row2': row2, 'row3': row3},
     );
   }
@@ -476,6 +499,7 @@ class NumericalGenerator implements QuestionGenerator {
       answer: '$answer',
       explanation: '한 줄의 합이 $target이 되도록 빠진 값을 계산합니다.',
       factors: const ['magic_square'],
+      hint: '숫자퍼즐입니다. 행, 열, 대각선 중 반복되는 합계를 찾아보세요.',
       variables: {'target': target, 'a': a, 'b': b},
     );
   }
@@ -493,6 +517,7 @@ class NumericalGenerator implements QuestionGenerator {
       answer: '$x',
       explanation: '먼저 $b를 빼고, 그 결과를 $a로 나눕니다.',
       factors: const ['conditional_equation'],
+      hint: '방정식 문제입니다. 양쪽에서 같은 수를 빼거나 나누어 x를 구해보세요.',
       variables: {'x': x, 'a': a, 'b': b, 'result': result},
     );
   }
@@ -532,6 +557,7 @@ class NumericalGenerator implements QuestionGenerator {
       explanation:
           '$start × $multiplier = ${start * multiplier}, 여기에 $add를 더합니다.',
       factors: const ['number_puzzle'],
+      hint: '숫자퍼즐입니다. 곱하기와 더하기가 어떤 순서로 적용되는지 확인해보세요.',
       variables: {'start': start, 'multiplier': multiplier, 'add': add},
     );
   }
@@ -565,5 +591,57 @@ class NumericalGenerator implements QuestionGenerator {
 
   List<String> _choices(int answer, List<int> distractors, Random rng) {
     return _distractors.numericChoices(answer, distractors, rng);
+  }
+
+  String _ruleNameFor(String typeCode) {
+    return switch (typeCode) {
+      'NR01' => '등차수열',
+      'NR02' => '등비수열',
+      'NR03' => '증가량 변화',
+      'NR04' => '감소량 변화',
+      'NR05' => '교차수열',
+      'NR06' => '홀짝 위치 규칙',
+      'NR07' => '피보나치형 수열',
+      'NR08' => '제곱수',
+      'NR09' => '세제곱수',
+      'NR10' => '소수',
+      'NR11' => '배수',
+      'NR12' => '약수',
+      'NR13' => '나머지',
+      'NR14' => '연산 순서',
+      'NR15' => '행렬 규칙',
+      'NR16' => '행 합 규칙',
+      'NR17' => '숫자퍼즐',
+      'NR18' => '방정식',
+      'NR19' => '비례식',
+      'NR20' => '숫자 관계',
+      _ => typeCode,
+    };
+  }
+
+  String _hintFor(String typeCode, String ruleName) {
+    return switch (typeCode) {
+      'NR01' => '앞뒤 숫자의 차이가 일정한지 확인해보세요.',
+      'NR02' => '앞 숫자에 같은 수를 곱하는 규칙인지 확인해보세요.',
+      'NR03' => '숫자 사이의 차이가 다시 일정하게 변하는지 살펴보세요.',
+      'NR04' => '감소하는 차이가 어떤 규칙으로 커지는지 비교해보세요.',
+      'NR05' => '홀수 번째와 짝수 번째 숫자를 따로 나누어 보세요.',
+      'NR06' => '위치가 홀수인지 짝수인지에 따라 다른 규칙일 수 있습니다.',
+      'NR07' => '앞의 두 수를 더해 다음 수가 되는지 확인해보세요.',
+      'NR08' => '2², 3², 4²처럼 제곱수 규칙을 찾아보세요.',
+      'NR09' => '2³, 3³, 4³처럼 세제곱 규칙을 찾아보세요.',
+      'NR10' => '1과 자기 자신으로만 나누어지는 수의 순서를 떠올려보세요.',
+      'NR11' => '같은 수의 배수가 이어지는지 확인해보세요.',
+      'NR12' => '약수를 모두 찾은 뒤 큰 순서로 비교해보세요.',
+      'NR13' => '나누어 떨어지고 남는 수를 계산해보세요.',
+      'NR14' => '곱셈을 먼저 계산한 뒤 덧셈이나 뺄셈을 처리해보세요.',
+      'NR15' => '같은 행이나 열에서 반복되는 차이를 찾아보세요.',
+      'NR16' => '각 행의 오른쪽 수가 왼쪽 두 수의 합인지 확인해보세요.',
+      'NR17' => '행, 열, 대각선 중 반복되는 합계를 찾아보세요.',
+      'NR18' => '양쪽에서 같은 수를 빼거나 나누어 x를 구해보세요.',
+      'NR19' => '같은 비율을 유지하려면 어떤 배수를 곱해야 하는지 보세요.',
+      'NR20' => '곱하기와 더하기가 어떤 순서로 적용되는지 확인해보세요.',
+      _ => '$ruleName 규칙을 찾고 보기와 하나씩 비교해보세요.',
+    };
   }
 }

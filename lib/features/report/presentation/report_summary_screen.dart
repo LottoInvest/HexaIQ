@@ -8,7 +8,7 @@ import '../../../core/widgets/action_card.dart';
 import '../../../core/widgets/hexagon_chart.dart';
 import '../../hexaiq/domain/hexaiq_models.dart';
 import '../../hexaiq/presentation/state/hexaiq_app_state.dart';
-import '../../item_bank/domain/exposure_status.dart';
+import '../../test/domain/models/question_record.dart';
 import '../../test/domain/models/test_session.dart';
 
 class ReportSummaryScreen extends StatelessWidget {
@@ -20,11 +20,11 @@ class ReportSummaryScreen extends StatelessWidget {
     final report = state.report;
     final session = state.testSession;
     if (report == null) {
-      return const Scaffold(body: Center(child: Text('Report is not ready.')));
+      return const Scaffold(body: Center(child: Text('리포트를 준비하고 있습니다.')));
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Test Report')),
+      appBar: AppBar(title: const Text('검사 리포트')),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -36,7 +36,7 @@ class ReportSummaryScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Overall score ${report.overallScore}',
+                      '종합 점수 ${report.overallScore}',
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 12),
@@ -44,7 +44,7 @@ class ReportSummaryScreen extends StatelessWidget {
                       children: [
                         Expanded(
                           child: _MetricTile(
-                            label: 'Correct',
+                            label: '정답',
                             value:
                                 '${state.correctCount} / ${state.totalQuestionCount}',
                           ),
@@ -52,14 +52,14 @@ class ReportSummaryScreen extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: _MetricTile(
-                            label: 'Accuracy',
+                            label: '정확도',
                             value: '${(state.accuracy * 100).round()}%',
                           ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: _MetricTile(
-                            label: 'Elapsed',
+                            label: '총 풀이 시간',
                             value: _formatElapsed(state.totalElapsedSeconds),
                           ),
                         ),
@@ -67,42 +67,24 @@ class ReportSummaryScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     _MetricTile(
-                      label: 'Total Questions',
+                      label: '전체 문항',
                       value: '${session?.questionHistory.length ?? 0}',
                     ),
                     const SizedBox(height: 8),
                     _MetricTile(
-                      label: 'Average Difficulty',
+                      label: '평균 난이도',
                       value: report.averageDifficulty.labelKo,
                     ),
                     const SizedBox(height: 8),
                     _MetricTile(
-                      label: 'Average Time',
+                      label: '평균 풀이 시간',
                       value: _formatElapsed(
                         session?.averageElapsedSeconds ?? 0,
                       ),
                     ),
                     if (session != null) ...[
                       const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _MetricTile(
-                              label: 'Theta Estimate',
-                              value: session.thetaEstimate.theta
-                                  .toStringAsFixed(2),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _MetricTile(
-                              label: 'Standard Error',
-                              value: session.thetaEstimate.standardError
-                                  .toStringAsFixed(2),
-                            ),
-                          ),
-                        ],
-                      ),
+                      _ThetaSummary(session: session),
                     ],
                     const SizedBox(height: 12),
                     Center(
@@ -113,6 +95,7 @@ class ReportSummaryScreen extends StatelessWidget {
                         labels: domainCatalog
                             .map((domain) => domain.shortLabel)
                             .toList(),
+                        labelFontSize: 13,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -120,7 +103,7 @@ class ReportSummaryScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
                       icon: const Icon(Icons.radar),
-                      label: const Text('Hexagon detail'),
+                      label: const Text('영역 상세 보기'),
                       onPressed: () => Navigator.of(
                         context,
                       ).pushNamed(AppRoutes.hexagonDetail),
@@ -139,23 +122,16 @@ class ReportSummaryScreen extends StatelessWidget {
               ),
             if (session != null && session.questionHistory.isNotEmpty) ...[
               const SizedBox(height: 12),
-              _CATDebugSummaryCard(session: session),
-              const SizedBox(height: 12),
               _QuestionHistoryCard(session: session),
             ],
-            const SizedBox(height: 12),
-            _ItemBankCard(counts: state.itemBankDomainCounts),
-            const SizedBox(height: 12),
-            _ExposureSummaryCard(
-              averageExposure: state.averageExposure,
-              mostUsed: state.mostUsedExposure,
-              leastUsed: state.leastUsedExposure,
-              topItems: state.topExposureStatuses,
-            ),
+            if (session != null && session.showDebugMetrics) ...[
+              const SizedBox(height: 12),
+              _DebugMetricsCard(session: session),
+            ],
             const SizedBox(height: 12),
             FilledButton.icon(
               icon: const Icon(Icons.home),
-              label: const Text('Home'),
+              label: const Text('홈으로'),
               onPressed: () => Navigator.of(
                 context,
               ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false),
@@ -169,134 +145,60 @@ class ReportSummaryScreen extends StatelessWidget {
   String _formatElapsed(int seconds) {
     final minutes = seconds ~/ 60;
     final remaining = seconds % 60;
-    return '${minutes}m ${remaining.toString().padLeft(2, '0')}s';
+    if (minutes == 0) {
+      return '$remaining초';
+    }
+    if (remaining == 0) {
+      return '$minutes분';
+    }
+    return '$minutes분 $remaining초';
   }
 }
 
-class _CATDebugSummaryCard extends StatelessWidget {
-  const _CATDebugSummaryCard({required this.session});
+class _ThetaSummary extends StatelessWidget {
+  const _ThetaSummary({required this.session});
 
   final TestSession session;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('CAT Debug Summary', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text(
-              'Theta Estimate ${session.thetaEstimate.theta.toStringAsFixed(2)}',
-            ),
-            Text(
-              'Standard Error '
-              '${session.thetaEstimate.standardError.toStringAsFixed(2)}',
-            ),
-            Text(
-              'Average Item Information '
-              '${session.averageItemInformation.toStringAsFixed(2)}',
-            ),
-            Text(
-              'Average CAT Selection Score '
-              '${session.averageCatSelectionScore.toStringAsFixed(2)}',
-            ),
-          ],
+    return Row(
+      children: [
+        Expanded(
+          child: _MetricTile(
+            label: '능력 추정값',
+            value: session.thetaEstimate.theta.toStringAsFixed(2),
+          ),
         ),
-      ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _MetricTile(
+            label: '추정 안정도',
+            value: _stabilityLabel(session.thetaEstimate.standardError),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _MetricTile(
+            label: '평균 정보량',
+            value: session.averageItemInformation.toStringAsFixed(2),
+          ),
+        ),
+      ],
     );
   }
-}
 
-class _ItemBankCard extends StatelessWidget {
-  const _ItemBankCard({required this.counts});
-
-  final Map<CognitiveDomain, int> counts;
-
-  @override
-  Widget build(BuildContext context) {
-    final total = counts.values.fold<int>(0, (sum, count) => sum + count);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Item Bank', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text('Total $total Questions'),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final info in domainCatalog)
-                  Chip(
-                    label: Text(
-                      '${info.shortLabel} ${counts[info.domain] ?? 0}',
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ExposureSummaryCard extends StatelessWidget {
-  const _ExposureSummaryCard({
-    required this.averageExposure,
-    required this.mostUsed,
-    required this.leastUsed,
-    required this.topItems,
-  });
-
-  final double averageExposure;
-  final ExposureStatus? mostUsed;
-  final ExposureStatus? leastUsed;
-  final List<ExposureStatus> topItems;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Exposure', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text('Average Exposure ${averageExposure.toStringAsFixed(2)}'),
-            const SizedBox(height: 8),
-            Text(
-              'Most Used Item ${mostUsed?.itemId ?? '-'} '
-              '(${mostUsed?.exposureCount ?? 0})',
-            ),
-            Text(
-              'Least Used Item ${leastUsed?.itemId ?? '-'} '
-              '(${leastUsed?.exposureCount ?? 0})',
-            ),
-            const SizedBox(height: 12),
-            Text('Top 5', style: theme.textTheme.labelLarge),
-            const SizedBox(height: 6),
-            if (topItems.isEmpty)
-              const Text('No exposure yet')
-            else
-              for (final status in topItems)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Text('${status.itemId}  ${status.exposureCount}'),
-                ),
-          ],
-        ),
-      ),
-    );
+  String _stabilityLabel(double standardError) {
+    if (!standardError.isFinite) {
+      return '낮음';
+    }
+    if (standardError <= 0.45) {
+      return '높음';
+    }
+    if (standardError <= 0.75) {
+      return '보통';
+    }
+    return '낮음';
   }
 }
 
@@ -315,7 +217,7 @@ class _DomainResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final resolved = result ?? const DomainResult();
     final body = score.isComingSoon
-        ? 'Coming Soon'
+        ? '준비 중'
         : '${resolved.correct}/${resolved.total}  ${(resolved.accuracy * 100).round()}%';
     return ActionCard(
       icon: score.isComingSoon
@@ -323,9 +225,7 @@ class _DomainResultCard extends StatelessWidget {
           : Icons.analytics_outlined,
       title: domainLabel(score.domain),
       body: body,
-      trailing: score.isComingSoon
-          ? const Text('Soon')
-          : Text('${score.score}'),
+      trailing: score.isComingSoon ? const Text('예정') : Text('${score.score}'),
       onTap: onTap,
     );
   }
@@ -344,26 +244,17 @@ class _QuestionHistoryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Question History',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('문항 기록', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             for (var i = 0; i < session.questionHistory.length; i++)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Text(
-                  'Q${i + 1} | item ${session.questionHistory[i].itemId} '
-                  '| domain ${session.questionHistory[i].domain.name} '
-                  '| ${session.questionHistory[i].difficulty.labelKo} '
-                  '| b=${session.questionHistory[i].difficultyIndex.toStringAsFixed(1)} '
-                  '| theta=${session.questionHistory[i].thetaBefore.toStringAsFixed(2)}'
-                  '→${session.questionHistory[i].thetaAfter.toStringAsFixed(2)} '
-                  '| info=${session.questionHistory[i].itemInformation.toStringAsFixed(2)} '
-                  '| CAT=${session.questionHistory[i].catSelectionScore.toStringAsFixed(2)} '
-                  '| score=${session.questionHistory[i].selectionScore.toStringAsFixed(2)} '
-                  '| ${session.questionHistory[i].correct == true ? 'Correct' : 'Wrong'} '
-                  '| ${_formatElapsed(session.questionHistory[i].elapsedSeconds)}',
+                  '${i + 1}번 문항 | '
+                  '${domainLabel(session.questionHistory[i].domain)} | '
+                  '${session.questionHistory[i].difficulty.labelKo} | '
+                  '${_answerLabel(session.questionHistory[i].correct)} | '
+                  '${_formatElapsed(session.questionHistory[i].elapsedSeconds)}',
                 ),
               ),
           ],
@@ -375,7 +266,58 @@ class _QuestionHistoryCard extends StatelessWidget {
   String _formatElapsed(int seconds) {
     final minutes = seconds ~/ 60;
     final remaining = seconds % 60;
-    return '${minutes}m ${remaining.toString().padLeft(2, '0')}s';
+    if (minutes == 0) {
+      return '$remaining초';
+    }
+    if (remaining == 0) {
+      return '$minutes분';
+    }
+    return '$minutes분 $remaining초';
+  }
+
+  String _answerLabel(bool? correct) {
+    return switch (correct) {
+      true => '정답',
+      false => '오답',
+      null => '미응답',
+    };
+  }
+}
+
+class _DebugMetricsCard extends StatelessWidget {
+  const _DebugMetricsCard({required this.session});
+
+  final TestSession session;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('개발 디버그', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            for (var i = 0; i < session.questionHistory.length; i++)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Text(_debugLine(i, session.questionHistory[i])),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _debugLine(int index, QuestionRecord record) {
+    return 'Q${index + 1} | item ${record.itemId} | '
+        'theta=${record.thetaBefore.toStringAsFixed(2)}'
+        '→${record.thetaAfter.toStringAsFixed(2)} | '
+        'p=${record.expectedProbability.toStringAsFixed(2)} | '
+        'likelihood=${record.likelihood.toStringAsFixed(2)} | '
+        'info=${record.itemInformation.toStringAsFixed(2)} | '
+        'CAT=${record.catSelectionScore.toStringAsFixed(2)}';
   }
 }
 

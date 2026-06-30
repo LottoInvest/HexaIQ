@@ -80,12 +80,14 @@ class QuestionMetadataDto {
   const QuestionMetadataDto({
     required this.rule,
     required this.difficultyFactors,
+    this.ruleName,
     this.version = 'v0.1.0',
     this.status,
     this.message,
   });
 
   final String rule;
+  final String? ruleName;
   final List<String> difficultyFactors;
   final String version;
   final String? status;
@@ -94,6 +96,7 @@ class QuestionMetadataDto {
   Map<String, Object?> toJson() {
     return {
       'rule': rule,
+      if (ruleName != null) 'ruleName': ruleName,
       'difficultyFactors': difficultyFactors,
       'version': version,
       if (status != null) 'status': status,
@@ -126,10 +129,16 @@ class GeneratedQuestionDto {
     this.itemInformation = 0,
     this.catSelectionScore = 0,
     this.hint,
+    String? ruleName,
+    String? solution,
     this.variables = const {},
     this.isStub = false,
   }) : expectedSolveTime =
-           expectedSolveTime ?? Duration(seconds: estimatedTimeSec);
+           expectedSolveTime ?? Duration(seconds: estimatedTimeSec),
+       ruleName = ruleName ?? metadata.ruleName ?? metadata.rule,
+       solution =
+           solution ??
+           choiceDtos.firstWhere((choice) => choice.key == answerKey).text;
 
   factory GeneratedQuestionDto.fromLegacyChoices({
     required String id,
@@ -154,6 +163,8 @@ class GeneratedQuestionDto {
     double itemInformation = 0,
     double? catSelectionScore,
     String? hint,
+    String? ruleName,
+    String? solution,
     Map<String, Object?> variables = const {},
     bool isStub = false,
   }) {
@@ -189,6 +200,8 @@ class GeneratedQuestionDto {
       itemInformation: itemInformation,
       catSelectionScore: catSelectionScore ?? selectionScore,
       hint: hint,
+      ruleName: ruleName,
+      solution: solution ?? answer,
       variables: variables,
       isStub: isStub,
     );
@@ -216,6 +229,8 @@ class GeneratedQuestionDto {
   final double itemInformation;
   final double catSelectionScore;
   final String? hint;
+  final String ruleName;
+  final String solution;
   final Map<String, Object?> variables;
   final bool isStub;
 
@@ -247,6 +262,8 @@ class GeneratedQuestionDto {
       'itemInformation': itemInformation,
       'catSelectionScore': catSelectionScore,
       if (hint != null) 'hint': hint,
+      'ruleName': ruleName,
+      'solution': solution,
       'ageGroup': ageGroup,
       'questionText': questionText,
       'choices': choiceDtos.map((choice) => choice.toJson()).toList(),

@@ -17,6 +17,10 @@ class QuestionRecord {
     this.thetaAfter = 0,
     this.itemInformation = 0,
     this.catSelectionScore = 0,
+    this.expectedProbability = 0.5,
+    this.likelihood = 1,
+    this.residual = 0,
+    this.totalInformation = 0,
     this.correct,
     this.elapsedSeconds = 0,
     this.responseTime = Duration.zero,
@@ -29,6 +33,10 @@ class QuestionRecord {
     required int elapsedSeconds,
     double thetaBefore = 0,
     double thetaAfter = 0,
+    double expectedProbability = 0.5,
+    double likelihood = 1,
+    double residual = 0,
+    double totalInformation = 0,
   }) {
     return QuestionRecord(
       question: question,
@@ -47,6 +55,10 @@ class QuestionRecord {
       thetaAfter: thetaAfter,
       itemInformation: question.itemInformation,
       catSelectionScore: question.catSelectionScore,
+      expectedProbability: expectedProbability,
+      likelihood: likelihood,
+      residual: residual,
+      totalInformation: totalInformation,
       thetaEstimate: thetaAfter,
     );
   }
@@ -67,5 +79,57 @@ class QuestionRecord {
   final double thetaAfter;
   final double itemInformation;
   final double catSelectionScore;
+  final double expectedProbability;
+  final double likelihood;
+  final double residual;
+  final double totalInformation;
   final double thetaEstimate;
+
+  QuestionRecord copyWith({
+    TestQuestion? question,
+    QuestionDifficulty? difficulty,
+    bool? correct,
+    int? elapsedSeconds,
+    Duration? responseTime,
+    int? seed,
+    IntelligenceDomain? domain,
+    double? difficultyIndex,
+    double? discrimination,
+    double? guessing,
+    String? itemId,
+    double? selectionScore,
+    double? thetaBefore,
+    double? thetaAfter,
+    double? itemInformation,
+    double? catSelectionScore,
+    double? expectedProbability,
+    double? likelihood,
+    double? residual,
+    double? totalInformation,
+    double? thetaEstimate,
+  }) {
+    return QuestionRecord(
+      question: question ?? this.question,
+      difficulty: difficulty ?? this.difficulty,
+      correct: correct ?? this.correct,
+      elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
+      responseTime: responseTime ?? this.responseTime,
+      seed: seed ?? this.seed,
+      domain: domain ?? this.domain,
+      difficultyIndex: difficultyIndex ?? this.difficultyIndex,
+      discrimination: discrimination ?? this.discrimination,
+      guessing: guessing ?? this.guessing,
+      itemId: itemId ?? this.itemId,
+      selectionScore: selectionScore ?? this.selectionScore,
+      thetaBefore: thetaBefore ?? this.thetaBefore,
+      thetaAfter: thetaAfter ?? this.thetaAfter,
+      itemInformation: itemInformation ?? this.itemInformation,
+      catSelectionScore: catSelectionScore ?? this.catSelectionScore,
+      expectedProbability: expectedProbability ?? this.expectedProbability,
+      likelihood: likelihood ?? this.likelihood,
+      residual: residual ?? this.residual,
+      totalInformation: totalInformation ?? this.totalInformation,
+      thetaEstimate: thetaEstimate ?? this.thetaEstimate,
+    );
+  }
 }

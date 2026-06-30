@@ -7,26 +7,37 @@ class HexagonChart extends StatelessWidget {
     required this.values,
     this.labels = const [],
     this.size = 260,
+    this.labelFontSize,
     super.key,
   });
 
   final List<double> values;
   final List<String> labels;
   final double size;
+  final double? labelFontSize;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.square(
-      dimension: size,
-      child: CustomPaint(
-        painter: _HexagonChartPainter(
-          values: values,
-          labels: labels,
-          color: Theme.of(context).colorScheme.primary,
-          brightness: Theme.of(context).brightness,
-          labelStyle:
-              Theme.of(context).textTheme.labelSmall ??
-              const TextStyle(fontSize: 11),
+    final baseLabelStyle =
+        Theme.of(context).textTheme.labelSmall ?? const TextStyle(fontSize: 11);
+    final resolvedLabelStyle = baseLabelStyle.copyWith(
+      fontSize: labelFontSize ?? baseLabelStyle.fontSize ?? 11,
+      fontWeight: FontWeight.w600,
+    );
+    return Semantics(
+      label: labels.isEmpty
+          ? 'Hexagon chart'
+          : 'Hexagon chart ${labels.join(', ')}',
+      child: SizedBox.square(
+        dimension: size,
+        child: CustomPaint(
+          painter: _HexagonChartPainter(
+            values: values,
+            labels: labels,
+            color: Theme.of(context).colorScheme.primary,
+            brightness: Theme.of(context).brightness,
+            labelStyle: resolvedLabelStyle,
+          ),
         ),
       ),
     );
@@ -136,6 +147,10 @@ class _HexagonChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _HexagonChartPainter oldDelegate) {
-    return oldDelegate.values != values || oldDelegate.labels != labels;
+    return oldDelegate.values != values ||
+        oldDelegate.labels != labels ||
+        oldDelegate.color != color ||
+        oldDelegate.brightness != brightness ||
+        oldDelegate.labelStyle != labelStyle;
   }
 }

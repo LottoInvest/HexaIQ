@@ -1,9 +1,7 @@
-import 'package:flutter/foundation.dart';
-
 import '../../../core/domain/adaptive_difficulty_engine.dart';
 import '../../../core/domain/domain_result.dart';
 import '../../../core/domain/intelligence_domain.dart';
-import '../../cat/domain/theta_updater.dart';
+import '../../cat/domain/theta_estimator.dart';
 import '../domain/models/test_session.dart';
 import '../../hexaiq/domain/hexaiq_models.dart';
 import '../domain/models/question_record.dart';
@@ -12,14 +10,14 @@ class TestSessionController {
   TestSessionController(
     this.session, {
     AdaptiveDifficultyEngine? adaptiveDifficultyEngine,
-    ThetaUpdater? thetaUpdater,
+    ThetaEstimator? thetaEstimator,
   }) : _adaptiveDifficultyEngine =
            adaptiveDifficultyEngine ?? const AdaptiveDifficultyEngine(),
-       _thetaUpdater = thetaUpdater ?? const ThetaUpdater();
+       _thetaEstimator = thetaEstimator ?? const ThetaEstimator();
 
   TestSession session;
   final AdaptiveDifficultyEngine _adaptiveDifficultyEngine;
-  final ThetaUpdater _thetaUpdater;
+  final ThetaEstimator _thetaEstimator;
 
   void selectAnswer(int selectedOption) {
     final question = session.currentQuestion;
@@ -123,32 +121,62 @@ class TestSessionController {
       isCorrect: isCorrect,
     );
     final thetaBefore = session.thetaEstimate;
-    final thetaAfter = _thetaUpdater.update(
-      current: thetaBefore,
-      difficulty: question.difficulty,
-      isCorrect: isCorrect,
-    );
     final nextQuestions = [...session.activeQuestions];
     final nextDifficultyByQuestionId = {
       ...session.difficultyByQuestionId,
       question.id: question.difficulty,
     };
+    final baseRecord = QuestionRecord.fromQuestion(
+      question: question,
+      correct: isCorrect,
+      elapsedSeconds: session.elapsedFor(question.id),
+      thetaBefore: thetaBefore.theta,
+      thetaAfter: thetaBefore.theta,
+    );
+    final baseHistory = [...session.questionHistory, baseRecord];
+    final thetaAfter = _thetaEstimator.estimate(
+      history: baseHistory,
+      current: thetaBefore,
+    );
+    final expectedProbability = _thetaEstimator.calculator.probability(
+      theta: thetaAfter.theta,
+      difficultyIndex: question.difficultyIndex,
+      discrimination: question.discrimination,
+    );
+    final likelihood = _thetaEstimator.calculator.likelihood(
+      theta: thetaAfter.theta,
+      difficultyIndex: question.difficultyIndex,
+      discrimination: question.discrimination,
+      isCorrect: isCorrect,
+    );
+    final residual = _thetaEstimator.calculator.residual(
+      theta: thetaAfter.theta,
+      difficultyIndex: question.difficultyIndex,
+      discrimination: question.discrimination,
+      isCorrect: isCorrect,
+    );
+    final itemInformation = _thetaEstimator.calculator.information(
+      theta: thetaAfter.theta,
+      difficultyIndex: question.difficultyIndex,
+      discrimination: question.discrimination,
+      guessing: question.guessing,
+    );
+    final totalInformation = _thetaEstimator.totalInformation(
+      history: baseHistory,
+      theta: thetaAfter.theta,
+    );
     final questionHistory = [
       ...session.questionHistory,
-      QuestionRecord.fromQuestion(
-        question: question,
-        correct: isCorrect,
-        elapsedSeconds: session.elapsedFor(question.id),
-        thetaBefore: thetaBefore.theta,
+      baseRecord.copyWith(
         thetaAfter: thetaAfter.theta,
+        thetaEstimate: thetaAfter.theta,
+        itemInformation: itemInformation,
+        expectedProbability: expectedProbability,
+        likelihood: likelihood,
+        residual: residual,
+        totalInformation: totalInformation,
       ),
     ];
-    debugPrint(
-      '[Theta] '
-      'before=${thetaBefore.theta.toStringAsFixed(2)} '
-      'after=${thetaAfter.theta.toStringAsFixed(2)} '
-      'se=${thetaAfter.standardError.toStringAsFixed(2)}',
-    );
     final nextIndex = session.currentQuestionIndex + 1;
     if (nextIndex < nextQuestions.length) {
       nextQuestions[nextIndex] = nextQuestions[nextIndex].copyWith(

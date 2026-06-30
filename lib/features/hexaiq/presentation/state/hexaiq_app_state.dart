@@ -494,6 +494,8 @@ class HexaIQAppState extends ChangeNotifier {
       itemInformation: dto.itemInformation,
       catSelectionScore: dto.catSelectionScore,
       hint: dto.hint,
+      ruleName: dto.ruleName,
+      solution: dto.solution,
     );
   }
 

@@ -19,126 +19,101 @@ class HexaIQIntroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final chipWidth = compact ? 84.0 : 104.0;
-    final chart = HexagonChart(
-      values: const [72, 68, 70, 64, 74, 66],
-      labels: domainCatalog.map((item) => item.shortLabel).toList(),
-      size: compact ? 132 : 176,
+    final bodyStyle = theme.textTheme.bodyLarge?.copyWith(
+      fontSize: compact ? 16 : 17,
+      height: 1.35,
     );
-    final copy = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('HexaIQ는 하나의 점수가 아니라', style: theme.textTheme.titleMedium),
-        const SizedBox(height: 4),
-        Text(
-          '6가지 인지 영역을 함께 분석합니다.',
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          '응답 결과에 따라 난이도를 조절하는 Adaptive Intelligence Test를 지원합니다.',
-          style: theme.textTheme.bodyMedium,
-        ),
-        const SizedBox(height: 6),
-        Text(
-          '문항 정보량과 응답 패턴을 기반으로 다음 문제를 선택하는 CAT 구조를 준비합니다.',
-          style: theme.textTheme.bodyMedium,
-        ),
-        const SizedBox(height: 6),
-        Text(
-          'Item Bank 120 Questions',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        if (averageExposure != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            'Average Exposure ${averageExposure!.toStringAsFixed(2)}',
-            style: theme.textTheme.bodyMedium,
-          ),
-        ],
-        SizedBox(height: compact ? 8 : 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final info in domainCatalog)
-              _DomainChip(
-                info: info,
-                width: chipWidth,
-                compact: compact,
-                onTap: onDomainTap == null
-                    ? null
-                    : () => onDomainTap!(info.domain),
-              ),
-          ],
-        ),
-      ],
+    final titleStyle = theme.textTheme.titleMedium?.copyWith(
+      fontSize: compact ? 18 : 20,
+      height: 1.3,
+      fontWeight: FontWeight.w700,
     );
+    final chartSize = compact ? 140.0 : 156.0;
 
     return Card(
       child: Padding(
         padding: EdgeInsets.all(compact ? 12 : 16),
-        child: compact
-            ? Row(
-                children: [
-                  chart,
-                  const SizedBox(width: 12),
-                  Expanded(child: copy),
-                ],
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(child: chart),
-                  const SizedBox(height: 12),
-                  copy,
-                ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: HexagonChart(
+                values: const [72, 68, 70, 64, 74, 66],
+                labels: domainCatalog.map((item) => item.shortLabel).toList(),
+                size: chartSize,
+                labelFontSize: compact ? 13 : 14,
               ),
+            ),
+            const SizedBox(key: Key('intro-chart-body-gap'), height: 18),
+            Text(
+              'HexaIQ는 하나의 점수가 아니라\n6가지 인지 영역을 함께 분석합니다.',
+              style: titleStyle,
+            ),
+            SizedBox(height: compact ? 8 : 10),
+            Text(
+              '응답 결과에 따라 난이도를 조절하고,\n문항 정보를 바탕으로 다음 문제를 선택합니다.',
+              style: bodyStyle,
+            ),
+            const SizedBox(key: Key('intro-body-domain-gap'), height: 20),
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  childAspectRatio: 3.4,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  children: [
+                    for (final info in domainCatalog)
+                      _DomainButton(
+                        info: info,
+                        compact: compact,
+                        onTap: onDomainTap == null
+                            ? null
+                            : () => onDomainTap!(info.domain),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(key: Key('intro-domain-bottom-gap'), height: 16),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _DomainChip extends StatelessWidget {
-  const _DomainChip({
-    required this.info,
-    required this.width,
-    required this.compact,
-    this.onTap,
-  });
+class _DomainButton extends StatelessWidget {
+  const _DomainButton({required this.info, required this.compact, this.onTap});
 
   final DomainInfo info;
-  final double width;
   final bool compact;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final label = SizedBox(
-      width: double.infinity,
-      child: Text(info.label, textAlign: TextAlign.center),
+    final label = Text(
+      info.label,
+      textAlign: TextAlign.center,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
-    final visualDensity = compact ? VisualDensity.compact : null;
-    return SizedBox(
-      width: width,
-      child: onTap == null
-          ? Chip(
-              visualDensity: visualDensity,
-              label: label,
-              labelPadding: EdgeInsets.zero,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            )
-          : ActionChip(
-              visualDensity: visualDensity,
-              label: label,
-              labelPadding: EdgeInsets.zero,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              onPressed: onTap,
-            ),
+    final style = OutlinedButton.styleFrom(
+      visualDensity: compact ? VisualDensity.compact : VisualDensity.standard,
+      padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 12),
+      textStyle: TextStyle(
+        fontSize: compact ? 14 : 15,
+        fontWeight: FontWeight.w600,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    );
+    return OutlinedButton(
+      style: style,
+      onPressed: onTap,
+      child: SizedBox(width: double.infinity, child: label),
     );
   }
 }

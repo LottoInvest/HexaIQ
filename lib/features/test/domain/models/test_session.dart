@@ -28,6 +28,7 @@ class TestSession {
     this.usedItemIds = const {},
     this.totalElapsedSeconds = 0,
     this.baseSeed = 0,
+    this.showDebugMetrics = false,
   }) : thetaEstimate = thetaEstimate ?? ThetaEstimate.initial(),
        thetaHistory = thetaHistory ?? const [];
 
@@ -51,6 +52,7 @@ class TestSession {
   final Set<String> usedItemIds;
   final int totalElapsedSeconds;
   final int baseSeed;
+  final bool showDebugMetrics;
 
   List<TestQuestion> get activeQuestions {
     return generatedQuestions.isNotEmpty ? generatedQuestions : questions;
@@ -149,6 +151,7 @@ class TestSession {
     Set<String>? usedItemIds,
     int? totalElapsedSeconds,
     int? baseSeed,
+    bool? showDebugMetrics,
   }) {
     return TestSession(
       sessionId: sessionId ?? this.sessionId,
@@ -173,6 +176,7 @@ class TestSession {
       usedItemIds: usedItemIds ?? this.usedItemIds,
       totalElapsedSeconds: totalElapsedSeconds ?? this.totalElapsedSeconds,
       baseSeed: baseSeed ?? this.baseSeed,
+      showDebugMetrics: showDebugMetrics ?? this.showDebugMetrics,
     );
   }
 }

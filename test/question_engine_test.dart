@@ -42,6 +42,24 @@ void main() {
     },
   );
 
+  test('NumericalGenerator provides specific cube hint', () {
+    final generator = NumericalGenerator();
+
+    final question = generator.generate(
+      const GenerateQuestionRequest(
+        profileId: 'profile-hint',
+        testId: 'test-hint',
+        domain: QuestionDomain.numerical,
+        ageGroup: 'grade5_6',
+        index: 9,
+        typeCode: 'NR09',
+        level: 6,
+      ),
+    );
+
+    expect(question.hint, '세제곱수 규칙입니다. 2³, 3³, 4³처럼 생각해보세요.');
+  });
+
   test('AgeMapper clamps level to age group range', () {
     final engine = QuestionEngine();
 
