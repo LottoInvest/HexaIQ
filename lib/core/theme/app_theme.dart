@@ -40,22 +40,29 @@ class AppTheme {
   }
 
   static ThemeData dark() {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF7EA2FF),
-      brightness: Brightness.dark,
-    );
+    const background = Color(0xFF0B1020);
+    const surface = Color(0xFF151B2E);
+    final colorScheme =
+        ColorScheme.fromSeed(
+          seedColor: const Color(0xFFAFC2FF),
+          brightness: Brightness.dark,
+        ).copyWith(
+          surface: surface,
+          primary: const Color(0xFFAFC2FF),
+          onPrimary: const Color(0xFF111827),
+        );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: const Color(0xFF101318),
+      scaffoldBackgroundColor: background,
       appBarTheme: const AppBarTheme(
         centerTitle: false,
         elevation: 0,
-        backgroundColor: Color(0xFF101318),
+        backgroundColor: background,
       ),
       cardTheme: CardThemeData(
-        color: const Color(0xFF181C22),
+        color: surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),

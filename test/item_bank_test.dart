@@ -300,6 +300,7 @@ class _FixedItemSelectionStrategy implements ItemSelectionStrategy {
     required Set<String> usedItemIds,
     required int seed,
     Map<String, ExposureStatus> exposureStatuses = const {},
+    ThetaEstimate? thetaEstimate,
   }) {
     called = true;
     return candidates.firstWhere((item) => item.id == itemId);
@@ -310,6 +311,7 @@ class _FixedItemSelectionStrategy implements ItemSelectionStrategy {
     required Item item,
     required QuestionDifficulty targetDifficulty,
     ExposureStatus? exposureStatus,
+    ThetaEstimate? thetaEstimate,
   }) {
     return 0.42;
   }

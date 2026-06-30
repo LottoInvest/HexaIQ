@@ -82,6 +82,28 @@ class ReportSummaryScreen extends StatelessWidget {
                         session?.averageElapsedSeconds ?? 0,
                       ),
                     ),
+                    if (session != null) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _MetricTile(
+                              label: 'Theta Estimate',
+                              value: session.thetaEstimate.theta
+                                  .toStringAsFixed(2),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _MetricTile(
+                              label: 'Standard Error',
+                              value: session.thetaEstimate.standardError
+                                  .toStringAsFixed(2),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     Center(
                       child: HexagonChart(
@@ -117,6 +139,8 @@ class ReportSummaryScreen extends StatelessWidget {
               ),
             if (session != null && session.questionHistory.isNotEmpty) ...[
               const SizedBox(height: 12),
+              _CATDebugSummaryCard(session: session),
+              const SizedBox(height: 12),
               _QuestionHistoryCard(session: session),
             ],
             const SizedBox(height: 12),
@@ -146,6 +170,44 @@ class ReportSummaryScreen extends StatelessWidget {
     final minutes = seconds ~/ 60;
     final remaining = seconds % 60;
     return '${minutes}m ${remaining.toString().padLeft(2, '0')}s';
+  }
+}
+
+class _CATDebugSummaryCard extends StatelessWidget {
+  const _CATDebugSummaryCard({required this.session});
+
+  final TestSession session;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('CAT Debug Summary', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Text(
+              'Theta Estimate ${session.thetaEstimate.theta.toStringAsFixed(2)}',
+            ),
+            Text(
+              'Standard Error '
+              '${session.thetaEstimate.standardError.toStringAsFixed(2)}',
+            ),
+            Text(
+              'Average Item Information '
+              '${session.averageItemInformation.toStringAsFixed(2)}',
+            ),
+            Text(
+              'Average CAT Selection Score '
+              '${session.averageCatSelectionScore.toStringAsFixed(2)}',
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -295,6 +357,10 @@ class _QuestionHistoryCard extends StatelessWidget {
                   '| domain ${session.questionHistory[i].domain.name} '
                   '| ${session.questionHistory[i].difficulty.labelKo} '
                   '| b=${session.questionHistory[i].difficultyIndex.toStringAsFixed(1)} '
+                  '| theta=${session.questionHistory[i].thetaBefore.toStringAsFixed(2)}'
+                  '→${session.questionHistory[i].thetaAfter.toStringAsFixed(2)} '
+                  '| info=${session.questionHistory[i].itemInformation.toStringAsFixed(2)} '
+                  '| CAT=${session.questionHistory[i].catSelectionScore.toStringAsFixed(2)} '
                   '| score=${session.questionHistory[i].selectionScore.toStringAsFixed(2)} '
                   '| ${session.questionHistory[i].correct == true ? 'Correct' : 'Wrong'} '
                   '| ${_formatElapsed(session.questionHistory[i].elapsedSeconds)}',

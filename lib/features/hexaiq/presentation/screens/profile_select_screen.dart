@@ -3,30 +3,37 @@ import 'package:provider/provider.dart';
 
 import '../../../../app/app_routes.dart';
 import '../../../../core/widgets/action_card.dart';
-import '../../../../core/widgets/empty_state.dart';
 import '../state/hexaiq_app_state.dart';
 
-class ProfileSelectScreen extends StatelessWidget {
+class ProfileSelectScreen extends StatefulWidget {
   const ProfileSelectScreen({super.key});
+
+  @override
+  State<ProfileSelectScreen> createState() => _ProfileSelectScreenState();
+}
+
+class _ProfileSelectScreenState extends State<ProfileSelectScreen> {
+  bool _redirectScheduled = false;
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<HexaIQAppState>();
+    if (state.profilesLoaded && state.profiles.isEmpty && !_redirectScheduled) {
+      _redirectScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          Navigator.of(context).pushReplacementNamed(AppRoutes.profileCreate);
+        }
+      });
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('프로필 선택')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: state.profiles.isEmpty
-              ? EmptyState(
-                  icon: Icons.person_add_alt_1,
-                  title: '프로필을 만들어 주세요',
-                  body: '기기당 최대 3개까지 만들 수 있고, 성장 기록은 프로필별로 분리됩니다.',
-                  actionLabel: '프로필 만들기',
-                  onAction: () {
-                    Navigator.of(context).pushNamed(AppRoutes.profileCreate);
-                  },
-                )
+              ? const Center(child: CircularProgressIndicator())
               : ListView(
                   children: [
                     for (final profile in state.profiles)
@@ -34,15 +41,19 @@ class ProfileSelectScreen extends StatelessWidget {
                         icon: Icons.account_circle,
                         title: profile.name,
                         body: '${profile.grade} · ${profile.ageGroup}',
-                        trailing: Text(profile.avatar),
+                        trailing: IconButton(
+                          tooltip: '삭제',
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: () =>
+                              _confirmDelete(context, profile.id, profile.name),
+                        ),
                         onTap: () async {
+                          final navigator = Navigator.of(context);
                           await context.read<HexaIQAppState>().selectProfile(
                             profile,
                           );
                           if (context.mounted) {
-                            Navigator.of(
-                              context,
-                            ).pushReplacementNamed(AppRoutes.home);
+                            navigator.pushReplacementNamed(AppRoutes.home);
                           }
                         },
                       ),
@@ -65,5 +76,40 @@ class ProfileSelectScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmDelete(
+    BuildContext context,
+    String profileId,
+    String profileName,
+  ) async {
+    final state = context.read<HexaIQAppState>();
+    final profile = state.profiles.firstWhere((item) => item.id == profileId);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('프로필을 삭제할까요?'),
+          content: Text('$profileName 프로필을 삭제하면 이 기기의 프로필 정보가 사라집니다.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('취소'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('삭제'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !context.mounted) {
+      return;
+    }
+    await context.read<HexaIQAppState>().deleteProfile(profile);
+    if (context.mounted && context.read<HexaIQAppState>().profiles.isEmpty) {
+      Navigator.of(context).pushReplacementNamed(AppRoutes.profileCreate);
+    }
   }
 }

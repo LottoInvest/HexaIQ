@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../app/app_routes.dart';
 import '../../../../core/domain/intelligence_domain.dart';
 import '../../../settings/presentation/widgets/theme_mode_selector.dart';
+import '../state/hexaiq_app_state.dart';
 import '../widgets/hexa_iq_intro_card.dart';
 
 class OnboardingScreen extends StatelessWidget {
@@ -11,49 +13,66 @@ class OnboardingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final isLandscape = size.width > size.height;
-    final isCompact = isLandscape && size.shortestSide < 600;
+    final isCompact = size.shortestSide < 600 || size.height < 760;
 
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 760),
-            child: ListView(
+            child: Padding(
               padding: EdgeInsets.all(isCompact ? 16 : 24),
-              shrinkWrap: true,
-              children: [
-                Text('HexaIQ', style: Theme.of(context).textTheme.displaySmall),
-                const SizedBox(height: 12),
-                Text(
-                  '검사 분석, 훈련 추천, 성장 기록을 하나의 흐름으로 연결합니다.',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                SizedBox(height: isCompact ? 12 : 20),
-                ThemeModeSelector(compact: isCompact),
-                SizedBox(height: isCompact ? 12 : 20),
-                HexaIQIntroCard(
-                  compact: isCompact,
-                  onDomainTap: (domain) => _handleDomainTap(context, domain),
-                ),
-                SizedBox(height: isCompact ? 16 : 24),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: FilledButton.icon(
-                    onPressed: () {
-                      Navigator.of(
-                        context,
-                      ).pushReplacementNamed(AppRoutes.profileSelect);
-                    },
-                    icon: const Icon(Icons.arrow_forward),
-                    label: const Text('시작하기'),
+              child: Stack(
+                children: [
+                  ListView(
+                    padding: const EdgeInsets.only(bottom: 84),
+                    children: [
+                      Text(
+                        'HexaIQ',
+                        style: Theme.of(context).textTheme.displaySmall,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '검사 분석, 훈련 추천, 성장 기록을 하나의 흐름으로 연결합니다.',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      SizedBox(height: isCompact ? 12 : 20),
+                      ThemeModeSelector(compact: isCompact),
+                      SizedBox(height: isCompact ? 12 : 20),
+                      HexaIQIntroCard(
+                        compact: isCompact,
+                        onDomainTap: (domain) =>
+                            _handleDomainTap(context, domain),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: SafeArea(
+                      top: false,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: () => _start(context),
+                          icon: const Icon(Icons.arrow_forward),
+                          label: const Text('시작하기'),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  void _start(BuildContext context) {
+    final state = context.read<HexaIQAppState>();
+    Navigator.of(context).pushReplacementNamed(
+      state.profiles.isEmpty ? AppRoutes.profileCreate : AppRoutes.profileSelect,
     );
   }
 
@@ -65,7 +84,7 @@ class OnboardingScreen extends StatelessWidget {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${domain.label} 영역은 Coming Soon입니다.')),
+      SnackBar(content: Text('${domain.label} 영역은 Coming Soon입니다')),
     );
   }
 }

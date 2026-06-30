@@ -1,6 +1,7 @@
 import '../../../core/domain/difficulty_profile.dart';
 import '../../../core/domain/intelligence_domain.dart';
 import '../../../core/domain/question_difficulty.dart';
+import '../../cat/domain/theta_estimate.dart';
 
 typedef QuestionDomain = IntelligenceDomain;
 
@@ -17,6 +18,7 @@ class GenerateQuestionRequest {
     this.difficulty = QuestionDifficulty.normal,
     this.difficultyProfile,
     this.usedItemIds = const {},
+    this.thetaEstimate,
   });
 
   final String profileId;
@@ -30,6 +32,7 @@ class GenerateQuestionRequest {
   final QuestionDifficulty difficulty;
   final DifficultyProfile? difficultyProfile;
   final Set<String> usedItemIds;
+  final ThetaEstimate? thetaEstimate;
 
   GenerateQuestionRequest copyWith({
     String? profileId,
@@ -43,6 +46,7 @@ class GenerateQuestionRequest {
     QuestionDifficulty? difficulty,
     DifficultyProfile? difficultyProfile,
     Set<String>? usedItemIds,
+    ThetaEstimate? thetaEstimate,
   }) {
     return GenerateQuestionRequest(
       profileId: profileId ?? this.profileId,
@@ -56,6 +60,7 @@ class GenerateQuestionRequest {
       difficulty: difficulty ?? this.difficulty,
       difficultyProfile: difficultyProfile ?? this.difficultyProfile,
       usedItemIds: usedItemIds ?? this.usedItemIds,
+      thetaEstimate: thetaEstimate ?? this.thetaEstimate,
     );
   }
 }
@@ -118,6 +123,9 @@ class GeneratedQuestionDto {
     Duration? expectedSolveTime,
     this.itemId,
     this.selectionScore = 1,
+    this.itemInformation = 0,
+    this.catSelectionScore = 0,
+    this.hint,
     this.variables = const {},
     this.isStub = false,
   }) : expectedSolveTime =
@@ -143,6 +151,9 @@ class GeneratedQuestionDto {
     Duration? expectedSolveTime,
     String? itemId,
     double selectionScore = 1,
+    double itemInformation = 0,
+    double? catSelectionScore,
+    String? hint,
     Map<String, Object?> variables = const {},
     bool isStub = false,
   }) {
@@ -175,6 +186,9 @@ class GeneratedQuestionDto {
           expectedSolveTime ?? Duration(seconds: estimatedTimeSec),
       itemId: itemId,
       selectionScore: selectionScore,
+      itemInformation: itemInformation,
+      catSelectionScore: catSelectionScore ?? selectionScore,
+      hint: hint,
       variables: variables,
       isStub: isStub,
     );
@@ -199,6 +213,9 @@ class GeneratedQuestionDto {
   final Duration expectedSolveTime;
   final String? itemId;
   final double selectionScore;
+  final double itemInformation;
+  final double catSelectionScore;
+  final String? hint;
   final Map<String, Object?> variables;
   final bool isStub;
 
@@ -227,6 +244,9 @@ class GeneratedQuestionDto {
       'expectedSolveTimeMs': expectedSolveTime.inMilliseconds,
       if (itemId != null) 'itemId': itemId,
       'selectionScore': selectionScore,
+      'itemInformation': itemInformation,
+      'catSelectionScore': catSelectionScore,
+      if (hint != null) 'hint': hint,
       'ageGroup': ageGroup,
       'questionText': questionText,
       'choices': choiceDtos.map((choice) => choice.toJson()).toList(),

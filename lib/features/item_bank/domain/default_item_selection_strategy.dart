@@ -1,5 +1,6 @@
 import '../../../../core/domain/intelligence_domain.dart';
 import '../../../../core/domain/question_difficulty.dart';
+import '../../cat/domain/theta_estimate.dart';
 import 'exposure_status.dart';
 import 'item.dart';
 import 'item_selection_strategy.dart';
@@ -15,6 +16,7 @@ class DefaultItemSelectionStrategy implements ItemSelectionStrategy {
     required Set<String> usedItemIds,
     required int seed,
     Map<String, ExposureStatus> exposureStatuses = const {},
+    ThetaEstimate? thetaEstimate,
   }) {
     final domainCandidates = candidates
         .where((item) => item.domain == domain)
@@ -71,6 +73,7 @@ class DefaultItemSelectionStrategy implements ItemSelectionStrategy {
     required Item item,
     required QuestionDifficulty targetDifficulty,
     ExposureStatus? exposureStatus,
+    ThetaEstimate? thetaEstimate,
   }) {
     final difficultyScore =
         1 / (1 + _difficultyDistance(item.difficulty, targetDifficulty));

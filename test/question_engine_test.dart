@@ -89,9 +89,11 @@ void main() {
     final second = engine.generate(request);
 
     final firstJson = Map<String, Object?>.from(first.toJson())
-      ..remove('selectionScore');
+      ..remove('selectionScore')
+      ..remove('catSelectionScore');
     final secondJson = Map<String, Object?>.from(second.toJson())
-      ..remove('selectionScore');
+      ..remove('selectionScore')
+      ..remove('catSelectionScore');
 
     expect(firstJson, secondJson);
     expect(second.selectionScore, lessThan(first.selectionScore));

@@ -4,13 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../app/app_routes.dart';
+import '../../../../core/domain/intelligence_domain.dart';
 import '../../../../core/domain/question_difficulty.dart';
 import '../../../question/widgets/scratch_pad_widget.dart';
 import '../../domain/hexaiq_models.dart';
 import '../state/hexaiq_app_state.dart';
 
 class QuestionScreen extends StatefulWidget {
-  const QuestionScreen({super.key});
+  const QuestionScreen({
+    super.key,
+    this.enableElapsedTimer = true,
+    this.hintDelay = const Duration(seconds: 5),
+  });
+
+  final bool enableElapsedTimer;
+  final Duration hintDelay;
 
   @override
   State<QuestionScreen> createState() => _QuestionScreenState();
@@ -21,8 +29,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
 
   final Stopwatch _stopwatch = Stopwatch();
   Timer? _timer;
+  Timer? _hintTimer;
   int _displaySeconds = 0;
   String? _activeQuestionId;
+  bool _showHint = false;
 
   @override
   void initState() {
@@ -33,6 +43,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _hintTimer?.cancel();
     _stopwatch.stop();
     super.dispose();
   }
@@ -43,6 +54,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
     _stopwatch
       ..reset()
       ..start();
+    if (!widget.enableElapsedTimer) {
+      return;
+    }
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) {
         return;
@@ -53,10 +67,24 @@ class _QuestionScreenState extends State<QuestionScreen> {
     });
   }
 
-  void _recordElapsed(HexaIQAppState state) {
+  void _startHintTimer() {
+    _hintTimer?.cancel();
+    _showHint = false;
+    _hintTimer = Timer(widget.hintDelay, () {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _showHint = true);
+    });
+  }
+
+  void _recordElapsed(HexaIQAppState state, {bool restartHint = true}) {
     final seconds = _stopwatch.elapsed.inSeconds;
     state.recordElapsedTime(seconds);
     _startQuestionTimer();
+    if (restartHint) {
+      _startHintTimer();
+    }
   }
 
   @override
@@ -69,6 +97,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
     if (_activeQuestionId != question.id) {
       _activeQuestionId = question.id;
       _startQuestionTimer();
+      _startHintTimer();
     }
 
     return Scaffold(
@@ -82,17 +111,22 @@ class _QuestionScreenState extends State<QuestionScreen> {
             final isTablet = shortestSide >= 600;
             final isPhoneLandscape = isLandscape && !isTablet;
             final showSplitLayout = isPhoneLandscape || isTablet;
-            final showScratchPad = _scratchPadConfig.isEnabledFor(
-              question.typeCode,
-            );
+            final showScratchPad =
+                question.domain == IntelligenceDomain.numerical ||
+                _scratchPadConfig.isEnabledFor(question.typeCode);
+            final isCompactPortrait =
+                !isLandscape && constraints.maxHeight < 760;
+            final compact = isPhoneLandscape || isCompactPortrait;
+            final hint = _hintFor(question);
             final content = _QuestionContent(
               state: state,
               question: question,
+              hint: _showHint ? hint : null,
               displaySeconds: _displaySeconds,
-              compact: isPhoneLandscape,
+              compact: compact,
               useChoiceGrid: isPhoneLandscape,
               isTablet: isTablet,
-              scrollable: showSplitLayout,
+              scrollable: true,
               onSelectAnswer: (index) =>
                   context.read<HexaIQAppState>().selectAnswer(index),
               onPrevious: state.questionIndex == 0
@@ -109,7 +143,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
               },
               onSubmit: () async {
                 final appState = context.read<HexaIQAppState>();
-                _recordElapsed(appState);
+                _hintTimer?.cancel();
+                _recordElapsed(appState, restartHint: false);
                 await appState.submitTest();
                 if (context.mounted) {
                   Navigator.of(
@@ -141,27 +176,49 @@ class _QuestionScreenState extends State<QuestionScreen> {
               );
             }
 
+            final scratchMinHeight = constraints.maxHeight < 520
+                ? constraints.maxHeight * 0.22
+                : 160.0;
             final scratchHeight = (constraints.maxHeight * 0.3).clamp(
-              180.0,
-              280.0,
+              scratchMinHeight,
+              constraints.maxHeight * 0.34,
             );
-            return ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                content,
-                if (showScratchPad) ...[
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: scratchHeight,
-                    child: ScratchPadWidget(resetToken: question.id),
-                  ),
+            return Padding(
+              padding: EdgeInsets.all(compact ? 10 : 16),
+              child: Column(
+                children: [
+                  Expanded(flex: showScratchPad ? 64 : 1, child: content),
+                  if (showScratchPad) ...[
+                    SizedBox(height: compact ? 8 : 12),
+                    SizedBox(
+                      height: scratchHeight,
+                      child: ScratchPadWidget(
+                        resetToken: question.id,
+                        compact: compact,
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             );
           },
         ),
       ),
     );
+  }
+
+  String _hintFor(TestQuestion question) {
+    if (question.hint != null && question.hint!.trim().isNotEmpty) {
+      return question.hint!;
+    }
+    return switch (question.typeCode) {
+      'NR01' => '등차수열 문제입니다. 차이를 비교해보세요.',
+      'NR02' => '등비수열 문제입니다. 곱해지는 비율을 찾아보세요.',
+      'NR15' || 'NR16' => '각 행과 열의 규칙을 나누어 비교해보세요.',
+      'NR17' => '마방진 합계 힌트입니다. 한 줄의 합을 먼저 확인해보세요.',
+      'NR20' => '숫자 관계 힌트입니다. 왼쪽과 오른쪽 수의 연결을 찾아보세요.',
+      _ => '문제 유형의 규칙을 먼저 찾고, 보기와 하나씩 비교해보세요.',
+    };
   }
 }
 
@@ -177,11 +234,13 @@ class _QuestionContent extends StatelessWidget {
     required this.onSelectAnswer,
     required this.onNext,
     required this.onSubmit,
+    this.hint,
     this.onPrevious,
   });
 
   final HexaIQAppState state;
   final TestQuestion question;
+  final String? hint;
   final int displaySeconds;
   final bool compact;
   final bool useChoiceGrid;
@@ -197,15 +256,10 @@ class _QuestionContent extends StatelessWidget {
     final selectedAnswer = state.selectedAnswerForCurrentQuestion;
     final progressPercent = (state.testProgress * 100).round();
     final isLastQuestion = state.isLastQuestion;
-    return ListView(
-      shrinkWrap: true,
-      physics: scrollable
-          ? const ClampingScrollPhysics()
-          : const NeverScrollableScrollPhysics(),
-      padding: EdgeInsets.zero,
+    return Column(
       children: [
         LinearProgressIndicator(value: state.testProgress, minHeight: 3),
-        SizedBox(height: compact ? 8 : 16),
+        SizedBox(height: compact ? 6 : 12),
         Row(
           children: [
             Expanded(
@@ -215,62 +269,33 @@ class _QuestionContent extends StatelessWidget {
               ),
             ),
             Text('$progressPercent%'),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Text(_formatElapsed(displaySeconds)),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Text(question.difficulty.labelKo),
           ],
         ),
-        SizedBox(height: compact ? 8 : 12),
-        Card(
-          child: Padding(
-            padding: EdgeInsets.all(compact ? 12 : 18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  question.prompt,
-                  style: compact
-                      ? Theme.of(context).textTheme.titleMedium
-                      : Theme.of(context).textTheme.titleLarge,
-                ),
-                SizedBox(height: compact ? 12 : 20),
-                if (useChoiceGrid)
-                  GridView.count(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 5.8,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: [
-                      for (var i = 0; i < question.choices.length; i++)
-                        _ChoiceButton(
-                          text: question.choices[i],
-                          selected: selectedAnswer == i,
-                          compact: compact,
-                          isTablet: isTablet,
-                          onPressed: () => onSelectAnswer(i),
-                        ),
-                    ],
-                  )
-                else
-                  for (var i = 0; i < question.choices.length; i++)
-                    Padding(
-                      padding: EdgeInsets.only(bottom: compact ? 6 : 10),
-                      child: _ChoiceButton(
-                        text: question.choices[i],
-                        selected: selectedAnswer == i,
-                        compact: compact,
-                        isTablet: isTablet,
-                        onPressed: () => onSelectAnswer(i),
-                      ),
-                    ),
-              ],
+        SizedBox(height: compact ? 6 : 10),
+        Expanded(
+          child: Card(
+            child: Padding(
+              padding: EdgeInsets.all(compact ? 10 : 16),
+              child: _ScrollableQuestionBody(
+                question: question,
+                selectedAnswer: selectedAnswer,
+                compact: compact,
+                useChoiceGrid: useChoiceGrid,
+                isTablet: isTablet,
+                onSelectAnswer: onSelectAnswer,
+              ),
             ),
           ),
         ),
-        SizedBox(height: compact ? 8 : 12),
+        if (hint != null) ...[
+          SizedBox(height: compact ? 6 : 8),
+          _HintBanner(hint: hint!, compact: compact),
+        ],
+        SizedBox(height: compact ? 6 : 10),
         Row(
           children: [
             OutlinedButton.icon(
@@ -294,6 +319,102 @@ class _QuestionContent extends StatelessWidget {
     final minutes = seconds ~/ 60;
     final remaining = seconds % 60;
     return '${minutes}m ${remaining.toString().padLeft(2, '0')}s';
+  }
+}
+
+class _ScrollableQuestionBody extends StatelessWidget {
+  const _ScrollableQuestionBody({
+    required this.question,
+    required this.selectedAnswer,
+    required this.compact,
+    required this.useChoiceGrid,
+    required this.isTablet,
+    required this.onSelectAnswer,
+  });
+
+  final TestQuestion question;
+  final int? selectedAnswer;
+  final bool compact;
+  final bool useChoiceGrid;
+  final bool isTablet;
+  final ValueChanged<int> onSelectAnswer;
+
+  @override
+  Widget build(BuildContext context) {
+    final promptStyle = Theme.of(context).textTheme.titleLarge?.copyWith(
+      fontSize: compact ? 18 : 22,
+      height: compact ? 1.15 : 1.35,
+    );
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        Text(question.prompt, style: promptStyle),
+        SizedBox(height: compact ? 10 : 18),
+        if (useChoiceGrid)
+          GridView.count(
+            crossAxisCount: 2,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            childAspectRatio: 5.8,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              for (var i = 0; i < question.choices.length; i++)
+                _ChoiceButton(
+                  text: question.choices[i],
+                  selected: selectedAnswer == i,
+                  compact: compact,
+                  isTablet: isTablet,
+                  onPressed: () => onSelectAnswer(i),
+                ),
+            ],
+          )
+        else
+          for (var i = 0; i < question.choices.length; i++)
+            Padding(
+              padding: EdgeInsets.only(bottom: compact ? 6 : 10),
+              child: _ChoiceButton(
+                text: question.choices[i],
+                selected: selectedAnswer == i,
+                compact: compact,
+                isTablet: isTablet,
+                onPressed: () => onSelectAnswer(i),
+              ),
+            ),
+      ],
+    );
+  }
+}
+
+class _HintBanner extends StatelessWidget {
+  const _HintBanner({required this.hint, required this.compact});
+
+  final String hint;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.primaryContainer.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.28)),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 10 : 12,
+          vertical: compact ? 7 : 9,
+        ),
+        child: Text(
+          hint,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            fontSize: compact ? 12 : 13,
+            color: colorScheme.onSurface,
+          ),
+        ),
+      ),
+    );
   }
 }
 

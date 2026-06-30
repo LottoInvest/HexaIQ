@@ -138,6 +138,9 @@ class MockHexaIQRepository implements HexaIQRepository {
       expectedSolveTime: dto.expectedSolveTime,
       itemId: dto.itemId,
       selectionScore: dto.selectionScore,
+      itemInformation: dto.itemInformation,
+      catSelectionScore: dto.catSelectionScore,
+      hint: dto.hint,
     );
   }
 

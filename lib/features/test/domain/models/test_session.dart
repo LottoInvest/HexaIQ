@@ -2,11 +2,12 @@ import '../../../../core/domain/domain_result.dart';
 import '../../../../core/domain/difficulty_profile.dart';
 import '../../../../core/domain/intelligence_domain.dart';
 import '../../../../core/domain/question_difficulty.dart';
+import '../../../cat/domain/theta_estimate.dart';
 import '../../../hexaiq/domain/hexaiq_models.dart';
 import 'question_record.dart';
 
 class TestSession {
-  const TestSession({
+  TestSession({
     required this.sessionId,
     required this.startedAt,
     this.domain = IntelligenceDomain.numerical,
@@ -21,11 +22,14 @@ class TestSession {
     this.difficultyProfile = const DifficultyProfile(),
     this.difficultyByQuestionId = const {},
     this.questionHistory = const [],
+    ThetaEstimate? thetaEstimate,
+    List<ThetaEstimate>? thetaHistory,
     this.adaptiveRecordedQuestionIds = const {},
     this.usedItemIds = const {},
     this.totalElapsedSeconds = 0,
     this.baseSeed = 0,
-  });
+  }) : thetaEstimate = thetaEstimate ?? ThetaEstimate.initial(),
+       thetaHistory = thetaHistory ?? const [];
 
   final String sessionId;
   final DateTime startedAt;
@@ -41,6 +45,8 @@ class TestSession {
   final DifficultyProfile difficultyProfile;
   final Map<String, QuestionDifficulty> difficultyByQuestionId;
   final List<QuestionRecord> questionHistory;
+  final ThetaEstimate thetaEstimate;
+  final List<ThetaEstimate> thetaHistory;
   final Set<String> adaptiveRecordedQuestionIds;
   final Set<String> usedItemIds;
   final int totalElapsedSeconds;
@@ -99,6 +105,28 @@ class TestSession {
     return (total / questionHistory.length).round();
   }
 
+  double get averageItemInformation {
+    if (questionHistory.isEmpty) {
+      return 0;
+    }
+    final total = questionHistory.fold<double>(
+      0,
+      (sum, record) => sum + record.itemInformation,
+    );
+    return total / questionHistory.length;
+  }
+
+  double get averageCatSelectionScore {
+    if (questionHistory.isEmpty) {
+      return 0;
+    }
+    final total = questionHistory.fold<double>(
+      0,
+      (sum, record) => sum + record.catSelectionScore,
+    );
+    return total / questionHistory.length;
+  }
+
   TestSession copyWith({
     String? sessionId,
     DateTime? startedAt,
@@ -115,6 +143,8 @@ class TestSession {
     DifficultyProfile? difficultyProfile,
     Map<String, QuestionDifficulty>? difficultyByQuestionId,
     List<QuestionRecord>? questionHistory,
+    ThetaEstimate? thetaEstimate,
+    List<ThetaEstimate>? thetaHistory,
     Set<String>? adaptiveRecordedQuestionIds,
     Set<String>? usedItemIds,
     int? totalElapsedSeconds,
@@ -136,6 +166,8 @@ class TestSession {
       difficultyByQuestionId:
           difficultyByQuestionId ?? this.difficultyByQuestionId,
       questionHistory: questionHistory ?? this.questionHistory,
+      thetaEstimate: thetaEstimate ?? this.thetaEstimate,
+      thetaHistory: thetaHistory ?? this.thetaHistory,
       adaptiveRecordedQuestionIds:
           adaptiveRecordedQuestionIds ?? this.adaptiveRecordedQuestionIds,
       usedItemIds: usedItemIds ?? this.usedItemIds,

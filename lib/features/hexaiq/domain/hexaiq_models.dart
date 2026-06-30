@@ -117,6 +117,9 @@ class TestQuestion {
     this.expectedSolveTime = Duration.zero,
     this.itemId,
     this.selectionScore = 1,
+    this.itemInformation = 0,
+    this.catSelectionScore = 0,
+    this.hint,
   });
 
   final IntelligenceDomain domain;
@@ -135,6 +138,9 @@ class TestQuestion {
   final Duration expectedSolveTime;
   final String? itemId;
   final double selectionScore;
+  final double itemInformation;
+  final double catSelectionScore;
+  final String? hint;
 
   TestQuestion copyWith({
     QuestionDifficulty? difficulty,
@@ -145,6 +151,9 @@ class TestQuestion {
     Duration? expectedSolveTime,
     String? itemId,
     double? selectionScore,
+    double? itemInformation,
+    double? catSelectionScore,
+    String? hint,
   }) {
     return TestQuestion(
       id: id,
@@ -163,6 +172,9 @@ class TestQuestion {
       expectedSolveTime: expectedSolveTime ?? this.expectedSolveTime,
       itemId: itemId ?? this.itemId,
       selectionScore: selectionScore ?? this.selectionScore,
+      itemInformation: itemInformation ?? this.itemInformation,
+      catSelectionScore: catSelectionScore ?? this.catSelectionScore,
+      hint: hint ?? this.hint,
     );
   }
 }

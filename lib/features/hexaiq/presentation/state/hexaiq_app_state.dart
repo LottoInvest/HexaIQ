@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/domain/difficulty_profile.dart';
 import '../../../../core/domain/intelligence_domain.dart';
 import '../../../../core/domain/question_difficulty.dart';
+import '../../../cat/domain/theta_estimate.dart';
 import '../../../item_bank/domain/exposure_status.dart';
 import '../../../question_engine/core/question_engine.dart';
 import '../../../question_engine/domain/question_engine_models.dart';
@@ -36,7 +37,8 @@ class HexaIQAppState extends ChangeNotifier {
   int rewardedAdsCompleted = 0;
   bool hasProfessionalAccess = false;
   bool isBusy = false;
-  ThemeMode themeMode = ThemeMode.system;
+  bool profilesLoaded = false;
+  ThemeMode themeMode = ThemeMode.dark;
 
   TestQuestion? get currentQuestion {
     return testSessionController?.session.currentQuestion;
@@ -187,6 +189,7 @@ class HexaIQAppState extends ChangeNotifier {
     if (selectedProfile != null) {
       growth = await repository.loadGrowth(selectedProfile!);
     }
+    profilesLoaded = true;
     notifyListeners();
   }
 
@@ -208,6 +211,17 @@ class HexaIQAppState extends ChangeNotifier {
     profiles = [...profiles, profile];
     selectedProfile = profile;
     growth = await repository.loadGrowth(profile);
+    notifyListeners();
+  }
+
+  Future<void> deleteProfile(UserProfile profile) async {
+    profiles = profiles.where((item) => item.id != profile.id).toList();
+    if (selectedProfile?.id == profile.id) {
+      selectedProfile = profiles.isNotEmpty ? profiles.first : null;
+      growth = selectedProfile == null
+          ? const []
+          : await repository.loadGrowth(selectedProfile!);
+    }
     notifyListeners();
   }
 
@@ -250,6 +264,7 @@ class HexaIQAppState extends ChangeNotifier {
       difficultyProfile: DifficultyProfile.initial(),
       usedSeeds: const {},
       usedItemIds: const {},
+      thetaEstimate: ThetaEstimate.initial(),
     );
     testSessionController = TestSessionController(
       TestSession(
@@ -343,6 +358,7 @@ class HexaIQAppState extends ChangeNotifier {
               if (question.itemId != null) question.itemId!,
             for (final record in session.questionHistory) record.itemId,
           },
+          thetaEstimate: session.thetaEstimate,
         );
         debugPrint(
           '[QuestionEngine] Generated Question${index + 1} '
@@ -394,6 +410,7 @@ class HexaIQAppState extends ChangeNotifier {
     required DifficultyProfile difficultyProfile,
     required Set<int> usedSeeds,
     required Set<String> usedItemIds,
+    required ThetaEstimate thetaEstimate,
   }) {
     final seed = _dynamicSeed(
       baseSeed: baseSeed,
@@ -418,6 +435,7 @@ class HexaIQAppState extends ChangeNotifier {
       level: level,
       difficultyProfile: difficultyProfile,
       usedItemIds: usedItemIds,
+      thetaEstimate: thetaEstimate,
     );
     return _toTestQuestion(dto);
   }
@@ -473,6 +491,9 @@ class HexaIQAppState extends ChangeNotifier {
       expectedSolveTime: dto.expectedSolveTime,
       itemId: dto.itemId,
       selectionScore: dto.selectionScore,
+      itemInformation: dto.itemInformation,
+      catSelectionScore: dto.catSelectionScore,
+      hint: dto.hint,
     );
   }
 

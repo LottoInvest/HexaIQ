@@ -43,6 +43,11 @@ class HexaIQIntroCard extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
+          '문항 정보량과 응답 패턴을 기반으로 다음 문제를 선택하는 CAT 구조를 준비합니다.',
+          style: theme.textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 6),
+        Text(
           'Item Bank 120 Questions',
           style: theme.textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.w700,

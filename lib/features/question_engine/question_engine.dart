@@ -1,4 +1,9 @@
 export '../../core/domain/intelligence_domain.dart';
+export '../cat/domain/cat_item_selection_strategy.dart';
+export '../cat/domain/cat_selection_score.dart';
+export '../cat/domain/item_information.dart';
+export '../cat/domain/theta_estimate.dart';
+export '../cat/domain/theta_updater.dart';
 export '../item_bank/data/in_memory_item_bank_repository.dart';
 export '../item_bank/data/exposure_repository.dart';
 export '../item_bank/data/in_memory_exposure_repository.dart';

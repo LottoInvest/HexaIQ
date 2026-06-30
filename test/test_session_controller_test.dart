@@ -185,7 +185,24 @@ void main() {
         state.testSession?.questionHistory.first.selectionScore,
         greaterThan(0),
       );
-      expect(state.testSession?.questionHistory.first.thetaEstimate, 0);
+      expect(
+        state.testSession?.questionHistory.first.thetaBefore,
+        closeTo(0, 0.001),
+      );
+      expect(
+        state.testSession?.questionHistory.first.thetaAfter,
+        greaterThan(0),
+      );
+      expect(
+        state.testSession?.questionHistory.first.itemInformation,
+        greaterThan(0),
+      );
+      expect(
+        state.testSession?.questionHistory.first.catSelectionScore,
+        greaterThan(0),
+      );
+      expect(state.testSession?.thetaHistory.length, 5);
+      expect(state.testSession?.thetaEstimate.theta, greaterThan(0));
       expect(state.topExposureStatuses, isNotEmpty);
       expect(state.mostUsedExposure?.exposureCount, greaterThan(0));
       expect(state.averageExposure, greaterThan(0));

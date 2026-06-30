@@ -4,11 +4,15 @@ import '../../../core/domain/adaptive_difficulty_engine.dart';
 import '../../../core/domain/difficulty_profile.dart';
 import '../../../core/domain/intelligence_domain.dart';
 import '../../../core/domain/question_difficulty.dart';
+import '../../cat/domain/cat_item_selection_strategy.dart';
+import '../../cat/domain/item_information.dart';
+import '../../cat/domain/theta_estimate.dart';
 import '../../item_bank/data/in_memory_item_bank_repository.dart';
 import '../../item_bank/data/exposure_repository.dart';
 import '../../item_bank/data/in_memory_exposure_repository.dart';
 import '../../item_bank/data/item_bank_repository.dart';
 import '../../item_bank/domain/default_item_selection_strategy.dart';
+import '../../item_bank/domain/exposure_status.dart';
 import '../../item_bank/domain/item.dart';
 import '../../item_bank/domain/item_selection_strategy.dart';
 import '../domain/question_engine_models.dart';
@@ -44,7 +48,7 @@ class QuestionEngine {
              generatorFactory: generatorFactory ?? GeneratorFactory(),
            ),
        itemSelectionStrategy =
-           itemSelectionStrategy ?? const DefaultItemSelectionStrategy(),
+           itemSelectionStrategy ?? const CATItemSelectionStrategy(),
        exposureRepository = exposureRepository ?? InMemoryExposureRepository(),
        difficultyManager =
            difficultyManager ?? DifficultyManager(ageMapper ?? AgeMapper()),
@@ -108,6 +112,7 @@ class QuestionEngine {
         difficulty: difficulty,
         difficultyProfile: request.difficultyProfile,
         usedItemIds: request.usedItemIds,
+        thetaEstimate: request.thetaEstimate,
       );
 
       try {
@@ -116,6 +121,8 @@ class QuestionEngine {
           selected.item,
           normalized,
           selected.selectionScore,
+          selected.itemInformation,
+          selected.catSelectionScore,
         );
         validator.validate(question);
         final qualityResult = qualityValidator.validate(question);
@@ -178,6 +185,7 @@ class QuestionEngine {
     String? typeCode,
     DifficultyProfile? difficultyProfile,
     Set<String> usedItemIds = const {},
+    ThetaEstimate? thetaEstimate,
   }) {
     return generate(
       GenerateQuestionRequest(
@@ -194,6 +202,7 @@ class QuestionEngine {
             difficultyProfile ??
             DifficultyProfile(currentDifficulty: difficulty),
         usedItemIds: usedItemIds,
+        thetaEstimate: thetaEstimate,
       ),
     );
   }
@@ -220,6 +229,7 @@ class QuestionEngine {
             level: level,
             difficulty: difficulty,
             difficultyProfile: difficultyProfile,
+            thetaEstimate: ThetaEstimate.initial(),
           ),
         ),
     ];
@@ -273,18 +283,25 @@ class QuestionEngine {
     final exposureStatuses = {
       for (final item in candidates) item.id: exposureRepository.load(item.id),
     };
-    final selected = itemSelectionStrategy.selectNext(
+    final thetaEstimate = request.thetaEstimate ?? ThetaEstimate.initial();
+    final (selected, effectiveStrategy) = _selectWithFallback(
       candidates: candidates,
-      domain: request.domain,
-      targetDifficulty: request.difficulty,
-      usedItemIds: request.usedItemIds,
+      request: request,
       seed: seed + attempt,
       exposureStatuses: exposureStatuses,
+      thetaEstimate: thetaEstimate,
     );
-    final selectionScore = itemSelectionStrategy.selectionScore(
+    final selectionScore = effectiveStrategy.selectionScore(
       item: selected,
       targetDifficulty: request.difficulty,
       exposureStatus: exposureStatuses[selected.id],
+      thetaEstimate: thetaEstimate,
+    );
+    final catScore = const CATItemSelectionStrategy().scoreForItem(
+      item: selected,
+      targetDifficulty: request.difficulty,
+      exposureStatus: exposureStatuses[selected.id],
+      thetaEstimate: thetaEstimate,
     );
     debugPrint(
       '[ItemSelection] '
@@ -298,13 +315,68 @@ class QuestionEngine {
       'exposure=${exposureStatuses[selected.id]?.exposureCount ?? 0} '
       'selectionScore=${selectionScore.toStringAsFixed(3)}',
     );
-    return _SelectedItem(item: selected, selectionScore: selectionScore);
+    debugPrint(
+      '[CAT]\n'
+      'theta=${thetaEstimate.theta.toStringAsFixed(2)}\n'
+      'selected=${selected.id}\n'
+      'information=${catScore.informationScore.toStringAsFixed(2)}\n'
+      'catScore=${catScore.totalScore.toStringAsFixed(2)}',
+    );
+    return _SelectedItem(
+      item: selected,
+      selectionScore: selectionScore,
+      itemInformation: catScore.informationScore,
+      catSelectionScore: catScore.totalScore,
+    );
+  }
+
+  (Item, ItemSelectionStrategy) _selectWithFallback({
+    required List<Item> candidates,
+    required GenerateQuestionRequest request,
+    required int seed,
+    required Map<String, ExposureStatus> exposureStatuses,
+    required ThetaEstimate thetaEstimate,
+  }) {
+    try {
+      return (
+        itemSelectionStrategy.selectNext(
+          candidates: candidates,
+          domain: request.domain,
+          targetDifficulty: request.difficulty,
+          usedItemIds: request.usedItemIds,
+          seed: seed,
+          exposureStatuses: exposureStatuses,
+          thetaEstimate: thetaEstimate,
+        ),
+        itemSelectionStrategy,
+      );
+    } on Object catch (error) {
+      if (itemSelectionStrategy is DefaultItemSelectionStrategy) {
+        rethrow;
+      }
+      debugPrint('[CAT] fallback=DefaultItemSelectionStrategy reason=$error');
+      const fallbackStrategy = DefaultItemSelectionStrategy();
+      return (
+        fallbackStrategy.selectNext(
+          candidates: candidates,
+          domain: request.domain,
+          targetDifficulty: request.difficulty,
+          usedItemIds: request.usedItemIds,
+          seed: seed,
+          exposureStatuses: exposureStatuses,
+          thetaEstimate: thetaEstimate,
+        ),
+        fallbackStrategy,
+      );
+    }
   }
 
   GeneratedQuestionDto _itemToQuestionDto(
     Item item,
     GenerateQuestionRequest request,
     double selectionScore,
+    double itemInformation,
+    double catSelectionScore,
   ) {
     final estimatedSeconds = item.expectedSolveTime.inSeconds > 0
         ? item.expectedSolveTime.inSeconds
@@ -337,10 +409,14 @@ class QuestionEngine {
       expectedSolveTime: item.expectedSolveTime,
       itemId: item.id,
       selectionScore: selectionScore,
+      itemInformation: itemInformation,
+      catSelectionScore: catSelectionScore,
       variables: {
         'itemId': item.id,
         'itemVersion': item.version,
         'selectionScore': selectionScore,
+        'itemInformation': itemInformation,
+        'catSelectionScore': catSelectionScore,
       },
       isStub: item.hasTag('stub'),
     );
@@ -420,6 +496,14 @@ class QuestionEngine {
       ),
       itemId: 'fallback-NR01-${request.index}',
       selectionScore: 0,
+      itemInformation: itemInformation(
+        theta: (request.thetaEstimate ?? ThetaEstimate.initial()).theta,
+        difficultyIndex: (difficulty.level - QuestionDifficulty.normal.level)
+            .toDouble(),
+        discrimination: 1,
+        guessing: 0.25,
+      ),
+      catSelectionScore: 0,
       metadata: QuestionMetadataDto(
         rule: 'NR01-fallback',
         difficultyFactors: const ['arithmetic_sequence', 'fallback'],
@@ -437,8 +521,15 @@ class QuestionEngine {
 }
 
 class _SelectedItem {
-  const _SelectedItem({required this.item, required this.selectionScore});
+  const _SelectedItem({
+    required this.item,
+    required this.selectionScore,
+    required this.itemInformation,
+    required this.catSelectionScore,
+  });
 
   final Item item;
   final double selectionScore;
+  final double itemInformation;
+  final double catSelectionScore;
 }

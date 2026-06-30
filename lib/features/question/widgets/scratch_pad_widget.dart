@@ -79,10 +79,35 @@ class _ScratchPadWidgetState extends State<ScratchPadWidget> {
     setState(_clearAll);
   }
 
+  Future<void> _confirmClear() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Scratch Work를 지울까요?'),
+          content: const Text('작성한 풀이 메모는 복구할 수 없습니다.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('취소'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('지우기'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed == true && mounted) {
+      _clearAndRebuild();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final padding = widget.compact ? 10.0 : 16.0;
+    final padding = widget.compact ? 8.0 : 14.0;
     return Card(
       child: Padding(
         padding: EdgeInsets.all(padding),
@@ -94,9 +119,14 @@ class _ScratchPadWidgetState extends State<ScratchPadWidget> {
                 Expanded(
                   child: Text(
                     'Scratch Work',
-                    style: widget.compact
-                        ? theme.textTheme.labelLarge
-                        : theme.textTheme.titleMedium,
+                    style:
+                        (widget.compact
+                                ? theme.textTheme.labelMedium
+                                : theme.textTheme.titleMedium)
+                            ?.copyWith(
+                              fontSize: widget.compact ? 14 : 16,
+                              fontWeight: FontWeight.w700,
+                            ),
                   ),
                 ),
                 _ModeButton(
@@ -114,10 +144,16 @@ class _ScratchPadWidgetState extends State<ScratchPadWidget> {
                 ),
                 IconButton(
                   tooltip: 'Clear',
+                  iconSize: widget.compact ? 18 : 22,
                   visualDensity: widget.compact
                       ? VisualDensity.compact
                       : VisualDensity.standard,
-                  onPressed: _clearAndRebuild,
+                  padding: EdgeInsets.all(widget.compact ? 4 : 8),
+                  constraints: BoxConstraints.tightFor(
+                    width: widget.compact ? 32 : 40,
+                    height: widget.compact ? 32 : 40,
+                  ),
+                  onPressed: _confirmClear,
                   icon: const Icon(Icons.clear),
                 ),
               ],
@@ -134,7 +170,7 @@ class _ScratchPadWidgetState extends State<ScratchPadWidget> {
                         maxLines: null,
                         textAlignVertical: TextAlignVertical.top,
                         style: widget.compact
-                            ? theme.textTheme.bodySmall
+                            ? theme.textTheme.bodySmall?.copyWith(fontSize: 13)
                             : null,
                         decoration: InputDecoration(
                           border: const OutlineInputBorder(),
@@ -184,6 +220,7 @@ class _ModeButton extends StatelessWidget {
     return TextButton(
       style: TextButton.styleFrom(
         visualDensity: compact ? VisualDensity.compact : VisualDensity.standard,
+        minimumSize: Size(compact ? 40 : 48, compact ? 32 : 40),
         padding: EdgeInsets.symmetric(horizontal: compact ? 6 : 10),
         foregroundColor: selected ? colorScheme.primary : colorScheme.onSurface,
         textStyle: TextStyle(

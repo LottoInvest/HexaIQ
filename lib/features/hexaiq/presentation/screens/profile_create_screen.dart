@@ -14,12 +14,13 @@ class ProfileCreateScreen extends StatefulWidget {
 class _ProfileCreateScreenState extends State<ProfileCreateScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _gradeController = TextEditingController(text: '초등 5학년');
   String _ageGroup = '초등 5-6';
-  String _grade = '초등 5학년';
 
   @override
   void dispose() {
     _nameController.dispose();
+    _gradeController.dispose();
     super.dispose();
   }
 
@@ -39,6 +40,8 @@ class _ProfileCreateScreenState extends State<ProfileCreateScreen> {
                   children: [
                     TextFormField(
                       controller: _nameController,
+                      keyboardType: TextInputType.text,
+                      textInputAction: TextInputAction.next,
                       decoration: const InputDecoration(
                         labelText: '이름',
                         border: OutlineInputBorder(),
@@ -80,12 +83,14 @@ class _ProfileCreateScreenState extends State<ProfileCreateScreen> {
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
-                      initialValue: _grade,
+                      controller: _gradeController,
+                      keyboardType: TextInputType.text,
+                      textInputAction: TextInputAction.done,
                       decoration: const InputDecoration(
                         labelText: '학년 또는 설명',
+                        helperText: '예: 초등 5학년, 초5, 중1, 고등 2학년, 성인',
                         border: OutlineInputBorder(),
                       ),
-                      onChanged: (value) => _grade = value,
                     ),
                     const SizedBox(height: 24),
                     FilledButton(
@@ -96,7 +101,9 @@ class _ProfileCreateScreenState extends State<ProfileCreateScreen> {
                         await context.read<HexaIQAppState>().createProfile(
                           name: _nameController.text.trim(),
                           ageGroup: _ageGroup,
-                          grade: _grade,
+                          grade: _gradeController.text.trim().isEmpty
+                              ? _ageGroup
+                              : _gradeController.text.trim(),
                         );
                         if (context.mounted) {
                           Navigator.of(context).pushNamedAndRemoveUntil(

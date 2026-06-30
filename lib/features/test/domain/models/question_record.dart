@@ -13,6 +13,10 @@ class QuestionRecord {
     required this.guessing,
     required this.itemId,
     required this.selectionScore,
+    this.thetaBefore = 0,
+    this.thetaAfter = 0,
+    this.itemInformation = 0,
+    this.catSelectionScore = 0,
     this.correct,
     this.elapsedSeconds = 0,
     this.responseTime = Duration.zero,
@@ -23,6 +27,8 @@ class QuestionRecord {
     required TestQuestion question,
     required bool correct,
     required int elapsedSeconds,
+    double thetaBefore = 0,
+    double thetaAfter = 0,
   }) {
     return QuestionRecord(
       question: question,
@@ -37,7 +43,11 @@ class QuestionRecord {
       guessing: question.guessing,
       itemId: question.itemId ?? question.id,
       selectionScore: question.selectionScore,
-      thetaEstimate: 0,
+      thetaBefore: thetaBefore,
+      thetaAfter: thetaAfter,
+      itemInformation: question.itemInformation,
+      catSelectionScore: question.catSelectionScore,
+      thetaEstimate: thetaAfter,
     );
   }
 
@@ -53,5 +63,9 @@ class QuestionRecord {
   final double guessing;
   final String itemId;
   final double selectionScore;
+  final double thetaBefore;
+  final double thetaAfter;
+  final double itemInformation;
+  final double catSelectionScore;
   final double thetaEstimate;
 }

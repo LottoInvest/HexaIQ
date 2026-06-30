@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart';
+
 import '../../../core/domain/adaptive_difficulty_engine.dart';
 import '../../../core/domain/domain_result.dart';
 import '../../../core/domain/intelligence_domain.dart';
+import '../../cat/domain/theta_updater.dart';
 import '../domain/models/test_session.dart';
 import '../../hexaiq/domain/hexaiq_models.dart';
 import '../domain/models/question_record.dart';
@@ -9,11 +12,14 @@ class TestSessionController {
   TestSessionController(
     this.session, {
     AdaptiveDifficultyEngine? adaptiveDifficultyEngine,
+    ThetaUpdater? thetaUpdater,
   }) : _adaptiveDifficultyEngine =
-           adaptiveDifficultyEngine ?? const AdaptiveDifficultyEngine();
+           adaptiveDifficultyEngine ?? const AdaptiveDifficultyEngine(),
+       _thetaUpdater = thetaUpdater ?? const ThetaUpdater();
 
   TestSession session;
   final AdaptiveDifficultyEngine _adaptiveDifficultyEngine;
+  final ThetaUpdater _thetaUpdater;
 
   void selectAnswer(int selectedOption) {
     final question = session.currentQuestion;
@@ -111,9 +117,16 @@ class TestSessionController {
     if (selected == null) {
       return;
     }
+    final isCorrect = selected == question.answerIndex;
     final nextProfile = _adaptiveDifficultyEngine.recordAnswer(
       profile: session.difficultyProfile,
-      isCorrect: selected == question.answerIndex,
+      isCorrect: isCorrect,
+    );
+    final thetaBefore = session.thetaEstimate;
+    final thetaAfter = _thetaUpdater.update(
+      current: thetaBefore,
+      difficulty: question.difficulty,
+      isCorrect: isCorrect,
     );
     final nextQuestions = [...session.activeQuestions];
     final nextDifficultyByQuestionId = {
@@ -124,10 +137,18 @@ class TestSessionController {
       ...session.questionHistory,
       QuestionRecord.fromQuestion(
         question: question,
-        correct: selected == question.answerIndex,
+        correct: isCorrect,
         elapsedSeconds: session.elapsedFor(question.id),
+        thetaBefore: thetaBefore.theta,
+        thetaAfter: thetaAfter.theta,
       ),
     ];
+    debugPrint(
+      '[Theta] '
+      'before=${thetaBefore.theta.toStringAsFixed(2)} '
+      'after=${thetaAfter.theta.toStringAsFixed(2)} '
+      'se=${thetaAfter.standardError.toStringAsFixed(2)}',
+    );
     final nextIndex = session.currentQuestionIndex + 1;
     if (nextIndex < nextQuestions.length) {
       nextQuestions[nextIndex] = nextQuestions[nextIndex].copyWith(
@@ -144,6 +165,8 @@ class TestSessionController {
       difficultyProfile: nextProfile,
       difficultyByQuestionId: nextDifficultyByQuestionId,
       questionHistory: questionHistory,
+      thetaEstimate: thetaAfter,
+      thetaHistory: [...session.thetaHistory, thetaAfter],
       adaptiveRecordedQuestionIds: {
         ...session.adaptiveRecordedQuestionIds,
         question.id,

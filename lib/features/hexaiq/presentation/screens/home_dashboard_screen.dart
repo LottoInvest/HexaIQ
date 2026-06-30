@@ -35,14 +35,15 @@ class HomeDashboardScreen extends StatelessWidget {
         builder: (context, constraints) {
           final screenClass = LayoutBreakpoints.classify(constraints.maxWidth);
           final isWide = screenClass != ScreenClass.compact;
+          final isShort = MediaQuery.of(context).size.height < 760;
           final domainIntro = HexaIQIntroCard(
-            compact: false,
+            compact: !isWide || isShort,
             averageExposure: state.averageExposure,
             onDomainTap: (domain) => _handleDomainTap(context, domain),
           );
           final summaryCard = Card(
             child: Padding(
-              padding: const EdgeInsets.all(18),
+              padding: EdgeInsets.all(isShort ? 12 : 18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -50,33 +51,36 @@ class HomeDashboardScreen extends StatelessWidget {
                     profile == null ? '프로필을 선택해 주세요' : '${profile.name}의 최근 요약',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  const SizedBox(height: 18),
+                  SizedBox(height: isShort ? 10 : 18),
                   Center(
                     child: HexagonChart(
                       values: const [74, 66, 79, 62, 58, 72],
                       labels: domainCatalog
                           .map((item) => item.shortLabel)
                           .toList(),
-                      size: isWide ? 300 : 240,
+                      size: isWide
+                          ? 300
+                          : isShort
+                          ? 160
+                          : 220,
                     ),
                   ),
                 ],
               ),
             ),
           );
-          final actions = Column(
+          final startAction = ActionCard(
+            icon: Icons.play_arrow,
+            title: '검사 시작',
+            body: 'Basic 검사로 전체 인지 프로필을 확인합니다.',
+            onTap: () => Navigator.of(context).pushNamed(AppRoutes.testTypeSelect),
+          );
+          final secondaryActions = Column(
             children: [
-              ActionCard(
-                icon: Icons.play_arrow,
-                title: '검사 시작',
-                body: 'Basic mock 검사로 전체 인지 프로필을 확인합니다.',
-                onTap: () =>
-                    Navigator.of(context).pushNamed(AppRoutes.testTypeSelect),
-              ),
               ActionCard(
                 icon: Icons.insights,
                 title: '성장 기록',
-                body: '최근 점수 변화와 재검사 흐름을 확인합니다.',
+                body: '최근 점수 변화와 학습 흐름을 확인합니다.',
                 onTap: () =>
                     Navigator.of(context).pushNamed(AppRoutes.growthDashboard),
               ),
@@ -90,6 +94,7 @@ class HomeDashboardScreen extends StatelessWidget {
               ),
             ],
           );
+          final actions = Column(children: [startAction, secondaryActions]);
 
           if (isWide) {
             return Row(
@@ -110,13 +115,34 @@ class HomeDashboardScreen extends StatelessWidget {
             );
           }
 
-          return ListView(
+          return Stack(
             children: [
-              summaryCard,
-              const SizedBox(height: 12),
-              domainIntro,
-              const SizedBox(height: 12),
-              actions,
+              ListView(
+                padding: const EdgeInsets.only(bottom: 88),
+                children: [
+                  if (!isShort) ...[summaryCard, const SizedBox(height: 12)],
+                  domainIntro,
+                  const SizedBox(height: 12),
+                  secondaryActions,
+                  const SizedBox(height: 24),
+                ],
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SafeArea(
+                  top: false,
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      icon: const Icon(Icons.play_arrow),
+                      label: const Text('검사 시작'),
+                      onPressed: () => Navigator.of(
+                        context,
+                      ).pushNamed(AppRoutes.testTypeSelect),
+                    ),
+                  ),
+                ),
+              ),
             ],
           );
         },
@@ -130,7 +156,7 @@ class HomeDashboardScreen extends StatelessWidget {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${domain.label} 영역은 Coming Soon입니다.')),
+      SnackBar(content: Text('${domain.label} 영역은 Coming Soon입니다')),
     );
   }
 }
