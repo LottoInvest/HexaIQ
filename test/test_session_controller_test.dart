@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hexaiq_app/core/domain/intelligence_domain.dart';
 import 'package:hexaiq_app/features/hexaiq/domain/hexaiq_models.dart';
 import 'package:hexaiq_app/features/hexaiq/domain/hexaiq_repository.dart';
 import 'package:hexaiq_app/features/hexaiq/presentation/state/hexaiq_app_state.dart';
@@ -20,6 +21,7 @@ void main() {
     );
 
     expect(session.currentQuestionIndex, 0);
+    expect(session.domain, IntelligenceDomain.numerical);
     expect(session.selectedAnswers, isEmpty);
     expect(updated.currentQuestionIndex, 1);
     expect(updated.selectedAnswers['q1'], 0);
@@ -60,6 +62,29 @@ void main() {
     expect(controller.session.elapsedFor('q1'), 7);
     expect(controller.session.elapsedFor('q2'), 5);
     expect(controller.session.totalElapsedSeconds, 12);
+  });
+
+  test('Submit stores domain results on session', () {
+    final controller = TestSessionController(
+      TestSession(
+        sessionId: 'session-domain',
+        startedAt: DateTime(2026),
+        domain: IntelligenceDomain.numerical,
+        questions: _questions,
+      ),
+    );
+
+    controller.selectAnswer(1);
+    controller.nextQuestion();
+    controller.selectAnswer(2);
+    controller.recordElapsedTime(9);
+    final session = controller.submit(completedAt: DateTime(2026, 1, 2));
+    final numerical = session.domainResults[IntelligenceDomain.numerical];
+
+    expect(session.isComplete, isTrue);
+    expect(numerical?.correctCount, 2);
+    expect(numerical?.totalCount, 2);
+    expect(numerical?.accuracy, 1);
   });
 
   test(

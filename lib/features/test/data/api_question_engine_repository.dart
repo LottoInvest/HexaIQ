@@ -1,3 +1,4 @@
+import '../../../core/domain/intelligence_domain.dart';
 import '../../hexaiq/domain/hexaiq_models.dart';
 import '../../question_engine/domain/question_engine_models.dart';
 import 'question_engine_repository.dart';
@@ -8,7 +9,7 @@ class ApiQuestionEngineRepository implements QuestionEngineRepository {
   @override
   Future<GeneratedQuestionDto> generate({
     required UserProfile profile,
-    required QuestionDomain domain,
+    required IntelligenceDomain domain,
     required String typeCode,
     required int level,
     int? seed,
@@ -21,7 +22,7 @@ class ApiQuestionEngineRepository implements QuestionEngineRepository {
   @override
   Future<List<GeneratedQuestionDto>> generateBatch({
     required UserProfile profile,
-    required QuestionDomain domain,
+    required IntelligenceDomain domain,
     required int level,
     required int count,
   }) {

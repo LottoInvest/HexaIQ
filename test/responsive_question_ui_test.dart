@@ -68,6 +68,32 @@ void main() {
     expect(find.text('수리논리'), findsOneWidget);
   });
 
+  testWidgets('HexaIQIntroCard area chips use equal width', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        home: const Scaffold(body: HexaIQIntroCard()),
+      ),
+    );
+
+    final suRiWidth = tester
+        .getSize(
+          find
+              .ancestor(of: find.text('수리논리'), matching: find.byType(SizedBox))
+              .first,
+        )
+        .width;
+    final memoryWidth = tester
+        .getSize(
+          find
+              .ancestor(of: find.text('기억력'), matching: find.byType(SizedBox))
+              .first,
+        )
+        .width;
+
+    expect(suRiWidth, memoryWidth);
+  });
+
   testWidgets('ScratchPad drawing mode and clear build', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -118,6 +144,10 @@ void main() {
     expect(find.textContaining('Question 1 / 5'), findsOneWidget);
     expect(find.text('Scratch Work'), findsOneWidget);
     expect(find.byType(GridView), findsOneWidget);
+    final firstChoiceText = tester.widget<Text>(
+      find.text(state.currentQuestion!.choices.first).first,
+    );
+    expect(firstChoiceText.textAlign, TextAlign.center);
     await tester.drag(find.byType(ListView).first, const Offset(0, -260));
     await tester.pump();
     expect(find.text('Next'), findsOneWidget);

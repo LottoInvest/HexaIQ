@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/domain/intelligence_domain.dart';
 import '../domain/question_engine_models.dart';
 import '../generators/numerical_generator.dart';
 import 'age_mapper.dart';
@@ -118,7 +119,7 @@ class QuestionEngine {
   List<GeneratedQuestionDto> generateDomainBatch({
     required String profileId,
     required String testId,
-    required QuestionDomain domain,
+    required IntelligenceDomain domain,
     required String ageGroup,
     required int count,
     int? level,
@@ -139,17 +140,13 @@ class QuestionEngine {
   }
 
   String _defaultTypeCode(GenerateQuestionRequest request) {
-    if (request.domain == QuestionDomain.numerical) {
+    if (request.domain == IntelligenceDomain.numerical) {
       return NumericalGenerator.typeCodes[request.index %
           NumericalGenerator.typeCodes.length];
     }
     final prefix = switch (request.domain) {
-      QuestionDomain.spatial => 'SP',
-      QuestionDomain.logical => 'LG',
-      QuestionDomain.verbal => 'VB',
-      QuestionDomain.memory => 'WM',
-      QuestionDomain.pattern => 'PT',
-      QuestionDomain.numerical => 'NR',
+      IntelligenceDomain.numerical => 'NR',
+      _ => request.domain.generatorPrefix,
     };
     return '$prefix${(request.index % 20 + 1).toString().padLeft(2, '0')}';
   }
@@ -158,7 +155,7 @@ class QuestionEngine {
     if (attempt == 0 || request.typeCode != null) {
       return request.typeCode ?? _defaultTypeCode(request);
     }
-    if (request.domain == QuestionDomain.numerical) {
+    if (request.domain == IntelligenceDomain.numerical) {
       final index =
           (request.index + attempt) % NumericalGenerator.typeCodes.length;
       return NumericalGenerator.typeCodes[index];
@@ -193,7 +190,7 @@ class QuestionEngine {
         seedManager.createSeed(
           profileId: request.profileId,
           testId: request.testId,
-          domain: QuestionDomain.numerical,
+          domain: IntelligenceDomain.numerical,
           typeCode: 'NR01',
           index: request.index,
         );
@@ -203,7 +200,7 @@ class QuestionEngine {
     final answer = start + diff * 4;
     return GeneratedQuestionDto.fromLegacyChoices(
       id: '${request.testId}-fallback-NR01-$seed-${request.index}',
-      domain: QuestionDomain.numerical,
+      domain: IntelligenceDomain.numerical,
       typeCode: 'NR01',
       level: level,
       ageGroup: ageGroup,

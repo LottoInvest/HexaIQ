@@ -1,4 +1,6 @@
-enum QuestionDomain { numerical, spatial, logical, verbal, memory, pattern }
+import '../../../core/domain/intelligence_domain.dart';
+
+typedef QuestionDomain = IntelligenceDomain;
 
 class GenerateQuestionRequest {
   const GenerateQuestionRequest({
@@ -14,7 +16,7 @@ class GenerateQuestionRequest {
 
   final String profileId;
   final String testId;
-  final QuestionDomain domain;
+  final IntelligenceDomain domain;
   final String ageGroup;
   final int index;
   final String? typeCode;
@@ -79,7 +81,7 @@ class GeneratedQuestionDto {
 
   factory GeneratedQuestionDto.fromLegacyChoices({
     required String id,
-    required QuestionDomain domain,
+    required IntelligenceDomain domain,
     required String typeCode,
     required int level,
     required String ageGroup,
@@ -118,7 +120,7 @@ class GeneratedQuestionDto {
   }
 
   final String id;
-  final QuestionDomain domain;
+  final IntelligenceDomain domain;
   final String typeCode;
   final int level;
   final String ageGroup;

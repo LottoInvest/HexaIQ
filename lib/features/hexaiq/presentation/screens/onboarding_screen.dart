@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/app_routes.dart';
+import '../../../../core/domain/intelligence_domain.dart';
 import '../../../settings/presentation/widgets/theme_mode_selector.dart';
 import '../widgets/hexa_iq_intro_card.dart';
 
@@ -31,7 +32,10 @@ class OnboardingScreen extends StatelessWidget {
                 SizedBox(height: isCompact ? 12 : 20),
                 ThemeModeSelector(compact: isCompact),
                 SizedBox(height: isCompact ? 12 : 20),
-                HexaIQIntroCard(compact: isCompact),
+                HexaIQIntroCard(
+                  compact: isCompact,
+                  onDomainTap: (domain) => _handleDomainTap(context, domain),
+                ),
                 SizedBox(height: isCompact ? 16 : 24),
                 Align(
                   alignment: Alignment.centerLeft,
@@ -50,6 +54,18 @@ class OnboardingScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _handleDomainTap(BuildContext context, IntelligenceDomain domain) {
+    if (domain.isAvailable) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Numerical 검사는 Basic 검사에서 시작할 수 있습니다.')),
+      );
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${domain.label} 영역은 Coming Soon입니다.')),
     );
   }
 }

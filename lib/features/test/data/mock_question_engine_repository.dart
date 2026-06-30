@@ -11,7 +11,7 @@ class MockQuestionEngineRepository implements QuestionEngineRepository {
   @override
   Future<GeneratedQuestionDto> generate({
     required UserProfile profile,
-    required QuestionDomain domain,
+    required IntelligenceDomain domain,
     required String typeCode,
     required int level,
     int? seed,
@@ -33,7 +33,7 @@ class MockQuestionEngineRepository implements QuestionEngineRepository {
   @override
   Future<List<GeneratedQuestionDto>> generateBatch({
     required UserProfile profile,
-    required QuestionDomain domain,
+    required IntelligenceDomain domain,
     required int level,
     required int count,
   }) async {

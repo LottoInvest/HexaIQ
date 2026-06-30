@@ -1,7 +1,8 @@
+import '../../../core/domain/intelligence_domain.dart';
 import '../domain/question_engine_models.dart';
 
 abstract class QuestionGenerator {
-  QuestionDomain get domain;
+  IntelligenceDomain get domain;
 
   Set<String> get supportedTypeCodes;
 

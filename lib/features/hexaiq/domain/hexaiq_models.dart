@@ -1,4 +1,7 @@
-enum CognitiveDomain { numerical, spatial, logical, verbal, memory, pattern }
+import '../../../core/domain/domain_result.dart';
+import '../../../core/domain/intelligence_domain.dart';
+
+typedef CognitiveDomain = IntelligenceDomain;
 
 enum TestType { basic, advanced, professional }
 
@@ -10,56 +13,56 @@ class DomainInfo {
     required this.description,
   });
 
-  final CognitiveDomain domain;
+  final IntelligenceDomain domain;
   final String label;
   final String shortLabel;
   final String description;
 }
 
-const domainCatalog = [
+final domainCatalog = [
   DomainInfo(
-    domain: CognitiveDomain.numerical,
-    label: '수리논리',
-    shortLabel: '수리',
+    domain: IntelligenceDomain.numerical,
+    label: IntelligenceDomain.numerical.label,
+    shortLabel: IntelligenceDomain.numerical.shortLabel,
     description: '수열, 계산 규칙, 비율을 빠르게 파악하는 힘',
   ),
   DomainInfo(
-    domain: CognitiveDomain.spatial,
-    label: '공간지각',
-    shortLabel: '공간',
+    domain: IntelligenceDomain.verbal,
+    label: IntelligenceDomain.verbal.label,
+    shortLabel: IntelligenceDomain.verbal.shortLabel,
+    description: '단어 관계와 문장의 의미를 이해하고 추론하는 힘',
+  ),
+  DomainInfo(
+    domain: IntelligenceDomain.spatial,
+    label: IntelligenceDomain.spatial.label,
+    shortLabel: IntelligenceDomain.spatial.shortLabel,
     description: '도형의 회전, 위치, 관계를 머릿속에서 다루는 힘',
   ),
   DomainInfo(
-    domain: CognitiveDomain.logical,
-    label: '논리추론',
-    shortLabel: '논리',
+    domain: IntelligenceDomain.memory,
+    label: IntelligenceDomain.memory.label,
+    shortLabel: IntelligenceDomain.memory.shortLabel,
+    description: '정보를 잠시 유지하고 다시 처리하는 힘',
+  ),
+  DomainInfo(
+    domain: IntelligenceDomain.logic,
+    label: IntelligenceDomain.logic.label,
+    shortLabel: IntelligenceDomain.logic.shortLabel,
     description: '조건과 규칙을 차분하게 연결해 결론을 찾는 힘',
   ),
   DomainInfo(
-    domain: CognitiveDomain.verbal,
-    label: '언어유추',
-    shortLabel: '언어',
-    description: '단어 관계와 문맥의 의미를 이해하는 힘',
-  ),
-  DomainInfo(
-    domain: CognitiveDomain.memory,
-    label: '작업기억',
-    shortLabel: '기억',
-    description: '짧은 정보를 유지하고 다시 처리하는 힘',
-  ),
-  DomainInfo(
-    domain: CognitiveDomain.pattern,
-    label: '추상패턴',
-    shortLabel: '패턴',
-    description: '기호와 형태 안의 반복 규칙을 발견하는 힘',
+    domain: IntelligenceDomain.processing,
+    label: IntelligenceDomain.processing.label,
+    shortLabel: IntelligenceDomain.processing.shortLabel,
+    description: '간단한 판단을 빠르고 안정적으로 처리하는 힘',
   ),
 ];
 
-String domainLabel(CognitiveDomain domain) {
+String domainLabel(IntelligenceDomain domain) {
   return domainCatalog.firstWhere((item) => item.domain == domain).label;
 }
 
-String domainShortLabel(CognitiveDomain domain) {
+String domainShortLabel(IntelligenceDomain domain) {
   return domainCatalog.firstWhere((item) => item.domain == domain).shortLabel;
 }
 
@@ -107,8 +110,8 @@ class TestQuestion {
     required this.explanation,
   });
 
+  final IntelligenceDomain domain;
   final String id;
-  final CognitiveDomain domain;
   final String typeCode;
   final int level;
   final String prompt;
@@ -133,13 +136,15 @@ class DomainScore {
     required this.percentile,
     required this.growth,
     required this.comment,
+    this.isComingSoon = false,
   });
 
-  final CognitiveDomain domain;
+  final IntelligenceDomain domain;
   final int score;
   final int percentile;
   final double growth;
   final String comment;
+  final bool isComingSoon;
 }
 
 class ReportSummary {
@@ -148,12 +153,30 @@ class ReportSummary {
     required this.summary,
     required this.domainScores,
     required this.recommendations,
+    this.domainResults = const {},
   });
 
   final int overallScore;
   final String summary;
   final List<DomainScore> domainScores;
   final List<String> recommendations;
+  final Map<IntelligenceDomain, DomainResult> domainResults;
+
+  ReportSummary copyWith({
+    int? overallScore,
+    String? summary,
+    List<DomainScore>? domainScores,
+    List<String>? recommendations,
+    Map<IntelligenceDomain, DomainResult>? domainResults,
+  }) {
+    return ReportSummary(
+      overallScore: overallScore ?? this.overallScore,
+      summary: summary ?? this.summary,
+      domainScores: domainScores ?? this.domainScores,
+      recommendations: recommendations ?? this.recommendations,
+      domainResults: domainResults ?? this.domainResults,
+    );
+  }
 }
 
 class GrowthPoint {

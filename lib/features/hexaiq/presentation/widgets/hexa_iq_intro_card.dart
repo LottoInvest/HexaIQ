@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/domain/intelligence_domain.dart';
 import '../../../../core/widgets/hexagon_chart.dart';
+import '../../domain/hexaiq_models.dart';
 
 class HexaIQIntroCard extends StatelessWidget {
-  const HexaIQIntroCard({super.key, this.compact = false});
+  const HexaIQIntroCard({super.key, this.compact = false, this.onDomainTap});
 
   final bool compact;
-
-  static const _labels = ['수리', '언어', '공간', '기억', '논리', '속도'];
-  static const _areas = ['수리논리', '언어추론', '공간지각', '기억력', '논리추론', '처리속도'];
+  final ValueChanged<IntelligenceDomain>? onDomainTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final chipWidth = compact ? 84.0 : 104.0;
     final chart = HexagonChart(
       values: const [72, 68, 70, 64, 74, 66],
-      labels: _labels,
+      labels: domainCatalog.map((item) => item.shortLabel).toList(),
       size: compact ? 132 : 176,
     );
     final copy = Column(
@@ -34,10 +35,14 @@ class HexaIQIntroCard extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: [
-            for (final area in _areas)
-              Chip(
-                visualDensity: compact ? VisualDensity.compact : null,
-                label: Text(area),
+            for (final info in domainCatalog)
+              _DomainChip(
+                info: info,
+                width: chipWidth,
+                compact: compact,
+                onTap: onDomainTap == null
+                    ? null
+                    : () => onDomainTap!(info.domain),
               ),
           ],
         ),
@@ -64,6 +69,46 @@ class HexaIQIntroCard extends StatelessWidget {
                 ],
               ),
       ),
+    );
+  }
+}
+
+class _DomainChip extends StatelessWidget {
+  const _DomainChip({
+    required this.info,
+    required this.width,
+    required this.compact,
+    this.onTap,
+  });
+
+  final DomainInfo info;
+  final double width;
+  final bool compact;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = SizedBox(
+      width: double.infinity,
+      child: Text(info.label, textAlign: TextAlign.center),
+    );
+    final visualDensity = compact ? VisualDensity.compact : null;
+    return SizedBox(
+      width: width,
+      child: onTap == null
+          ? Chip(
+              visualDensity: visualDensity,
+              label: label,
+              labelPadding: EdgeInsets.zero,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            )
+          : ActionChip(
+              visualDensity: visualDensity,
+              label: label,
+              labelPadding: EdgeInsets.zero,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              onPressed: onTap,
+            ),
     );
   }
 }

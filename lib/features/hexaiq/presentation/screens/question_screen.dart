@@ -324,6 +324,7 @@ class _ChoiceButton extends StatelessWidget {
       color: selected ? colorScheme.onPrimary : colorScheme.onSurface,
     );
     final style = ButtonStyle(
+      alignment: Alignment.center,
       visualDensity: compact ? VisualDensity.compact : VisualDensity.standard,
       minimumSize: WidgetStatePropertyAll(Size(40, compact ? 40 : 52)),
       padding: WidgetStatePropertyAll(
@@ -339,9 +340,10 @@ class _ChoiceButton extends StatelessWidget {
     );
 
     final child = Align(
-      alignment: Alignment.centerLeft,
+      alignment: Alignment.center,
       child: Text(
         text,
+        textAlign: TextAlign.center,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: textStyle,

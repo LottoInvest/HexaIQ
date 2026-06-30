@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/app_routes.dart';
+import '../../../core/domain/domain_result.dart';
 import '../../../core/widgets/action_card.dart';
 import '../../../core/widgets/hexagon_chart.dart';
 import '../../hexaiq/domain/hexaiq_models.dart';
@@ -87,10 +88,9 @@ class ReportSummaryScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             for (final score in report.domainScores)
-              ActionCard(
-                icon: Icons.analytics_outlined,
-                title: domainLabel(score.domain),
-                body: 'Score ${score.score} · Percentile ${score.percentile}',
+              _DomainResultCard(
+                score: score,
+                result: report.domainResults[score.domain],
                 onTap: () =>
                     Navigator.of(context).pushNamed(AppRoutes.domainDetail),
               ),
@@ -112,6 +112,37 @@ class ReportSummaryScreen extends StatelessWidget {
     final minutes = seconds ~/ 60;
     final remaining = seconds % 60;
     return '${minutes}m ${remaining.toString().padLeft(2, '0')}s';
+  }
+}
+
+class _DomainResultCard extends StatelessWidget {
+  const _DomainResultCard({
+    required this.score,
+    required this.result,
+    required this.onTap,
+  });
+
+  final DomainScore score;
+  final DomainResult? result;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolved = result ?? const DomainResult();
+    final body = score.isComingSoon
+        ? 'Coming Soon'
+        : '${resolved.correct}/${resolved.total}  ${(resolved.accuracy * 100).round()}%';
+    return ActionCard(
+      icon: score.isComingSoon
+          ? Icons.hourglass_empty_outlined
+          : Icons.analytics_outlined,
+      title: domainLabel(score.domain),
+      body: body,
+      trailing: score.isComingSoon
+          ? const Text('Soon')
+          : Text('${score.score}'),
+      onTap: onTap,
+    );
   }
 }
 

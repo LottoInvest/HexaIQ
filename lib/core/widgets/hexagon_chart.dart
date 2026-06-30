@@ -23,6 +23,7 @@ class HexagonChart extends StatelessWidget {
           values: values,
           labels: labels,
           color: Theme.of(context).colorScheme.primary,
+          brightness: Theme.of(context).brightness,
           labelStyle:
               Theme.of(context).textTheme.labelSmall ??
               const TextStyle(fontSize: 11),
@@ -37,22 +38,33 @@ class _HexagonChartPainter extends CustomPainter {
     required this.values,
     required this.labels,
     required this.color,
+    required this.brightness,
     required this.labelStyle,
   });
 
   final List<double> values;
   final List<String> labels;
   final Color color;
+  final Brightness brightness;
   final TextStyle labelStyle;
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = min(size.width, size.height) * 0.34;
+    final isDark = brightness == Brightness.dark;
     final gridPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.10)
+      ..color = isDark
+          ? Colors.white.withValues(alpha: 0.22)
+          : Colors.black.withValues(alpha: 0.12)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
+    final outerPaint = Paint()
+      ..color = isDark
+          ? Colors.white.withValues(alpha: 0.45)
+          : Colors.black.withValues(alpha: 0.22)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = isDark ? 1.4 : 1.2;
     final fillPaint = Paint()
       ..color = color.withValues(alpha: 0.18)
       ..style = PaintingStyle.fill;
@@ -62,7 +74,10 @@ class _HexagonChartPainter extends CustomPainter {
       ..strokeWidth = 2;
 
     for (var ring = 1; ring <= 4; ring++) {
-      canvas.drawPath(_polygonPath(center, radius * ring / 4), gridPaint);
+      canvas.drawPath(
+        _polygonPath(center, radius * ring / 4),
+        ring == 4 ? outerPaint : gridPaint,
+      );
     }
 
     for (var i = 0; i < 6; i++) {

@@ -157,6 +157,7 @@ class HexaIQAppState extends ChangeNotifier {
       TestSession(
         sessionId: 'session-${startedAt.millisecondsSinceEpoch}',
         startedAt: startedAt,
+        domain: CognitiveDomain.numerical,
         questions: questions,
       ),
     );
@@ -227,7 +228,8 @@ class HexaIQAppState extends ChangeNotifier {
           selectedIndex: session.selectedAnswerFor(question.id) ?? -1,
         ),
     ];
-    report = await repository.buildReport(responses);
+    final builtReport = await repository.buildReport(responses);
+    report = builtReport.copyWith(domainResults: session.domainResults);
     notifyListeners();
   }
 

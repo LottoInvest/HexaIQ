@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../app/app_routes.dart';
+import '../../../../core/domain/intelligence_domain.dart';
 import '../../../../core/responsive/layout_breakpoints.dart';
 import '../../../../core/responsive/responsive_page.dart';
 import '../../../../core/widgets/action_card.dart';
@@ -9,6 +10,7 @@ import '../../../../core/widgets/hexagon_chart.dart';
 import '../../domain/hexaiq_models.dart';
 import '../state/hexaiq_app_state.dart';
 import '../widgets/dashboard_nav.dart';
+import '../widgets/hexa_iq_intro_card.dart';
 
 class HomeDashboardScreen extends StatelessWidget {
   const HomeDashboardScreen({super.key});
@@ -33,6 +35,10 @@ class HomeDashboardScreen extends StatelessWidget {
         builder: (context, constraints) {
           final screenClass = LayoutBreakpoints.classify(constraints.maxWidth);
           final isWide = screenClass != ScreenClass.compact;
+          final domainIntro = HexaIQIntroCard(
+            compact: false,
+            onDomainTap: (domain) => _handleDomainTap(context, domain),
+          );
           final summaryCard = Card(
             child: Padding(
               padding: const EdgeInsets.all(18),
@@ -90,16 +96,40 @@ class HomeDashboardScreen extends StatelessWidget {
               children: [
                 Expanded(child: summaryCard),
                 const SizedBox(width: 16),
-                Expanded(child: actions),
+                Expanded(
+                  child: Column(
+                    children: [
+                      domainIntro,
+                      const SizedBox(height: 12),
+                      actions,
+                    ],
+                  ),
+                ),
               ],
             );
           }
 
           return ListView(
-            children: [summaryCard, const SizedBox(height: 12), actions],
+            children: [
+              summaryCard,
+              const SizedBox(height: 12),
+              domainIntro,
+              const SizedBox(height: 12),
+              actions,
+            ],
           );
         },
       ),
+    );
+  }
+
+  void _handleDomainTap(BuildContext context, IntelligenceDomain domain) {
+    if (domain.isAvailable) {
+      Navigator.of(context).pushNamed(AppRoutes.testTypeSelect);
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${domain.label} 영역은 Coming Soon입니다.')),
     );
   }
 }

@@ -1,3 +1,4 @@
+export '../../core/domain/intelligence_domain.dart';
 export 'core/age_mapper.dart';
 export 'core/difficulty_manager.dart';
 export 'core/distractor_generator.dart';

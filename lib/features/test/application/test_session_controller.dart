@@ -1,3 +1,5 @@
+import '../../../core/domain/domain_result.dart';
+import '../../../core/domain/intelligence_domain.dart';
 import '../domain/models/test_session.dart';
 
 class TestSessionController {
@@ -59,7 +61,38 @@ class TestSessionController {
   }
 
   TestSession finish({DateTime? completedAt}) {
-    session = session.copyWith(completedAt: completedAt ?? DateTime.now());
+    session = session.copyWith(
+      completedAt: completedAt ?? DateTime.now(),
+      domainResults: _calculateDomainResults(),
+    );
     return session;
+  }
+
+  Map<IntelligenceDomain, DomainResult> _calculateDomainResults() {
+    final results = <IntelligenceDomain, DomainResult>{};
+    for (final domain in IntelligenceDomain.values) {
+      final domainQuestions = session.questions
+          .where((question) => question.domain == domain)
+          .toList(growable: false);
+      if (domainQuestions.isEmpty) {
+        results[domain] = const DomainResult();
+        continue;
+      }
+      final correct = domainQuestions.where((question) {
+        return session.selectedAnswerFor(question.id) == question.answerIndex;
+      }).length;
+      final wrong = domainQuestions.length - correct;
+      final elapsed = domainQuestions.fold<int>(
+        0,
+        (sum, question) => sum + session.elapsedFor(question.id),
+      );
+      results[domain] = DomainResult(
+        correct: correct,
+        wrong: wrong,
+        accuracy: correct / domainQuestions.length,
+        elapsed: elapsed,
+      );
+    }
+    return results;
   }
 }
