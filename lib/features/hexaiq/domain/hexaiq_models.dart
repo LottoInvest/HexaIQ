@@ -110,6 +110,13 @@ class TestQuestion {
     required this.answerIndex,
     required this.explanation,
     this.difficulty = QuestionDifficulty.normal,
+    this.seed = 0,
+    this.difficultyIndex = 0,
+    this.discrimination = 1,
+    this.guessing = 0.25,
+    this.expectedSolveTime = Duration.zero,
+    this.itemId,
+    this.selectionScore = 1,
   });
 
   final IntelligenceDomain domain;
@@ -121,8 +128,24 @@ class TestQuestion {
   final int answerIndex;
   final String explanation;
   final QuestionDifficulty difficulty;
+  final int seed;
+  final double difficultyIndex;
+  final double discrimination;
+  final double guessing;
+  final Duration expectedSolveTime;
+  final String? itemId;
+  final double selectionScore;
 
-  TestQuestion copyWith({QuestionDifficulty? difficulty}) {
+  TestQuestion copyWith({
+    QuestionDifficulty? difficulty,
+    int? seed,
+    double? difficultyIndex,
+    double? discrimination,
+    double? guessing,
+    Duration? expectedSolveTime,
+    String? itemId,
+    double? selectionScore,
+  }) {
     return TestQuestion(
       id: id,
       domain: domain,
@@ -133,6 +156,13 @@ class TestQuestion {
       answerIndex: answerIndex,
       explanation: explanation,
       difficulty: difficulty ?? this.difficulty,
+      seed: seed ?? this.seed,
+      difficultyIndex: difficultyIndex ?? this.difficultyIndex,
+      discrimination: discrimination ?? this.discrimination,
+      guessing: guessing ?? this.guessing,
+      expectedSolveTime: expectedSolveTime ?? this.expectedSolveTime,
+      itemId: itemId ?? this.itemId,
+      selectionScore: selectionScore ?? this.selectionScore,
     );
   }
 }

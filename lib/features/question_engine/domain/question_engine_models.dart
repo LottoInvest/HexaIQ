@@ -16,6 +16,7 @@ class GenerateQuestionRequest {
     this.seed,
     this.difficulty = QuestionDifficulty.normal,
     this.difficultyProfile,
+    this.usedItemIds = const {},
   });
 
   final String profileId;
@@ -28,6 +29,7 @@ class GenerateQuestionRequest {
   final int? seed;
   final QuestionDifficulty difficulty;
   final DifficultyProfile? difficultyProfile;
+  final Set<String> usedItemIds;
 
   GenerateQuestionRequest copyWith({
     String? profileId,
@@ -40,6 +42,7 @@ class GenerateQuestionRequest {
     int? seed,
     QuestionDifficulty? difficulty,
     DifficultyProfile? difficultyProfile,
+    Set<String>? usedItemIds,
   }) {
     return GenerateQuestionRequest(
       profileId: profileId ?? this.profileId,
@@ -52,6 +55,7 @@ class GenerateQuestionRequest {
       seed: seed ?? this.seed,
       difficulty: difficulty ?? this.difficulty,
       difficultyProfile: difficultyProfile ?? this.difficultyProfile,
+      usedItemIds: usedItemIds ?? this.usedItemIds,
     );
   }
 }
@@ -94,7 +98,7 @@ class QuestionMetadataDto {
 }
 
 class GeneratedQuestionDto {
-  const GeneratedQuestionDto({
+  GeneratedQuestionDto({
     required this.id,
     required this.domain,
     required this.typeCode,
@@ -108,9 +112,16 @@ class GeneratedQuestionDto {
     required this.estimatedTimeSec,
     required this.metadata,
     this.difficulty = QuestionDifficulty.normal,
+    this.difficultyIndex = 0,
+    this.discrimination = 1,
+    this.guessing = 0.25,
+    Duration? expectedSolveTime,
+    this.itemId,
+    this.selectionScore = 1,
     this.variables = const {},
     this.isStub = false,
-  });
+  }) : expectedSolveTime =
+           expectedSolveTime ?? Duration(seconds: estimatedTimeSec);
 
   factory GeneratedQuestionDto.fromLegacyChoices({
     required String id,
@@ -126,6 +137,12 @@ class GeneratedQuestionDto {
     required int estimatedTimeSec,
     required QuestionMetadataDto metadata,
     QuestionDifficulty difficulty = QuestionDifficulty.normal,
+    double? difficultyIndex,
+    double discrimination = 1,
+    double guessing = 0.25,
+    Duration? expectedSolveTime,
+    String? itemId,
+    double selectionScore = 1,
     Map<String, Object?> variables = const {},
     bool isStub = false,
   }) {
@@ -149,6 +166,15 @@ class GeneratedQuestionDto {
       estimatedTimeSec: estimatedTimeSec,
       metadata: metadata,
       difficulty: difficulty,
+      difficultyIndex:
+          difficultyIndex ??
+          (difficulty.level - QuestionDifficulty.normal.level).toDouble(),
+      discrimination: discrimination,
+      guessing: guessing,
+      expectedSolveTime:
+          expectedSolveTime ?? Duration(seconds: estimatedTimeSec),
+      itemId: itemId,
+      selectionScore: selectionScore,
       variables: variables,
       isStub: isStub,
     );
@@ -167,6 +193,12 @@ class GeneratedQuestionDto {
   final int estimatedTimeSec;
   final QuestionMetadataDto metadata;
   final QuestionDifficulty difficulty;
+  final double difficultyIndex;
+  final double discrimination;
+  final double guessing;
+  final Duration expectedSolveTime;
+  final String? itemId;
+  final double selectionScore;
   final Map<String, Object?> variables;
   final bool isStub;
 
@@ -189,6 +221,12 @@ class GeneratedQuestionDto {
       'typeCode': typeCode,
       'level': level,
       'difficulty': difficulty.name,
+      'difficultyIndex': difficultyIndex,
+      'discrimination': discrimination,
+      'guessing': guessing,
+      'expectedSolveTimeMs': expectedSolveTime.inMilliseconds,
+      if (itemId != null) 'itemId': itemId,
+      'selectionScore': selectionScore,
       'ageGroup': ageGroup,
       'questionText': questionText,
       'choices': choiceDtos.map((choice) => choice.toJson()).toList(),

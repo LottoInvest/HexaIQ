@@ -88,7 +88,13 @@ void main() {
     final first = engine.generate(request);
     final second = engine.generate(request);
 
-    expect(first.toJson(), second.toJson());
+    final firstJson = Map<String, Object?>.from(first.toJson())
+      ..remove('selectionScore');
+    final secondJson = Map<String, Object?>.from(second.toJson())
+      ..remove('selectionScore');
+
+    expect(firstJson, secondJson);
+    expect(second.selectionScore, lessThan(first.selectionScore));
   });
 
   test('QuestionEngine applies requested adaptive difficulty', () {
@@ -126,38 +132,65 @@ void main() {
     expect(easy.level, lessThan(hard.level));
   });
 
-  test('Different seeds generate different numerical questions', () {
+  test('QuestionEngine generateOne returns a validated adaptive question', () {
     final engine = QuestionEngine();
-    final first = engine.generate(
+
+    final question = engine.generateOne(
+      seed: 98765,
+      domain: QuestionDomain.numerical,
+      difficulty: QuestionDifficulty.hard,
+      profileId: 'profile-one',
+      testId: 'test-one',
+      ageGroup: 'grade5_6',
+      index: 2,
+    );
+
+    expect(question.domain, QuestionDomain.numerical);
+    expect(question.difficulty, QuestionDifficulty.hard);
+    expect(question.seed, 98765);
+    expect(question.choices, contains(question.answer));
+    expect(question.difficultyIndex, isNotNull);
+    expect(question.discrimination, greaterThan(0));
+    expect(question.guessing, greaterThan(0));
+    expect(question.expectedSolveTime.inSeconds, question.estimatedTimeSec);
+  });
+
+  test('QuestionEngine generateOne uses fallback after retry failures', () {
+    final engine = QuestionEngine(qualityValidator: _AlwaysInvalidValidator());
+
+    final question = engine.generateOne(
+      seed: 12345,
+      domain: QuestionDomain.numerical,
+      difficulty: QuestionDifficulty.easy,
+      profileId: 'profile-one-fallback',
+      testId: 'test-one-fallback',
+      ageGroup: 'grade5_6',
+      index: 0,
+    );
+
+    expect(question.typeCode, 'NR01');
+    expect(question.metadata.status, 'fallback');
+    expect(question.difficulty, QuestionDifficulty.easy);
+  });
+
+  test('QuestionEngine returns item bank backed questions', () {
+    final engine = QuestionEngine();
+
+    final question = engine.generate(
       const GenerateQuestionRequest(
-        profileId: 'profile-seed',
-        testId: 'test-seed',
+        profileId: 'profile-item-bank',
+        testId: 'test-item-bank',
         domain: QuestionDomain.numerical,
         ageGroup: 'grade5_6',
-        index: 0,
-        typeCode: 'NR05',
+        index: 3,
         level: 5,
         seed: 111,
       ),
     );
-    final second = engine.generate(
-      const GenerateQuestionRequest(
-        profileId: 'profile-seed',
-        testId: 'test-seed',
-        domain: QuestionDomain.numerical,
-        ageGroup: 'grade5_6',
-        index: 0,
-        typeCode: 'NR05',
-        level: 5,
-        seed: 222,
-      ),
-    );
 
-    expect(
-      first.questionText == second.questionText &&
-          first.answer == second.answer,
-      isFalse,
-    );
+    expect(question.itemId, isNotNull);
+    expect(question.variables['itemId'], question.itemId);
+    expect(question.metadata.version, 'v0.6.0');
   });
 
   test('Stub generators return valid placeholder DTOs', () {

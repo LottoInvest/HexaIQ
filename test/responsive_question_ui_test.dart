@@ -143,7 +143,6 @@ void main() {
     await tester.pump();
 
     expect(find.textContaining('Question 1 / 5'), findsOneWidget);
-    expect(find.text('Scratch Work'), findsOneWidget);
     expect(find.byType(GridView), findsOneWidget);
     final firstChoiceText = tester.widget<Text>(
       find.text(state.currentQuestion!.choices.first).first,

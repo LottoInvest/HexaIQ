@@ -4,6 +4,13 @@ import '../../../core/domain/adaptive_difficulty_engine.dart';
 import '../../../core/domain/difficulty_profile.dart';
 import '../../../core/domain/intelligence_domain.dart';
 import '../../../core/domain/question_difficulty.dart';
+import '../../item_bank/data/in_memory_item_bank_repository.dart';
+import '../../item_bank/data/exposure_repository.dart';
+import '../../item_bank/data/in_memory_exposure_repository.dart';
+import '../../item_bank/data/item_bank_repository.dart';
+import '../../item_bank/domain/default_item_selection_strategy.dart';
+import '../../item_bank/domain/item.dart';
+import '../../item_bank/domain/item_selection_strategy.dart';
 import '../domain/question_engine_models.dart';
 import '../generators/numerical_generator.dart';
 import 'age_mapper.dart';
@@ -24,10 +31,21 @@ class QuestionEngine {
     QuestionValidator? validator,
     QuestionQualityValidator? qualityValidator,
     AdaptiveDifficultyEngine? adaptiveDifficultyEngine,
+    ItemBankRepository? itemBankRepository,
+    ItemSelectionStrategy? itemSelectionStrategy,
+    ExposureRepository? exposureRepository,
   }) : ageMapper = ageMapper ?? AgeMapper(),
        seedManager = seedManager ?? SeedManager(),
        validator = validator ?? const QuestionValidator(),
        generatorFactory = generatorFactory ?? GeneratorFactory(),
+       itemBankRepository =
+           itemBankRepository ??
+           InMemoryItemBankRepository(
+             generatorFactory: generatorFactory ?? GeneratorFactory(),
+           ),
+       itemSelectionStrategy =
+           itemSelectionStrategy ?? const DefaultItemSelectionStrategy(),
+       exposureRepository = exposureRepository ?? InMemoryExposureRepository(),
        difficultyManager =
            difficultyManager ?? DifficultyManager(ageMapper ?? AgeMapper()),
        adaptiveDifficultyEngine =
@@ -48,6 +66,9 @@ class QuestionEngine {
   final SeedManager seedManager;
   final QuestionValidator validator;
   final QuestionQualityValidator qualityValidator;
+  final ItemBankRepository itemBankRepository;
+  final ItemSelectionStrategy itemSelectionStrategy;
+  final ExposureRepository exposureRepository;
 
   GeneratedQuestionDto generate(GenerateQuestionRequest request) {
     final age = ageMapper.resolve(request.ageGroup);
@@ -60,17 +81,18 @@ class QuestionEngine {
           DifficultyProfile(currentDifficulty: request.difficulty),
     );
     final adaptiveLevel = _levelForDifficulty(level, difficulty);
-    final generator = generatorFactory.generatorFor(request.domain);
-
     for (var attempt = 0; attempt < maxValidationRetries; attempt++) {
-      final typeCode = _retryTypeCode(request, attempt);
+      final typeCode = request.typeCode == null
+          ? null
+          : _retryTypeCode(request, attempt);
+      final seedTypeCode = typeCode ?? _defaultTypeCode(request);
       final seed =
           request.seed ??
           seedManager.createSeed(
             profileId: request.profileId,
             testId: request.testId,
             domain: request.domain,
-            typeCode: typeCode,
+            typeCode: seedTypeCode,
             index: request.index,
             retry: attempt,
           );
@@ -85,10 +107,16 @@ class QuestionEngine {
         seed: request.seed == null ? seed : seed + attempt,
         difficulty: difficulty,
         difficultyProfile: request.difficultyProfile,
+        usedItemIds: request.usedItemIds,
       );
 
       try {
-        final question = generator.generate(normalized);
+        final selected = _selectItem(normalized, attempt);
+        final question = _itemToQuestionDto(
+          selected.item,
+          normalized,
+          selected.selectionScore,
+        );
         validator.validate(question);
         final qualityResult = qualityValidator.validate(question);
         if (!qualityResult.isValid) {
@@ -108,12 +136,13 @@ class QuestionEngine {
           question: question.questionText,
           answer: question.answer,
         );
+        _recordExposure(question.itemId);
         return question;
       } on Object catch (error, stackTrace) {
         debugPrint(
           '[QuestionEngine] generation failed '
           'attempt=${attempt + 1}/$maxValidationRetries '
-          'type=$typeCode '
+          'type=${typeCode ?? 'strategy'} '
           'seed=${normalized.seed} '
           'reason=$error',
         );
@@ -127,7 +156,46 @@ class QuestionEngine {
       'seed=${request.seed ?? 0} '
       'reason=validation retries exhausted',
     );
-    return _fallbackNr01(request, age.code, adaptiveLevel, difficulty);
+    final fallback = _fallbackNr01(
+      request,
+      age.code,
+      adaptiveLevel,
+      difficulty,
+    );
+    _recordExposure(fallback.itemId);
+    return fallback;
+  }
+
+  GeneratedQuestionDto generateOne({
+    required int seed,
+    required IntelligenceDomain domain,
+    required QuestionDifficulty difficulty,
+    String profileId = 'dynamic-profile',
+    String testId = 'dynamic-test',
+    String ageGroup = 'grade5_6',
+    int index = 0,
+    int? level,
+    String? typeCode,
+    DifficultyProfile? difficultyProfile,
+    Set<String> usedItemIds = const {},
+  }) {
+    return generate(
+      GenerateQuestionRequest(
+        profileId: profileId,
+        testId: testId,
+        domain: domain,
+        ageGroup: ageGroup,
+        index: index,
+        typeCode: typeCode,
+        level: level,
+        seed: seed,
+        difficulty: difficulty,
+        difficultyProfile:
+            difficultyProfile ??
+            DifficultyProfile(currentDifficulty: difficulty),
+        usedItemIds: usedItemIds,
+      ),
+    );
   }
 
   List<GeneratedQuestionDto> generateDomainBatch({
@@ -181,6 +249,112 @@ class QuestionEngine {
     final base = _defaultTypeCode(request);
     final prefix = base.substring(0, 2);
     return '$prefix${((request.index + attempt) % 20 + 1).toString().padLeft(2, '0')}';
+  }
+
+  _SelectedItem _selectItem(GenerateQuestionRequest request, int attempt) {
+    var candidates = itemBankRepository.findCandidates(
+      domain: request.domain,
+      difficulty: request.difficulty,
+    );
+    if (request.typeCode != null) {
+      candidates = candidates
+          .where((item) => item.typeCode == request.typeCode)
+          .toList(growable: false);
+    }
+    if (candidates.isEmpty) {
+      throw StateError(
+        'No item bank candidates for '
+        'domain=${request.domain.name} '
+        'type=${request.typeCode ?? 'any'} '
+        'difficulty=${request.difficulty.name}',
+      );
+    }
+    final seed = request.seed ?? request.index;
+    final exposureStatuses = {
+      for (final item in candidates) item.id: exposureRepository.load(item.id),
+    };
+    final selected = itemSelectionStrategy.selectNext(
+      candidates: candidates,
+      domain: request.domain,
+      targetDifficulty: request.difficulty,
+      usedItemIds: request.usedItemIds,
+      seed: seed + attempt,
+      exposureStatuses: exposureStatuses,
+    );
+    final selectionScore = itemSelectionStrategy.selectionScore(
+      item: selected,
+      targetDifficulty: request.difficulty,
+      exposureStatus: exposureStatuses[selected.id],
+    );
+    debugPrint(
+      '[ItemSelection] '
+      'domain=${request.domain.name} '
+      'target=${request.difficulty.name} '
+      'candidates=${candidates.length} '
+      'used=${request.usedItemIds.length} '
+      'selected=${selected.id} '
+      'difficulty=${selected.difficulty.name} '
+      'difficultyIndex=${selected.difficultyIndex} '
+      'exposure=${exposureStatuses[selected.id]?.exposureCount ?? 0} '
+      'selectionScore=${selectionScore.toStringAsFixed(3)}',
+    );
+    return _SelectedItem(item: selected, selectionScore: selectionScore);
+  }
+
+  GeneratedQuestionDto _itemToQuestionDto(
+    Item item,
+    GenerateQuestionRequest request,
+    double selectionScore,
+  ) {
+    final estimatedSeconds = item.expectedSolveTime.inSeconds > 0
+        ? item.expectedSolveTime.inSeconds
+        : difficultyManager.estimatedTimeSec(request.level ?? 1);
+    return GeneratedQuestionDto.fromLegacyChoices(
+      id: '${request.testId}-${item.id}-${request.index}',
+      domain: item.domain,
+      typeCode: item.typeCode,
+      level: request.level ?? item.difficulty.level,
+      ageGroup: request.ageGroup,
+      seed: request.seed ?? request.index,
+      questionText: item.question,
+      choices: item.choices,
+      answer: item.answer,
+      explanation: item.explanation,
+      estimatedTimeSec: estimatedSeconds,
+      metadata: QuestionMetadataDto(
+        rule: item.typeCode,
+        difficultyFactors: item.tags,
+        version: item.version,
+        status: item.hasTag('stub') ? 'coming_soon' : null,
+        message: item.hasTag('stub')
+            ? '${item.domain.label} domain is coming soon.'
+            : null,
+      ),
+      difficulty: request.difficulty,
+      difficultyIndex: item.difficultyIndex,
+      discrimination: item.discrimination,
+      guessing: item.guessing,
+      expectedSolveTime: item.expectedSolveTime,
+      itemId: item.id,
+      selectionScore: selectionScore,
+      variables: {
+        'itemId': item.id,
+        'itemVersion': item.version,
+        'selectionScore': selectionScore,
+      },
+      isStub: item.hasTag('stub'),
+    );
+  }
+
+  void _recordExposure(String? itemId) {
+    if (itemId == null) {
+      return;
+    }
+    final status = exposureRepository.update(itemId);
+    debugPrint(
+      '[Exposure] item=$itemId count=${status.exposureCount} '
+      'averageResponseMs=${status.averageResponseTime.inMilliseconds}',
+    );
   }
 
   void _logQuestionSnapshot(GeneratedQuestionDto question) {
@@ -237,6 +411,15 @@ class QuestionEngine {
           'Each term increases by $diff, so the next number is $answer.',
       estimatedTimeSec: difficultyManager.estimatedTimeSec(level),
       difficulty: difficulty,
+      difficultyIndex: (difficulty.level - QuestionDifficulty.normal.level)
+          .toDouble(),
+      discrimination: 1,
+      guessing: 0.25,
+      expectedSolveTime: Duration(
+        seconds: difficultyManager.estimatedTimeSec(level),
+      ),
+      itemId: 'fallback-NR01-${request.index}',
+      selectionScore: 0,
       metadata: QuestionMetadataDto(
         rule: 'NR01-fallback',
         difficultyFactors: const ['arithmetic_sequence', 'fallback'],
@@ -251,4 +434,11 @@ class QuestionEngine {
     final delta = (difficulty.level - QuestionDifficulty.normal.level) * 2;
     return difficultyManager.clamp(baseLevel + delta, 1, 10);
   }
+}
+
+class _SelectedItem {
+  const _SelectedItem({required this.item, required this.selectionScore});
+
+  final Item item;
+  final double selectionScore;
 }

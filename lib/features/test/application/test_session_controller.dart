@@ -2,6 +2,8 @@ import '../../../core/domain/adaptive_difficulty_engine.dart';
 import '../../../core/domain/domain_result.dart';
 import '../../../core/domain/intelligence_domain.dart';
 import '../domain/models/test_session.dart';
+import '../../hexaiq/domain/hexaiq_models.dart';
+import '../domain/models/question_record.dart';
 
 class TestSessionController {
   TestSessionController(
@@ -26,11 +28,34 @@ class TestSessionController {
     );
   }
 
-  void nextQuestion() {
-    if (session.currentQuestionIndex >= session.questions.length - 1) {
+  void nextQuestion({
+    TestQuestion Function(TestSession session)? generateNextQuestion,
+  }) {
+    if (session.currentQuestionIndex >= session.targetQuestionCount - 1) {
       return;
     }
     _recordAdaptiveForCurrentQuestion();
+    if (session.currentQuestionIndex >= session.activeQuestions.length - 1 &&
+        session.activeQuestions.length < session.targetQuestionCount &&
+        generateNextQuestion != null) {
+      final generated = generateNextQuestion(session);
+      final nextQuestions = [...session.activeQuestions, generated];
+      session = session.copyWith(
+        questions: nextQuestions,
+        generatedQuestions: nextQuestions,
+        difficultyByQuestionId: {
+          ...session.difficultyByQuestionId,
+          generated.id: generated.difficulty,
+        },
+        usedItemIds: {
+          ...session.usedItemIds,
+          if (generated.itemId != null) generated.itemId!,
+        },
+      );
+    }
+    if (session.currentQuestionIndex >= session.activeQuestions.length - 1) {
+      return;
+    }
     session = session.copyWith(
       currentQuestionIndex: session.currentQuestionIndex + 1,
     );
@@ -90,11 +115,19 @@ class TestSessionController {
       profile: session.difficultyProfile,
       isCorrect: selected == question.answerIndex,
     );
-    final nextQuestions = [...session.questions];
+    final nextQuestions = [...session.activeQuestions];
     final nextDifficultyByQuestionId = {
       ...session.difficultyByQuestionId,
       question.id: question.difficulty,
     };
+    final questionHistory = [
+      ...session.questionHistory,
+      QuestionRecord.fromQuestion(
+        question: question,
+        correct: selected == question.answerIndex,
+        elapsedSeconds: session.elapsedFor(question.id),
+      ),
+    ];
     final nextIndex = session.currentQuestionIndex + 1;
     if (nextIndex < nextQuestions.length) {
       nextQuestions[nextIndex] = nextQuestions[nextIndex].copyWith(
@@ -105,8 +138,12 @@ class TestSessionController {
     }
     session = session.copyWith(
       questions: nextQuestions,
+      generatedQuestions: session.generatedQuestions.isNotEmpty
+          ? nextQuestions
+          : session.generatedQuestions,
       difficultyProfile: nextProfile,
       difficultyByQuestionId: nextDifficultyByQuestionId,
+      questionHistory: questionHistory,
       adaptiveRecordedQuestionIds: {
         ...session.adaptiveRecordedQuestionIds,
         question.id,
@@ -117,7 +154,7 @@ class TestSessionController {
   Map<IntelligenceDomain, DomainResult> _calculateDomainResults() {
     final results = <IntelligenceDomain, DomainResult>{};
     for (final domain in IntelligenceDomain.values) {
-      final domainQuestions = session.questions
+      final domainQuestions = session.activeQuestions
           .where((question) => question.domain == domain)
           .toList(growable: false);
       if (domainQuestions.isEmpty) {

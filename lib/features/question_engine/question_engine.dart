@@ -1,4 +1,14 @@
 export '../../core/domain/intelligence_domain.dart';
+export '../item_bank/data/in_memory_item_bank_repository.dart';
+export '../item_bank/data/exposure_repository.dart';
+export '../item_bank/data/in_memory_exposure_repository.dart';
+export '../item_bank/data/item_bank_repository.dart';
+export '../item_bank/domain/calibration_state.dart';
+export '../item_bank/domain/default_item_selection_strategy.dart';
+export '../item_bank/domain/exposure_status.dart';
+export '../item_bank/domain/item.dart';
+export '../item_bank/domain/item_selection_strategy.dart';
+export '../item_bank/domain/item_statistics.dart';
 export 'core/age_mapper.dart';
 export 'core/difficulty_manager.dart';
 export 'core/distractor_generator.dart';

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import '../../../core/domain/intelligence_domain.dart';
+import '../../item_bank/domain/item.dart';
 import '../core/question_generator.dart';
 import '../domain/question_engine_models.dart';
 
@@ -44,6 +45,11 @@ class StubQuestionGenerator implements QuestionGenerator {
       variables: const {'stub': true},
       isStub: true,
     );
+  }
+
+  @override
+  Item generateItem(GenerateQuestionRequest request) {
+    return Item.fromGeneratedQuestion(generate(request));
   }
 
   @override

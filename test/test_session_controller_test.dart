@@ -145,25 +145,56 @@ void main() {
   });
 
   test(
-    'Submit finishes session and AppState calculates score report',
+    'AppState dynamically generates five adaptive questions and report history',
     () async {
       final state = HexaIQAppState(repository: _FakeRepository());
       await Future<void>.delayed(Duration.zero);
       await state.startTest();
 
-      state.selectAnswer(1);
-      state.recordElapsedTime(10);
-      state.nextQuestion();
-      state.selectAnswer(1);
-      state.recordElapsedTime(20);
+      expect(state.testSession?.generatedQuestions.length, 1);
+      expect(state.totalQuestionCount, 5);
+
+      final seeds = <int>{state.currentQuestion!.seed};
+      for (var i = 0; i < 4; i++) {
+        final question = state.currentQuestion!;
+        state.selectAnswer(question.answerIndex);
+        state.recordElapsedTime(10 + i);
+        state.nextQuestion();
+        expect(state.testSession?.generatedQuestions.length, i + 2);
+        expect(seeds.add(state.currentQuestion!.seed), isTrue);
+      }
+
+      final lastQuestion = state.currentQuestion!;
+      state.selectAnswer(lastQuestion.answerIndex);
+      state.recordElapsedTime(14);
       await state.submitTest();
 
       expect(state.testSession?.isComplete, isTrue);
-      expect(state.correctCount, 1);
-      expect(state.wrongCount, 1);
-      expect(state.accuracy, 0.5);
-      expect(state.totalElapsedSeconds, 30);
+      expect(state.testSession?.questionHistory.length, 5);
+      final itemIds = state.testSession!.questionHistory
+          .map((record) => record.itemId)
+          .toSet();
+      expect(itemIds.length, 5);
+      expect(state.testSession?.usedItemIds.length, 5);
+      expect(state.correctCount, 5);
+      expect(state.wrongCount, 0);
+      expect(state.accuracy, 1);
+      expect(state.totalElapsedSeconds, 60);
+      expect(state.testSession?.questionHistory.first.itemId, isNotEmpty);
+      expect(
+        state.testSession?.questionHistory.first.selectionScore,
+        greaterThan(0),
+      );
+      expect(state.testSession?.questionHistory.first.thetaEstimate, 0);
+      expect(state.topExposureStatuses, isNotEmpty);
+      expect(state.mostUsedExposure?.exposureCount, greaterThan(0));
+      expect(state.averageExposure, greaterThan(0));
+      expect(
+        state.testSession?.difficultyProfile.currentDifficulty,
+        isIn([QuestionDifficulty.hard, QuestionDifficulty.veryHard]),
+      );
       expect(state.report, isNotNull);
+      expect(state.report?.averageDifficulty, isNot(QuestionDifficulty.normal));
     },
   );
 }

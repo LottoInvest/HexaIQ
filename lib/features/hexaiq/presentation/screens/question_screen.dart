@@ -210,7 +210,7 @@ class _QuestionContent extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'Question ${state.questionIndex + 1} / ${state.questions.length}',
+                'Question ${state.questionIndex + 1} / ${state.totalQuestionCount}',
                 style: Theme.of(context).textTheme.labelLarge,
               ),
             ),

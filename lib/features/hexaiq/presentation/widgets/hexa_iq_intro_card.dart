@@ -5,10 +5,16 @@ import '../../../../core/widgets/hexagon_chart.dart';
 import '../../domain/hexaiq_models.dart';
 
 class HexaIQIntroCard extends StatelessWidget {
-  const HexaIQIntroCard({super.key, this.compact = false, this.onDomainTap});
+  const HexaIQIntroCard({
+    super.key,
+    this.compact = false,
+    this.onDomainTap,
+    this.averageExposure,
+  });
 
   final bool compact;
   final ValueChanged<IntelligenceDomain>? onDomainTap;
+  final double? averageExposure;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +41,20 @@ class HexaIQIntroCard extends StatelessWidget {
           '응답 결과에 따라 난이도를 조절하는 Adaptive Intelligence Test를 지원합니다.',
           style: theme.textTheme.bodyMedium,
         ),
+        const SizedBox(height: 6),
+        Text(
+          'Item Bank 120 Questions',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        if (averageExposure != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            'Average Exposure ${averageExposure!.toStringAsFixed(2)}',
+            style: theme.textTheme.bodyMedium,
+          ),
+        ],
         SizedBox(height: compact ? 8 : 12),
         Wrap(
           spacing: 8,

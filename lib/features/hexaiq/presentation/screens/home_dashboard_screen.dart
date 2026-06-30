@@ -37,6 +37,7 @@ class HomeDashboardScreen extends StatelessWidget {
           final isWide = screenClass != ScreenClass.compact;
           final domainIntro = HexaIQIntroCard(
             compact: false,
+            averageExposure: state.averageExposure,
             onDomainTap: (domain) => _handleDomainTap(context, domain),
           );
           final summaryCard = Card(

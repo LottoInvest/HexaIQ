@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import '../../../core/domain/question_difficulty.dart';
+import '../../item_bank/domain/item.dart';
 import '../core/distractor_generator.dart';
 import '../core/question_generator.dart';
 import '../domain/question_engine_models.dart';
@@ -56,6 +57,11 @@ class NumericalGenerator implements QuestionGenerator {
     }
     final rng = Random((request.seed ?? request.index) + typeCode.hashCode);
     return rule(request, rng);
+  }
+
+  @override
+  Item generateItem(GenerateQuestionRequest request) {
+    return Item.fromGeneratedQuestion(generate(request));
   }
 
   @override

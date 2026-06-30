@@ -131,6 +131,13 @@ class MockHexaIQRepository implements HexaIQRepository {
       answerIndex: dto.answerIndex,
       explanation: dto.explanation,
       difficulty: dto.difficulty,
+      seed: dto.seed,
+      difficultyIndex: dto.difficultyIndex,
+      discrimination: dto.discrimination,
+      guessing: dto.guessing,
+      expectedSolveTime: dto.expectedSolveTime,
+      itemId: dto.itemId,
+      selectionScore: dto.selectionScore,
     );
   }
 
