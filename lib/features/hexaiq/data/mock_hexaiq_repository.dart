@@ -1,5 +1,6 @@
 import '../../../core/domain/domain_result.dart';
 import '../../../core/domain/intelligence_domain.dart';
+import '../../../core/domain/question_difficulty.dart';
 import '../../question_engine/data/mock_question_api.dart';
 import '../../question_engine/domain/question_engine_models.dart';
 import '../domain/hexaiq_models.dart';
@@ -90,6 +91,7 @@ class MockHexaIQRepository implements HexaIQRepository {
         '강한 영역은 심화 문항으로 넓히고, 약한 영역은 짧게 반복하는 훈련이 좋습니다.',
       ],
       domainResults: domainResults,
+      averageDifficulty: _averageDifficulty(responses),
     );
   }
 
@@ -128,7 +130,24 @@ class MockHexaIQRepository implements HexaIQRepository {
       choices: dto.choices,
       answerIndex: dto.answerIndex,
       explanation: dto.explanation,
+      difficulty: dto.difficulty,
     );
+  }
+
+  QuestionDifficulty _averageDifficulty(List<QuestionResponse> responses) {
+    if (responses.isEmpty) {
+      return QuestionDifficulty.normal;
+    }
+    final average =
+        responses
+            .map((response) => response.question.difficulty.level)
+            .reduce((a, b) => a + b) /
+        responses.length;
+    return QuestionDifficulty.values.reduce((nearest, difficulty) {
+      final nearestDistance = (nearest.level - average).abs();
+      final currentDistance = (difficulty.level - average).abs();
+      return currentDistance < nearestDistance ? difficulty : nearest;
+    });
   }
 
   DomainResult _buildDomainResult(

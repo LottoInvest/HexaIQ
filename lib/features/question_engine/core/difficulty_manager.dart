@@ -1,7 +1,7 @@
 import 'age_mapper.dart';
 
-class DifficultyProfile {
-  const DifficultyProfile({
+class DifficultyLevelProfile {
+  const DifficultyLevelProfile({
     required this.level,
     required this.numberMax,
     required this.operationSteps,
@@ -39,7 +39,10 @@ class DifficultyManager {
     return clamp(raw, age.minLevel, age.maxLevel);
   }
 
-  DifficultyProfile profile({required String ageGroup, required int level}) {
+  DifficultyLevelProfile profile({
+    required String ageGroup,
+    required int level,
+  }) {
     final age = ageMapper.resolve(ageGroup);
     final clamped = clamp(level, age.minLevel, age.maxLevel);
     final numberMax = switch (clamped) {
@@ -47,7 +50,7 @@ class DifficultyManager {
       <= 6 => age.mediumNumberMax,
       _ => age.largeNumberMax,
     };
-    return DifficultyProfile(
+    return DifficultyLevelProfile(
       level: clamped,
       numberMax: numberMax,
       operationSteps: clamped <= 3

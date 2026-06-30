@@ -1,4 +1,5 @@
 import '../../../core/domain/intelligence_domain.dart';
+import '../../../core/domain/question_difficulty.dart';
 import '../../hexaiq/domain/hexaiq_models.dart';
 import '../core/question_engine.dart';
 import '../domain/question_engine_models.dart';
@@ -14,6 +15,7 @@ class MockQuestionApi {
     required IntelligenceDomain domain,
     required int count,
     TestType testType = TestType.basic,
+    QuestionDifficulty difficulty = QuestionDifficulty.normal,
   }) async {
     final levelOffset = switch (testType) {
       TestType.basic => 0,
@@ -34,6 +36,7 @@ class MockQuestionApi {
       ageGroup: profile.ageGroup,
       count: count,
       level: level,
+      difficulty: difficulty,
     );
   }
 

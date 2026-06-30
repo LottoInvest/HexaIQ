@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/domain/adaptive_difficulty_engine.dart';
+import '../../../core/domain/difficulty_profile.dart';
 import '../../../core/domain/intelligence_domain.dart';
+import '../../../core/domain/question_difficulty.dart';
 import '../domain/question_engine_models.dart';
 import '../generators/numerical_generator.dart';
 import 'age_mapper.dart';
@@ -20,12 +23,15 @@ class QuestionEngine {
     SeedManager? seedManager,
     QuestionValidator? validator,
     QuestionQualityValidator? qualityValidator,
+    AdaptiveDifficultyEngine? adaptiveDifficultyEngine,
   }) : ageMapper = ageMapper ?? AgeMapper(),
        seedManager = seedManager ?? SeedManager(),
        validator = validator ?? const QuestionValidator(),
        generatorFactory = generatorFactory ?? GeneratorFactory(),
        difficultyManager =
            difficultyManager ?? DifficultyManager(ageMapper ?? AgeMapper()),
+       adaptiveDifficultyEngine =
+           adaptiveDifficultyEngine ?? const AdaptiveDifficultyEngine(),
        qualityValidator =
            qualityValidator ??
            QuestionQualityValidator(
@@ -38,6 +44,7 @@ class QuestionEngine {
   final GeneratorFactory generatorFactory;
   final AgeMapper ageMapper;
   final DifficultyManager difficultyManager;
+  final AdaptiveDifficultyEngine adaptiveDifficultyEngine;
   final SeedManager seedManager;
   final QuestionValidator validator;
   final QuestionQualityValidator qualityValidator;
@@ -48,6 +55,11 @@ class QuestionEngine {
       ageGroup: age.code,
       requestedLevel: request.level,
     );
+    final difficulty = adaptiveDifficultyEngine.recommend(
+      request.difficultyProfile ??
+          DifficultyProfile(currentDifficulty: request.difficulty),
+    );
+    final adaptiveLevel = _levelForDifficulty(level, difficulty);
     final generator = generatorFactory.generatorFor(request.domain);
 
     for (var attempt = 0; attempt < maxValidationRetries; attempt++) {
@@ -69,8 +81,10 @@ class QuestionEngine {
         ageGroup: age.code,
         index: request.index,
         typeCode: typeCode,
-        level: level,
+        level: adaptiveLevel,
         seed: request.seed == null ? seed : seed + attempt,
+        difficulty: difficulty,
+        difficultyProfile: request.difficultyProfile,
       );
 
       try {
@@ -113,7 +127,7 @@ class QuestionEngine {
       'seed=${request.seed ?? 0} '
       'reason=validation retries exhausted',
     );
-    return _fallbackNr01(request, age.code, level);
+    return _fallbackNr01(request, age.code, adaptiveLevel, difficulty);
   }
 
   List<GeneratedQuestionDto> generateDomainBatch({
@@ -123,6 +137,8 @@ class QuestionEngine {
     required String ageGroup,
     required int count,
     int? level,
+    QuestionDifficulty difficulty = QuestionDifficulty.normal,
+    DifficultyProfile? difficultyProfile,
   }) {
     return [
       for (var index = 0; index < count; index++)
@@ -134,6 +150,8 @@ class QuestionEngine {
             ageGroup: ageGroup,
             index: index,
             level: level,
+            difficulty: difficulty,
+            difficultyProfile: difficultyProfile,
           ),
         ),
     ];
@@ -173,6 +191,7 @@ class QuestionEngine {
       'id=${question.id} '
       'seed=${question.seed} '
       'level=${question.level} '
+      'difficulty=${question.difficulty.name} '
       'answerKey=${question.answerKey} '
       'choices=${question.choices} '
       'questionText="${question.questionText}" '
@@ -184,6 +203,7 @@ class QuestionEngine {
     GenerateQuestionRequest request,
     String ageGroup,
     int level,
+    QuestionDifficulty difficulty,
   ) {
     final seed =
         request.seed ??
@@ -216,6 +236,7 @@ class QuestionEngine {
       explanation:
           'Each term increases by $diff, so the next number is $answer.',
       estimatedTimeSec: difficultyManager.estimatedTimeSec(level),
+      difficulty: difficulty,
       metadata: QuestionMetadataDto(
         rule: 'NR01-fallback',
         difficultyFactors: const ['arithmetic_sequence', 'fallback'],
@@ -224,5 +245,10 @@ class QuestionEngine {
       ),
       variables: {'terms': terms, 'diff': diff, 'fallback': true},
     );
+  }
+
+  int _levelForDifficulty(int baseLevel, QuestionDifficulty difficulty) {
+    final delta = (difficulty.level - QuestionDifficulty.normal.level) * 2;
+    return difficultyManager.clamp(baseLevel + delta, 1, 10);
   }
 }

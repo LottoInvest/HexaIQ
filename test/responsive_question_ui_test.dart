@@ -65,6 +65,7 @@ void main() {
     );
 
     expect(find.textContaining('6가지 인지 영역'), findsOneWidget);
+    expect(find.textContaining('Adaptive Intelligence Test'), findsOneWidget);
     expect(find.text('수리논리'), findsOneWidget);
   });
 

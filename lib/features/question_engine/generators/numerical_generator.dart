@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import '../../../core/domain/question_difficulty.dart';
 import '../core/distractor_generator.dart';
 import '../core/question_generator.dart';
 import '../domain/question_engine_models.dart';
@@ -57,6 +58,11 @@ class NumericalGenerator implements QuestionGenerator {
     return rule(request, rng);
   }
 
+  @override
+  GeneratedQuestionDto generateFallback(GenerateQuestionRequest request) {
+    return generate(request.copyWith(typeCode: 'NR01'));
+  }
+
   GeneratedQuestionDto _question({
     required GenerateQuestionRequest request,
     required String typeCode,
@@ -80,9 +86,14 @@ class NumericalGenerator implements QuestionGenerator {
       answer: answer,
       explanation: explanation,
       estimatedTimeSec: 12 + level * 4,
+      difficulty: request.difficulty,
       metadata: QuestionMetadataDto(
         rule: typeCode,
-        difficultyFactors: ['level_$level', ...factors],
+        difficultyFactors: [
+          'level_$level',
+          'difficulty_${request.difficulty.name}',
+          ...factors,
+        ],
       ),
       variables: variables,
     );
@@ -90,8 +101,8 @@ class NumericalGenerator implements QuestionGenerator {
 
   GeneratedQuestionDto _nr01(GenerateQuestionRequest request, Random rng) {
     final level = request.level ?? 1;
-    final diff = _int(rng, 1, level + 3);
-    final start = _int(rng, 1, 10 + level);
+    final diff = _intFor(request, rng, 1, level + 3);
+    final start = _intFor(request, rng, 1, 10 + level);
     final terms = [for (var i = 0; i < 4; i++) start + diff * i];
     final answer = start + diff * 4;
     return _question(
@@ -112,8 +123,8 @@ class NumericalGenerator implements QuestionGenerator {
 
   GeneratedQuestionDto _nr02(GenerateQuestionRequest request, Random rng) {
     final level = request.level ?? 1;
-    final ratio = _int(rng, 2, min(5, 2 + level ~/ 2));
-    final start = _int(rng, 1, 5);
+    final ratio = _intFor(request, rng, 2, min(5, 2 + level ~/ 2));
+    final start = _intFor(request, rng, 1, 5);
     final terms = [for (var i = 0; i < 4; i++) start * pow(ratio, i).toInt()];
     final answer = terms.last * ratio;
     return _question(
@@ -133,9 +144,9 @@ class NumericalGenerator implements QuestionGenerator {
   }
 
   GeneratedQuestionDto _nr03(GenerateQuestionRequest request, Random rng) {
-    final firstDiff = _int(rng, 1, 4);
-    final step = _int(rng, 1, 3);
-    final terms = <int>[_int(rng, 1, 10)];
+    final firstDiff = _intFor(request, rng, 1, 4);
+    final step = _intFor(request, rng, 1, 3);
+    final terms = <int>[_intFor(request, rng, 1, 10)];
     final diffs = <int>[];
     for (var i = 0; i < 4; i++) {
       final diff = firstDiff + step * i;
@@ -160,9 +171,9 @@ class NumericalGenerator implements QuestionGenerator {
   }
 
   GeneratedQuestionDto _nr04(GenerateQuestionRequest request, Random rng) {
-    final firstDiff = _int(rng, 1, 4);
-    final step = _int(rng, 1, 3);
-    final terms = <int>[_int(rng, 50, 90)];
+    final firstDiff = _intFor(request, rng, 1, 4);
+    final step = _intFor(request, rng, 1, 3);
+    final terms = <int>[_intFor(request, rng, 50, 90)];
     final diffs = <int>[];
     for (var i = 0; i < 4; i++) {
       final diff = firstDiff + step * i;
@@ -187,10 +198,10 @@ class NumericalGenerator implements QuestionGenerator {
   }
 
   GeneratedQuestionDto _nr05(GenerateQuestionRequest request, Random rng) {
-    final a = _int(rng, 1, 9);
-    final b = _int(rng, 10, 19);
-    final da = _int(rng, 2, 5);
-    final db = _int(rng, 2, 5);
+    final a = _intFor(request, rng, 1, 9);
+    final b = _intFor(request, rng, 10, 19);
+    final da = _intFor(request, rng, 2, 5);
+    final db = _intFor(request, rng, 2, 5);
     final terms = [a, b, a + da, b + db, a + da * 2, b + db * 2];
     final answer = a + da * 3;
     return _question(
@@ -206,9 +217,9 @@ class NumericalGenerator implements QuestionGenerator {
   }
 
   GeneratedQuestionDto _nr06(GenerateQuestionRequest request, Random rng) {
-    final start = _int(rng, 1, 10);
-    final oddDiff = _int(rng, 2, 5);
-    final evenDiff = _int(rng, 3, 6);
+    final start = _intFor(request, rng, 1, 10);
+    final oddDiff = _intFor(request, rng, 2, 5);
+    final evenDiff = _intFor(request, rng, 3, 6);
     final terms = [
       start,
       start + 10,
@@ -235,8 +246,8 @@ class NumericalGenerator implements QuestionGenerator {
   }
 
   GeneratedQuestionDto _nr07(GenerateQuestionRequest request, Random rng) {
-    final a = _int(rng, 1, 4);
-    final b = _int(rng, 1, 4);
+    final a = _intFor(request, rng, 1, 4);
+    final b = _intFor(request, rng, 1, 4);
     final terms = <int>[a, b];
     for (var i = 0; i < 4; i++) {
       terms.add(terms[terms.length - 1] + terms[terms.length - 2]);
@@ -259,7 +270,7 @@ class NumericalGenerator implements QuestionGenerator {
   }
 
   GeneratedQuestionDto _nr08(GenerateQuestionRequest request, Random rng) {
-    final n = _int(rng, 2, 6);
+    final n = _intFor(request, rng, 2, 6);
     final terms = [for (var i = n; i < n + 4; i++) i * i];
     final answer = (n + 4) * (n + 4);
     return _question(
@@ -279,7 +290,7 @@ class NumericalGenerator implements QuestionGenerator {
   }
 
   GeneratedQuestionDto _nr09(GenerateQuestionRequest request, Random rng) {
-    final n = _int(rng, 1, 4);
+    final n = _intFor(request, rng, 1, 4);
     final terms = [for (var i = n; i < n + 4; i++) i * i * i];
     final answer = (n + 4) * (n + 4) * (n + 4);
     return _question(
@@ -300,7 +311,7 @@ class NumericalGenerator implements QuestionGenerator {
 
   GeneratedQuestionDto _nr10(GenerateQuestionRequest request, Random rng) {
     const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31];
-    final start = _int(rng, 0, 5);
+    final start = _intFor(request, rng, 0, 5);
     final terms = primes.sublist(start, start + 4);
     final answer = primes[start + 4];
     return _question(
@@ -320,8 +331,8 @@ class NumericalGenerator implements QuestionGenerator {
   }
 
   GeneratedQuestionDto _nr11(GenerateQuestionRequest request, Random rng) {
-    final multiple = _int(rng, 2, 9);
-    final start = _int(rng, 2, 5);
+    final multiple = _intFor(request, rng, 2, 9);
+    final start = _intFor(request, rng, 2, 5);
     final terms = [for (var i = 0; i < 4; i++) multiple * (start + i)];
     final answer = multiple * (start + 4);
     return _question(
@@ -360,8 +371,8 @@ class NumericalGenerator implements QuestionGenerator {
   }
 
   GeneratedQuestionDto _nr13(GenerateQuestionRequest request, Random rng) {
-    final divisor = _int(rng, 3, 9);
-    final number = _int(rng, 20, 80);
+    final divisor = _intFor(request, rng, 3, 9);
+    final number = _intFor(request, rng, 20, 80);
     final answer = number % divisor;
     return _question(
       request: request,
@@ -376,9 +387,9 @@ class NumericalGenerator implements QuestionGenerator {
   }
 
   GeneratedQuestionDto _nr14(GenerateQuestionRequest request, Random rng) {
-    final a = _int(rng, 2, 9);
-    final b = _int(rng, 2, 9);
-    final c = _int(rng, 1, 9);
+    final a = _intFor(request, rng, 2, 9);
+    final b = _intFor(request, rng, 2, 9);
+    final c = _intFor(request, rng, 1, 9);
     final answer = a * b + c;
     return _question(
       request: request,
@@ -393,9 +404,9 @@ class NumericalGenerator implements QuestionGenerator {
   }
 
   GeneratedQuestionDto _nr15(GenerateQuestionRequest request, Random rng) {
-    final left = _int(rng, 3, 12);
-    final topRight = _int(rng, 8, 18);
-    final bottomLeft = _int(rng, 8, 18);
+    final left = _intFor(request, rng, 3, 12);
+    final topRight = _intFor(request, rng, 8, 18);
+    final bottomLeft = _intFor(request, rng, 8, 18);
     final diff = topRight - left;
     final answer = bottomLeft + diff;
     return _question(
@@ -422,9 +433,9 @@ class NumericalGenerator implements QuestionGenerator {
   }
 
   GeneratedQuestionDto _nr16(GenerateQuestionRequest request, Random rng) {
-    final row1 = [_int(rng, 2, 8), _int(rng, 2, 8)];
-    final row2 = [_int(rng, 3, 9), _int(rng, 3, 9)];
-    final row3 = [_int(rng, 4, 10), _int(rng, 4, 10)];
+    final row1 = [_intFor(request, rng, 2, 8), _intFor(request, rng, 2, 8)];
+    final row2 = [_intFor(request, rng, 3, 9), _intFor(request, rng, 3, 9)];
+    final row3 = [_intFor(request, rng, 4, 10), _intFor(request, rng, 4, 10)];
     final firstSum = row1[0] + row1[1];
     final secondSum = row2[0] + row2[1];
     final answer = row3[0] + row3[1];
@@ -447,9 +458,9 @@ class NumericalGenerator implements QuestionGenerator {
   }
 
   GeneratedQuestionDto _nr17(GenerateQuestionRequest request, Random rng) {
-    final target = _int(rng, 12, 24);
-    final a = _int(rng, 1, 9);
-    final b = _int(rng, 1, min(9, target - a - 1));
+    final target = _intFor(request, rng, 12, 24);
+    final a = _intFor(request, rng, 1, 9);
+    final b = _intFor(request, rng, 1, min(9, target - a - 1));
     final answer = target - a - b;
     return _question(
       request: request,
@@ -464,9 +475,9 @@ class NumericalGenerator implements QuestionGenerator {
   }
 
   GeneratedQuestionDto _nr18(GenerateQuestionRequest request, Random rng) {
-    final x = _int(rng, 2, 20);
-    final a = _int(rng, 2, 5);
-    final b = _int(rng, 1, 9);
+    final x = _intFor(request, rng, 2, 20);
+    final a = _intFor(request, rng, 2, 5);
+    final b = _intFor(request, rng, 1, 9);
     final result = a * x + b;
     return _question(
       request: request,
@@ -481,9 +492,9 @@ class NumericalGenerator implements QuestionGenerator {
   }
 
   GeneratedQuestionDto _nr19(GenerateQuestionRequest request, Random rng) {
-    final a = _int(rng, 2, 5);
-    final b = _int(rng, 6, 12);
-    final k = _int(rng, 2, 6);
+    final a = _intFor(request, rng, 2, 5);
+    final b = _intFor(request, rng, 6, 12);
+    final k = _intFor(request, rng, 2, 6);
     final answer = b * k;
     return _question(
       request: request,
@@ -498,9 +509,9 @@ class NumericalGenerator implements QuestionGenerator {
   }
 
   GeneratedQuestionDto _nr20(GenerateQuestionRequest request, Random rng) {
-    final start = _int(rng, 2, 9);
-    final multiplier = _int(rng, 2, 5);
-    final add = _int(rng, 3, 12);
+    final start = _intFor(request, rng, 2, 9);
+    final multiplier = _intFor(request, rng, 2, 5);
+    final add = _intFor(request, rng, 3, 12);
     final answer = start * multiplier + add;
     return _question(
       request: request,
@@ -519,7 +530,30 @@ class NumericalGenerator implements QuestionGenerator {
     );
   }
 
+  int _intFor(
+    GenerateQuestionRequest request,
+    Random rng,
+    int lower,
+    int upper,
+  ) {
+    final cap = _difficultyCap(request.difficulty);
+    return _int(rng, lower, min(upper, cap));
+  }
+
+  int _difficultyCap(QuestionDifficulty difficulty) {
+    return switch (difficulty) {
+      QuestionDifficulty.veryEasy => 10,
+      QuestionDifficulty.easy => 30,
+      QuestionDifficulty.normal => 100,
+      QuestionDifficulty.hard => 300,
+      QuestionDifficulty.veryHard => 1000,
+    };
+  }
+
   int _int(Random rng, int min, int max) {
+    if (max <= min) {
+      return min;
+    }
     return min + rng.nextInt(max - min + 1);
   }
 

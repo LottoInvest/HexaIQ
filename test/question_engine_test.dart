@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hexaiq_app/core/domain/question_difficulty.dart';
 import 'package:hexaiq_app/features/hexaiq/domain/hexaiq_models.dart';
 import 'package:hexaiq_app/features/question_engine/question_engine.dart';
 
@@ -88,6 +89,41 @@ void main() {
     final second = engine.generate(request);
 
     expect(first.toJson(), second.toJson());
+  });
+
+  test('QuestionEngine applies requested adaptive difficulty', () {
+    final engine = QuestionEngine();
+
+    final easy = engine.generate(
+      const GenerateQuestionRequest(
+        profileId: 'profile-difficulty',
+        testId: 'test-difficulty',
+        domain: QuestionDomain.numerical,
+        ageGroup: 'grade5_6',
+        index: 0,
+        typeCode: 'NR01',
+        level: 5,
+        seed: 77,
+        difficulty: QuestionDifficulty.easy,
+      ),
+    );
+    final hard = engine.generate(
+      const GenerateQuestionRequest(
+        profileId: 'profile-difficulty',
+        testId: 'test-difficulty',
+        domain: QuestionDomain.numerical,
+        ageGroup: 'grade5_6',
+        index: 1,
+        typeCode: 'NR01',
+        level: 5,
+        seed: 77,
+        difficulty: QuestionDifficulty.hard,
+      ),
+    );
+
+    expect(easy.difficulty, QuestionDifficulty.easy);
+    expect(hard.difficulty, QuestionDifficulty.hard);
+    expect(easy.level, lessThan(hard.level));
   });
 
   test('Different seeds generate different numerical questions', () {
@@ -198,6 +234,7 @@ void main() {
       );
 
       expect(question.typeCode, 'NR01');
+      expect(question.difficulty, QuestionDifficulty.normal);
       expect(question.metadata.status, 'fallback');
       expect(question.choices, contains(question.answer));
       expect(question.answerIndex, question.choices.indexOf(question.answer));
@@ -214,10 +251,17 @@ void main() {
       ageGroup: 'grade5_6',
       count: 5,
       level: 5,
+      difficulty: QuestionDifficulty.hard,
     );
 
     expect(questions.length, 5);
     expect(questions.every((question) => question.typeCode == 'NR01'), isTrue);
+    expect(
+      questions.every(
+        (question) => question.difficulty == QuestionDifficulty.hard,
+      ),
+      isTrue,
+    );
     expect(questions.every((question) => question.choices.length == 4), isTrue);
   });
 

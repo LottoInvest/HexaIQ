@@ -1,4 +1,6 @@
+import '../../../core/domain/difficulty_profile.dart';
 import '../../../core/domain/intelligence_domain.dart';
+import '../../../core/domain/question_difficulty.dart';
 
 typedef QuestionDomain = IntelligenceDomain;
 
@@ -12,6 +14,8 @@ class GenerateQuestionRequest {
     this.typeCode,
     this.level,
     this.seed,
+    this.difficulty = QuestionDifficulty.normal,
+    this.difficultyProfile,
   });
 
   final String profileId;
@@ -22,6 +26,34 @@ class GenerateQuestionRequest {
   final String? typeCode;
   final int? level;
   final int? seed;
+  final QuestionDifficulty difficulty;
+  final DifficultyProfile? difficultyProfile;
+
+  GenerateQuestionRequest copyWith({
+    String? profileId,
+    String? testId,
+    IntelligenceDomain? domain,
+    String? ageGroup,
+    int? index,
+    String? typeCode,
+    int? level,
+    int? seed,
+    QuestionDifficulty? difficulty,
+    DifficultyProfile? difficultyProfile,
+  }) {
+    return GenerateQuestionRequest(
+      profileId: profileId ?? this.profileId,
+      testId: testId ?? this.testId,
+      domain: domain ?? this.domain,
+      ageGroup: ageGroup ?? this.ageGroup,
+      index: index ?? this.index,
+      typeCode: typeCode ?? this.typeCode,
+      level: level ?? this.level,
+      seed: seed ?? this.seed,
+      difficulty: difficulty ?? this.difficulty,
+      difficultyProfile: difficultyProfile ?? this.difficultyProfile,
+    );
+  }
 }
 
 class QuestionChoiceDto {
@@ -75,6 +107,7 @@ class GeneratedQuestionDto {
     required this.explanation,
     required this.estimatedTimeSec,
     required this.metadata,
+    this.difficulty = QuestionDifficulty.normal,
     this.variables = const {},
     this.isStub = false,
   });
@@ -92,6 +125,7 @@ class GeneratedQuestionDto {
     required String explanation,
     required int estimatedTimeSec,
     required QuestionMetadataDto metadata,
+    QuestionDifficulty difficulty = QuestionDifficulty.normal,
     Map<String, Object?> variables = const {},
     bool isStub = false,
   }) {
@@ -114,6 +148,7 @@ class GeneratedQuestionDto {
       explanation: explanation,
       estimatedTimeSec: estimatedTimeSec,
       metadata: metadata,
+      difficulty: difficulty,
       variables: variables,
       isStub: isStub,
     );
@@ -131,6 +166,7 @@ class GeneratedQuestionDto {
   final String explanation;
   final int estimatedTimeSec;
   final QuestionMetadataDto metadata;
+  final QuestionDifficulty difficulty;
   final Map<String, Object?> variables;
   final bool isStub;
 
@@ -152,6 +188,7 @@ class GeneratedQuestionDto {
       'domain': domain.name,
       'typeCode': typeCode,
       'level': level,
+      'difficulty': difficulty.name,
       'ageGroup': ageGroup,
       'questionText': questionText,
       'choices': choiceDtos.map((choice) => choice.toJson()).toList(),

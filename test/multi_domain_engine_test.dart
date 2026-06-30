@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hexaiq_app/core/domain/question_difficulty.dart';
 import 'package:hexaiq_app/features/hexaiq/data/mock_hexaiq_repository.dart';
 import 'package:hexaiq_app/features/hexaiq/domain/hexaiq_models.dart';
 import 'package:hexaiq_app/features/question_engine/question_engine.dart';
@@ -39,6 +40,7 @@ void main() {
       answer: '3',
       explanation: 'Add one.',
       estimatedTimeSec: 24,
+      difficulty: QuestionDifficulty.hard,
       metadata: const QuestionMetadataDto(
         rule: 'NR01',
         difficultyFactors: ['test'],
@@ -47,7 +49,9 @@ void main() {
 
     expect(dto.domain, IntelligenceDomain.numerical);
     expect(dto.typeCode, 'NR01');
+    expect(dto.difficulty, QuestionDifficulty.hard);
     expect(dto.toJson()['domain'], 'numerical');
+    expect(dto.toJson()['difficulty'], 'hard');
   });
 
   test('GeneratorFactory returns numerical and five mock generators', () {

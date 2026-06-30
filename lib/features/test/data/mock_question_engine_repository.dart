@@ -1,3 +1,4 @@
+import '../../../core/domain/question_difficulty.dart';
 import '../../hexaiq/domain/hexaiq_models.dart';
 import '../../question_engine/question_engine.dart';
 import 'question_engine_repository.dart';
@@ -15,6 +16,7 @@ class MockQuestionEngineRepository implements QuestionEngineRepository {
     required String typeCode,
     required int level,
     int? seed,
+    QuestionDifficulty difficulty = QuestionDifficulty.normal,
   }) async {
     return _engine.generate(
       GenerateQuestionRequest(
@@ -26,6 +28,7 @@ class MockQuestionEngineRepository implements QuestionEngineRepository {
         typeCode: typeCode,
         level: level,
         seed: seed,
+        difficulty: difficulty,
       ),
     );
   }
@@ -36,6 +39,7 @@ class MockQuestionEngineRepository implements QuestionEngineRepository {
     required IntelligenceDomain domain,
     required int level,
     required int count,
+    QuestionDifficulty difficulty = QuestionDifficulty.normal,
   }) async {
     return [
       for (var index = 0; index < count; index++)
@@ -47,6 +51,7 @@ class MockQuestionEngineRepository implements QuestionEngineRepository {
             ageGroup: profile.ageGroup,
             index: index,
             level: level,
+            difficulty: difficulty,
           ),
         ),
     ];

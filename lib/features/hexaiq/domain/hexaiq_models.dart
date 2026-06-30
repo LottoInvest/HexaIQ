@@ -1,5 +1,6 @@
 import '../../../core/domain/domain_result.dart';
 import '../../../core/domain/intelligence_domain.dart';
+import '../../../core/domain/question_difficulty.dart';
 
 typedef CognitiveDomain = IntelligenceDomain;
 
@@ -108,6 +109,7 @@ class TestQuestion {
     required this.choices,
     required this.answerIndex,
     required this.explanation,
+    this.difficulty = QuestionDifficulty.normal,
   });
 
   final IntelligenceDomain domain;
@@ -118,6 +120,21 @@ class TestQuestion {
   final List<String> choices;
   final int answerIndex;
   final String explanation;
+  final QuestionDifficulty difficulty;
+
+  TestQuestion copyWith({QuestionDifficulty? difficulty}) {
+    return TestQuestion(
+      id: id,
+      domain: domain,
+      typeCode: typeCode,
+      level: level,
+      prompt: prompt,
+      choices: choices,
+      answerIndex: answerIndex,
+      explanation: explanation,
+      difficulty: difficulty ?? this.difficulty,
+    );
+  }
 }
 
 class QuestionResponse {
@@ -154,6 +171,7 @@ class ReportSummary {
     required this.domainScores,
     required this.recommendations,
     this.domainResults = const {},
+    this.averageDifficulty = QuestionDifficulty.normal,
   });
 
   final int overallScore;
@@ -161,6 +179,7 @@ class ReportSummary {
   final List<DomainScore> domainScores;
   final List<String> recommendations;
   final Map<IntelligenceDomain, DomainResult> domainResults;
+  final QuestionDifficulty averageDifficulty;
 
   ReportSummary copyWith({
     int? overallScore,
@@ -168,6 +187,7 @@ class ReportSummary {
     List<DomainScore>? domainScores,
     List<String>? recommendations,
     Map<IntelligenceDomain, DomainResult>? domainResults,
+    QuestionDifficulty? averageDifficulty,
   }) {
     return ReportSummary(
       overallScore: overallScore ?? this.overallScore,
@@ -175,6 +195,7 @@ class ReportSummary {
       domainScores: domainScores ?? this.domainScores,
       recommendations: recommendations ?? this.recommendations,
       domainResults: domainResults ?? this.domainResults,
+      averageDifficulty: averageDifficulty ?? this.averageDifficulty,
     );
   }
 }

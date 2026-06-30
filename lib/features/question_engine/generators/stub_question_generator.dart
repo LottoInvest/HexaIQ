@@ -34,6 +34,7 @@ class StubQuestionGenerator implements QuestionGenerator {
       answer: answer,
       explanation: '${domain.label} 영역은 현재 mock generator 상태입니다.',
       estimatedTimeSec: 20,
+      difficulty: request.difficulty,
       metadata: QuestionMetadataDto(
         rule: '$typeCode-stub',
         difficultyFactors: const ['stub'],
@@ -42,6 +43,15 @@ class StubQuestionGenerator implements QuestionGenerator {
       ),
       variables: const {'stub': true},
       isStub: true,
+    );
+  }
+
+  @override
+  GeneratedQuestionDto generateFallback(GenerateQuestionRequest request) {
+    return generate(
+      request.copyWith(
+        typeCode: request.typeCode ?? '${domain.generatorPrefix}01',
+      ),
     );
   }
 }

@@ -7,4 +7,8 @@ abstract class QuestionGenerator {
   Set<String> get supportedTypeCodes;
 
   GeneratedQuestionDto generate(GenerateQuestionRequest request);
+
+  GeneratedQuestionDto generateFallback(GenerateQuestionRequest request) {
+    return generate(request);
+  }
 }

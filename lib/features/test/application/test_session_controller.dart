@@ -1,11 +1,17 @@
+import '../../../core/domain/adaptive_difficulty_engine.dart';
 import '../../../core/domain/domain_result.dart';
 import '../../../core/domain/intelligence_domain.dart';
 import '../domain/models/test_session.dart';
 
 class TestSessionController {
-  TestSessionController(this.session);
+  TestSessionController(
+    this.session, {
+    AdaptiveDifficultyEngine? adaptiveDifficultyEngine,
+  }) : _adaptiveDifficultyEngine =
+           adaptiveDifficultyEngine ?? const AdaptiveDifficultyEngine();
 
   TestSession session;
+  final AdaptiveDifficultyEngine _adaptiveDifficultyEngine;
 
   void selectAnswer(int selectedOption) {
     final question = session.currentQuestion;
@@ -24,6 +30,7 @@ class TestSessionController {
     if (session.currentQuestionIndex >= session.questions.length - 1) {
       return;
     }
+    _recordAdaptiveForCurrentQuestion();
     session = session.copyWith(
       currentQuestionIndex: session.currentQuestionIndex + 1,
     );
@@ -61,11 +68,50 @@ class TestSessionController {
   }
 
   TestSession finish({DateTime? completedAt}) {
+    _recordAdaptiveForCurrentQuestion();
     session = session.copyWith(
       completedAt: completedAt ?? DateTime.now(),
       domainResults: _calculateDomainResults(),
     );
     return session;
+  }
+
+  void _recordAdaptiveForCurrentQuestion() {
+    final question = session.currentQuestion;
+    if (question == null ||
+        session.adaptiveRecordedQuestionIds.contains(question.id)) {
+      return;
+    }
+    final selected = session.selectedAnswerFor(question.id);
+    if (selected == null) {
+      return;
+    }
+    final nextProfile = _adaptiveDifficultyEngine.recordAnswer(
+      profile: session.difficultyProfile,
+      isCorrect: selected == question.answerIndex,
+    );
+    final nextQuestions = [...session.questions];
+    final nextDifficultyByQuestionId = {
+      ...session.difficultyByQuestionId,
+      question.id: question.difficulty,
+    };
+    final nextIndex = session.currentQuestionIndex + 1;
+    if (nextIndex < nextQuestions.length) {
+      nextQuestions[nextIndex] = nextQuestions[nextIndex].copyWith(
+        difficulty: nextProfile.currentDifficulty,
+      );
+      nextDifficultyByQuestionId[nextQuestions[nextIndex].id] =
+          nextProfile.currentDifficulty;
+    }
+    session = session.copyWith(
+      questions: nextQuestions,
+      difficultyProfile: nextProfile,
+      difficultyByQuestionId: nextDifficultyByQuestionId,
+      adaptiveRecordedQuestionIds: {
+        ...session.adaptiveRecordedQuestionIds,
+        question.id,
+      },
+    );
   }
 
   Map<IntelligenceDomain, DomainResult> _calculateDomainResults() {

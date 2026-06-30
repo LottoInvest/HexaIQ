@@ -229,7 +229,10 @@ class HexaIQAppState extends ChangeNotifier {
         ),
     ];
     final builtReport = await repository.buildReport(responses);
-    report = builtReport.copyWith(domainResults: session.domainResults);
+    report = builtReport.copyWith(
+      domainResults: session.domainResults,
+      averageDifficulty: session.averageDifficulty,
+    );
     notifyListeners();
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../app/app_routes.dart';
+import '../../../../core/domain/question_difficulty.dart';
 import '../../../question/widgets/scratch_pad_widget.dart';
 import '../../domain/hexaiq_models.dart';
 import '../state/hexaiq_app_state.dart';
@@ -216,6 +217,8 @@ class _QuestionContent extends StatelessWidget {
             Text('$progressPercent%'),
             const SizedBox(width: 12),
             Text(_formatElapsed(displaySeconds)),
+            const SizedBox(width: 12),
+            Text(question.difficulty.labelKo),
           ],
         ),
         SizedBox(height: compact ? 8 : 12),

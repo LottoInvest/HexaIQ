@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hexaiq_app/core/domain/intelligence_domain.dart';
+import 'package:hexaiq_app/core/domain/question_difficulty.dart';
 import 'package:hexaiq_app/features/hexaiq/domain/hexaiq_models.dart';
 import 'package:hexaiq_app/features/hexaiq/domain/hexaiq_repository.dart';
 import 'package:hexaiq_app/features/hexaiq/presentation/state/hexaiq_app_state.dart';
@@ -25,6 +26,7 @@ void main() {
     expect(session.selectedAnswers, isEmpty);
     expect(updated.currentQuestionIndex, 1);
     expect(updated.selectedAnswers['q1'], 0);
+    expect(updated.averageDifficulty, QuestionDifficulty.normal);
   });
 
   test('Question navigation and answer selection are preserved', () {
@@ -87,6 +89,61 @@ void main() {
     expect(numerical?.accuracy, 1);
   });
 
+  test('Adaptive session raises next difficulty after OO', () {
+    final controller = TestSessionController(
+      TestSession(
+        sessionId: 'session-adaptive-oo',
+        startedAt: DateTime(2026),
+        questions: _adaptiveQuestions,
+      ),
+    );
+
+    controller.selectAnswer(1);
+    controller.nextQuestion();
+    controller.selectAnswer(2);
+    controller.nextQuestion();
+
+    expect(
+      controller.session.difficultyProfile.currentDifficulty,
+      QuestionDifficulty.hard,
+    );
+    expect(controller.session.questions[2].difficulty, QuestionDifficulty.hard);
+    expect(
+      controller.session.difficultyByQuestionId['q1'],
+      QuestionDifficulty.normal,
+    );
+    expect(
+      controller.session.difficultyByQuestionId['q3'],
+      QuestionDifficulty.hard,
+    );
+    expect(controller.session.averageDifficulty, QuestionDifficulty.normal);
+  });
+
+  test('Adaptive session lowers next difficulty after XX', () {
+    final controller = TestSessionController(
+      TestSession(
+        sessionId: 'session-adaptive-xx',
+        startedAt: DateTime(2026),
+        questions: _adaptiveQuestions,
+      ),
+    );
+
+    controller.selectAnswer(0);
+    controller.nextQuestion();
+    controller.selectAnswer(0);
+    controller.nextQuestion();
+
+    expect(
+      controller.session.difficultyProfile.currentDifficulty,
+      QuestionDifficulty.easy,
+    );
+    expect(controller.session.questions[2].difficulty, QuestionDifficulty.easy);
+    expect(
+      controller.session.difficultyByQuestionId['q3'],
+      QuestionDifficulty.easy,
+    );
+  });
+
   test(
     'Submit finishes session and AppState calculates score report',
     () async {
@@ -131,6 +188,20 @@ const _questions = [
     choices: ['6', '7', '8', '9'],
     answerIndex: 2,
     explanation: 'Multiply by two.',
+  ),
+];
+
+const _adaptiveQuestions = [
+  ..._questions,
+  TestQuestion(
+    id: 'q3',
+    domain: CognitiveDomain.numerical,
+    typeCode: 'NR03',
+    level: 1,
+    prompt: '3, 6, ?',
+    choices: ['6', '8', '9', '12'],
+    answerIndex: 2,
+    explanation: 'Add three.',
   ),
 ];
 

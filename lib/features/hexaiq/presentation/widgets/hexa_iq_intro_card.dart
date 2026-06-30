@@ -30,6 +30,11 @@ class HexaIQIntroCard extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
+        const SizedBox(height: 6),
+        Text(
+          '응답 결과에 따라 난이도를 조절하는 Adaptive Intelligence Test를 지원합니다.',
+          style: theme.textTheme.bodyMedium,
+        ),
         SizedBox(height: compact ? 8 : 12),
         Wrap(
           spacing: 8,

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../app/app_routes.dart';
 import '../../../core/domain/domain_result.dart';
+import '../../../core/domain/question_difficulty.dart';
 import '../../../core/widgets/action_card.dart';
 import '../../../core/widgets/hexagon_chart.dart';
 import '../../hexaiq/domain/hexaiq_models.dart';
@@ -60,6 +61,11 @@ class ReportSummaryScreen extends StatelessWidget {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 8),
+                    _MetricTile(
+                      label: 'Average Difficulty',
+                      value: report.averageDifficulty.labelKo,
                     ),
                     const SizedBox(height: 12),
                     Center(
