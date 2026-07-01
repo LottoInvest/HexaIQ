@@ -3,7 +3,12 @@ import '../../../../core/domain/difficulty_profile.dart';
 import '../../../../core/domain/intelligence_domain.dart';
 import '../../../../core/domain/question_difficulty.dart';
 import '../../../cat/domain/theta_estimate.dart';
+import '../../../cat/domain/theta_estimation_method.dart';
 import '../../../hexaiq/domain/hexaiq_models.dart';
+import '../../../norm/domain/ability_level.dart';
+import '../../../norm/domain/iq_scale_converter.dart';
+import '../../../norm/domain/norm_profile.dart';
+import '../../../norm/domain/percentile_converter.dart';
 import 'question_record.dart';
 
 class TestSession {
@@ -29,6 +34,11 @@ class TestSession {
     this.totalElapsedSeconds = 0,
     this.baseSeed = 0,
     this.showDebugMetrics = false,
+    this.thetaEstimationMethod = ThetaEstimationMethod.newtonRaphson,
+    this.normProfile = NormProfile.defaultProfile,
+    this.estimatedIQ = 100,
+    this.percentile = 50,
+    this.abilityLevel = AbilityLevel.average,
   }) : thetaEstimate = thetaEstimate ?? ThetaEstimate.initial(),
        thetaHistory = thetaHistory ?? const [];
 
@@ -53,6 +63,18 @@ class TestSession {
   final int totalElapsedSeconds;
   final int baseSeed;
   final bool showDebugMetrics;
+  final ThetaEstimationMethod thetaEstimationMethod;
+  final NormProfile normProfile;
+  final int estimatedIQ;
+  final int percentile;
+  final AbilityLevel abilityLevel;
+
+  double get scaledScore {
+    return const IQScaleConverter().scaledScore(
+      theta: thetaEstimate.theta,
+      profile: normProfile,
+    );
+  }
 
   List<TestQuestion> get activeQuestions {
     return generatedQuestions.isNotEmpty ? generatedQuestions : questions;
@@ -152,6 +174,11 @@ class TestSession {
     int? totalElapsedSeconds,
     int? baseSeed,
     bool? showDebugMetrics,
+    ThetaEstimationMethod? thetaEstimationMethod,
+    NormProfile? normProfile,
+    int? estimatedIQ,
+    int? percentile,
+    AbilityLevel? abilityLevel,
   }) {
     return TestSession(
       sessionId: sessionId ?? this.sessionId,
@@ -177,6 +204,28 @@ class TestSession {
       totalElapsedSeconds: totalElapsedSeconds ?? this.totalElapsedSeconds,
       baseSeed: baseSeed ?? this.baseSeed,
       showDebugMetrics: showDebugMetrics ?? this.showDebugMetrics,
+      thetaEstimationMethod:
+          thetaEstimationMethod ?? this.thetaEstimationMethod,
+      normProfile: normProfile ?? this.normProfile,
+      estimatedIQ: estimatedIQ ?? this.estimatedIQ,
+      percentile: percentile ?? this.percentile,
+      abilityLevel: abilityLevel ?? this.abilityLevel,
+    );
+  }
+
+  TestSession withNormEstimate() {
+    final iq = const IQScaleConverter().estimatedIQ(
+      theta: thetaEstimate.theta,
+      profile: normProfile,
+    );
+    final percentile = const PercentileConverter().percentile(
+      theta: thetaEstimate.theta,
+      profile: normProfile,
+    );
+    return copyWith(
+      estimatedIQ: iq,
+      percentile: percentile,
+      abilityLevel: AbilityLevel.fromIQ(iq),
     );
   }
 }

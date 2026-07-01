@@ -41,8 +41,12 @@ void main() {
       explanation: 'Add one.',
       estimatedTimeSec: 24,
       difficulty: QuestionDifficulty.hard,
+      ruleName: '등차수열',
+      solution: '3',
+      solutionExplanation: '1, 2 다음은 3입니다.',
       metadata: const QuestionMetadataDto(
         rule: 'NR01',
+        ruleName: '등차수열',
         difficultyFactors: ['test'],
       ),
     );
@@ -50,8 +54,14 @@ void main() {
     expect(dto.domain, IntelligenceDomain.numerical);
     expect(dto.typeCode, 'NR01');
     expect(dto.difficulty, QuestionDifficulty.hard);
+    expect(dto.ruleName, '등차수열');
+    expect(dto.solution, '3');
+    expect(dto.solutionExplanation, '1, 2 다음은 3입니다.');
     expect(dto.toJson()['domain'], 'numerical');
     expect(dto.toJson()['difficulty'], 'hard');
+    expect(dto.toJson()['ruleName'], '등차수열');
+    expect(dto.toJson()['solution'], '3');
+    expect(dto.toJson()['solutionExplanation'], '1, 2 다음은 3입니다.');
   });
 
   test('GeneratorFactory returns numerical and five mock generators', () {

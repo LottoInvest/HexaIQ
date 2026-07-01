@@ -1,9 +1,12 @@
 export '../../core/domain/intelligence_domain.dart';
 export '../cat/domain/cat_item_selection_strategy.dart';
 export '../cat/domain/cat_selection_score.dart';
+export '../cat/domain/irt3pl_model.dart';
 export '../cat/domain/item_information.dart';
 export '../cat/domain/likelihood_calculator.dart';
+export '../cat/domain/prior_distribution.dart';
 export '../cat/domain/theta_estimate.dart';
+export '../cat/domain/theta_estimation_method.dart';
 export '../cat/domain/theta_estimator.dart';
 export '../cat/domain/theta_updater.dart';
 export '../item_bank/data/in_memory_item_bank_repository.dart';

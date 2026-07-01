@@ -123,6 +123,7 @@ class GeneratedQuestionDto {
     this.difficultyIndex = 0,
     this.discrimination = 1,
     this.guessing = 0.25,
+    this.upperAsymptote = 1,
     Duration? expectedSolveTime,
     this.itemId,
     this.selectionScore = 1,
@@ -131,6 +132,7 @@ class GeneratedQuestionDto {
     this.hint,
     String? ruleName,
     String? solution,
+    String? solutionExplanation,
     this.variables = const {},
     this.isStub = false,
   }) : expectedSolveTime =
@@ -138,7 +140,8 @@ class GeneratedQuestionDto {
        ruleName = ruleName ?? metadata.ruleName ?? metadata.rule,
        solution =
            solution ??
-           choiceDtos.firstWhere((choice) => choice.key == answerKey).text;
+           choiceDtos.firstWhere((choice) => choice.key == answerKey).text,
+       solutionExplanation = solutionExplanation ?? explanation;
 
   factory GeneratedQuestionDto.fromLegacyChoices({
     required String id,
@@ -157,6 +160,7 @@ class GeneratedQuestionDto {
     double? difficultyIndex,
     double discrimination = 1,
     double guessing = 0.25,
+    double upperAsymptote = 1,
     Duration? expectedSolveTime,
     String? itemId,
     double selectionScore = 1,
@@ -165,6 +169,7 @@ class GeneratedQuestionDto {
     String? hint,
     String? ruleName,
     String? solution,
+    String? solutionExplanation,
     Map<String, Object?> variables = const {},
     bool isStub = false,
   }) {
@@ -193,6 +198,7 @@ class GeneratedQuestionDto {
           (difficulty.level - QuestionDifficulty.normal.level).toDouble(),
       discrimination: discrimination,
       guessing: guessing,
+      upperAsymptote: upperAsymptote,
       expectedSolveTime:
           expectedSolveTime ?? Duration(seconds: estimatedTimeSec),
       itemId: itemId,
@@ -202,6 +208,7 @@ class GeneratedQuestionDto {
       hint: hint,
       ruleName: ruleName,
       solution: solution ?? answer,
+      solutionExplanation: solutionExplanation ?? explanation,
       variables: variables,
       isStub: isStub,
     );
@@ -223,6 +230,7 @@ class GeneratedQuestionDto {
   final double difficultyIndex;
   final double discrimination;
   final double guessing;
+  final double upperAsymptote;
   final Duration expectedSolveTime;
   final String? itemId;
   final double selectionScore;
@@ -231,6 +239,7 @@ class GeneratedQuestionDto {
   final String? hint;
   final String ruleName;
   final String solution;
+  final String solutionExplanation;
   final Map<String, Object?> variables;
   final bool isStub;
 
@@ -256,6 +265,7 @@ class GeneratedQuestionDto {
       'difficultyIndex': difficultyIndex,
       'discrimination': discrimination,
       'guessing': guessing,
+      'upperAsymptote': upperAsymptote,
       'expectedSolveTimeMs': expectedSolveTime.inMilliseconds,
       if (itemId != null) 'itemId': itemId,
       'selectionScore': selectionScore,
@@ -264,6 +274,7 @@ class GeneratedQuestionDto {
       if (hint != null) 'hint': hint,
       'ruleName': ruleName,
       'solution': solution,
+      'solutionExplanation': solutionExplanation,
       'ageGroup': ageGroup,
       'questionText': questionText,
       'choices': choiceDtos.map((choice) => choice.toJson()).toList(),

@@ -36,6 +36,17 @@ class HomeDashboardScreen extends StatelessWidget {
           final screenClass = LayoutBreakpoints.classify(constraints.maxWidth);
           final isWide = screenClass != ScreenClass.compact;
           final isShort = MediaQuery.of(context).size.height < 760;
+          final completedSession = state.testSession?.isComplete == true
+              ? state.testSession
+              : null;
+          final hasRecentNorm =
+              completedSession != null || (profile?.testCount ?? 0) > 0;
+          final recentIQ = completedSession?.estimatedIQ ?? profile?.recentIQ;
+          final recentPercentile =
+              completedSession?.percentile ?? profile?.recentPercentile;
+          final recentAbilityLabel =
+              completedSession?.abilityLevel.labelKo ??
+              profile?.recentAbilityLevel;
           final domainIntro = HexaIQIntroCard(
             compact: !isWide || isShort,
             averageExposure: state.averageExposure,
@@ -65,6 +76,17 @@ class HomeDashboardScreen extends StatelessWidget {
                           : 220,
                     ),
                   ),
+                  if (hasRecentNorm &&
+                      recentIQ != null &&
+                      recentPercentile != null &&
+                      recentAbilityLabel != null) ...[
+                    SizedBox(height: isShort ? 10 : 16),
+                    _RecentNormCard(
+                      estimatedIQ: recentIQ,
+                      percentile: recentPercentile,
+                      abilityLabel: recentAbilityLabel,
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -73,7 +95,8 @@ class HomeDashboardScreen extends StatelessWidget {
             icon: Icons.play_arrow,
             title: '검사 시작',
             body: 'Basic 검사로 전체 인지 프로필을 확인합니다.',
-            onTap: () => Navigator.of(context).pushNamed(AppRoutes.testTypeSelect),
+            onTap: () =>
+                Navigator.of(context).pushNamed(AppRoutes.testTypeSelect),
           );
           final secondaryActions = Column(
             children: [
@@ -157,6 +180,67 @@ class HomeDashboardScreen extends StatelessWidget {
     }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('${domain.label} 영역은 Coming Soon입니다')),
+    );
+  }
+}
+
+class _RecentNormCard extends StatelessWidget {
+  const _RecentNormCard({
+    required this.estimatedIQ,
+    required this.percentile,
+    required this.abilityLabel,
+  });
+
+  final int estimatedIQ;
+  final int percentile;
+  final String abilityLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Expanded(
+              child: _RecentNormMetric(label: '최근 IQ', value: '$estimatedIQ'),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _RecentNormMetric(label: '백분위', value: '$percentile%'),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _RecentNormMetric(label: '수준', value: abilityLabel),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RecentNormMetric extends StatelessWidget {
+  const _RecentNormMetric({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: theme.textTheme.labelMedium),
+        const SizedBox(height: 4),
+        Text(value, style: theme.textTheme.titleMedium),
+      ],
     );
   }
 }

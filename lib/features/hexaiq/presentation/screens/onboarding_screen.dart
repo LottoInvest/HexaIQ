@@ -37,12 +37,11 @@ class OnboardingScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                       Text(
                         headline,
-                        style: Theme.of(context).textTheme.titleLarge
-                            ?.copyWith(
-                              fontSize: isCompact ? 18 : 20,
-                              height: 1.35,
-                              fontWeight: FontWeight.normal,
-                            ),
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontSize: isCompact ? 18 : 20,
+                          height: 1.35,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                       SizedBox(height: isCompact ? 12 : 20),
                       ThemeModeSelector(compact: isCompact),
@@ -77,10 +76,18 @@ class OnboardingScreen extends StatelessWidget {
     );
   }
 
-  void _start(BuildContext context) {
+  Future<void> _start(BuildContext context) async {
     final state = context.read<HexaIQAppState>();
+    if (!state.profilesLoaded) {
+      await state.loadInitialData();
+    }
+    if (!context.mounted) {
+      return;
+    }
     Navigator.of(context).pushReplacementNamed(
-      state.profiles.isEmpty ? AppRoutes.profileCreate : AppRoutes.profileSelect,
+      state.profiles.isEmpty
+          ? AppRoutes.profileCreate
+          : AppRoutes.profileSelect,
     );
   }
 
@@ -92,7 +99,7 @@ class OnboardingScreen extends StatelessWidget {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${domain.label} 영역은 Coming Soon입니다')),
+      SnackBar(content: Text('${domain.label} 영역은 Coming Soon입니다.')),
     );
   }
 }

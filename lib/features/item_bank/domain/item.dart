@@ -10,6 +10,7 @@ class Item {
     required this.difficultyIndex,
     required this.discrimination,
     required this.guessing,
+    this.upperAsymptote = 1,
     required this.expectedSolveTime,
     required this.question,
     required this.choices,
@@ -19,6 +20,10 @@ class Item {
     required this.version,
     required this.createdAt,
     required this.updatedAt,
+    this.hint,
+    this.ruleName,
+    this.solution,
+    this.solutionExplanation,
   });
 
   factory Item.fromGeneratedQuestion(
@@ -35,11 +40,16 @@ class Item {
       difficultyIndex: question.difficultyIndex,
       discrimination: question.discrimination,
       guessing: question.guessing,
+      upperAsymptote: question.upperAsymptote,
       expectedSolveTime: question.expectedSolveTime,
       question: question.questionText,
       choices: question.choices,
       answer: question.answer,
       explanation: question.explanation,
+      hint: question.hint,
+      ruleName: question.ruleName,
+      solution: question.solution,
+      solutionExplanation: question.solutionExplanation,
       tags: [
         question.domain.name,
         question.typeCode,
@@ -59,11 +69,16 @@ class Item {
   final double difficultyIndex;
   final double discrimination;
   final double guessing;
+  final double upperAsymptote;
   final Duration expectedSolveTime;
   final String question;
   final List<String> choices;
   final String answer;
   final String explanation;
+  final String? hint;
+  final String? ruleName;
+  final String? solution;
+  final String? solutionExplanation;
   final List<String> tags;
   final String version;
   final DateTime createdAt;
@@ -87,11 +102,16 @@ class Item {
     double? difficultyIndex,
     double? discrimination,
     double? guessing,
+    double? upperAsymptote,
     Duration? expectedSolveTime,
     String? question,
     List<String>? choices,
     String? answer,
     String? explanation,
+    String? hint,
+    String? ruleName,
+    String? solution,
+    String? solutionExplanation,
     List<String>? tags,
     String? version,
     DateTime? createdAt,
@@ -104,11 +124,16 @@ class Item {
       difficultyIndex: difficultyIndex ?? this.difficultyIndex,
       discrimination: discrimination ?? this.discrimination,
       guessing: guessing ?? this.guessing,
+      upperAsymptote: upperAsymptote ?? this.upperAsymptote,
       expectedSolveTime: expectedSolveTime ?? this.expectedSolveTime,
       question: question ?? this.question,
       choices: choices ?? this.choices,
       answer: answer ?? this.answer,
       explanation: explanation ?? this.explanation,
+      hint: hint ?? this.hint,
+      ruleName: ruleName ?? this.ruleName,
+      solution: solution ?? this.solution,
+      solutionExplanation: solutionExplanation ?? this.solutionExplanation,
       tags: tags ?? this.tags,
       version: version ?? this.version,
       createdAt: createdAt ?? this.createdAt,

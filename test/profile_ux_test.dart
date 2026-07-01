@@ -110,6 +110,17 @@ class _ProfileRepository implements HexaIQRepository {
   Future<List<UserProfile>> loadProfiles() async => initialProfiles;
 
   @override
+  Future<void> saveProfiles(List<UserProfile> profiles) async {}
+
+  @override
+  Future<void> saveTestResult(TestResultSummary result) async {}
+
+  @override
+  Future<List<TestResultSummary>> loadTestHistory(String profileId) async {
+    return const [];
+  }
+
+  @override
   Future<ReportSummary> buildReport(List<QuestionResponse> responses) async {
     return const ReportSummary(
       overallScore: 0,

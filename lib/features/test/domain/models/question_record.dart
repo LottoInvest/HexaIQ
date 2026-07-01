@@ -11,6 +11,7 @@ class QuestionRecord {
     required this.difficultyIndex,
     required this.discrimination,
     required this.guessing,
+    required this.upperAsymptote,
     required this.itemId,
     required this.selectionScore,
     this.thetaBefore = 0,
@@ -19,6 +20,8 @@ class QuestionRecord {
     this.catSelectionScore = 0,
     this.expectedProbability = 0.5,
     this.likelihood = 1,
+    this.logLikelihood = 0,
+    this.posteriorContribution = 0,
     this.residual = 0,
     this.totalInformation = 0,
     this.correct,
@@ -35,6 +38,8 @@ class QuestionRecord {
     double thetaAfter = 0,
     double expectedProbability = 0.5,
     double likelihood = 1,
+    double logLikelihood = 0,
+    double posteriorContribution = 0,
     double residual = 0,
     double totalInformation = 0,
   }) {
@@ -49,6 +54,7 @@ class QuestionRecord {
       difficultyIndex: question.difficultyIndex,
       discrimination: question.discrimination,
       guessing: question.guessing,
+      upperAsymptote: question.upperAsymptote,
       itemId: question.itemId ?? question.id,
       selectionScore: question.selectionScore,
       thetaBefore: thetaBefore,
@@ -57,6 +63,8 @@ class QuestionRecord {
       catSelectionScore: question.catSelectionScore,
       expectedProbability: expectedProbability,
       likelihood: likelihood,
+      logLikelihood: logLikelihood,
+      posteriorContribution: posteriorContribution,
       residual: residual,
       totalInformation: totalInformation,
       thetaEstimate: thetaAfter,
@@ -73,6 +81,7 @@ class QuestionRecord {
   final double difficultyIndex;
   final double discrimination;
   final double guessing;
+  final double upperAsymptote;
   final String itemId;
   final double selectionScore;
   final double thetaBefore;
@@ -81,6 +90,8 @@ class QuestionRecord {
   final double catSelectionScore;
   final double expectedProbability;
   final double likelihood;
+  final double logLikelihood;
+  final double posteriorContribution;
   final double residual;
   final double totalInformation;
   final double thetaEstimate;
@@ -96,6 +107,7 @@ class QuestionRecord {
     double? difficultyIndex,
     double? discrimination,
     double? guessing,
+    double? upperAsymptote,
     String? itemId,
     double? selectionScore,
     double? thetaBefore,
@@ -104,6 +116,8 @@ class QuestionRecord {
     double? catSelectionScore,
     double? expectedProbability,
     double? likelihood,
+    double? logLikelihood,
+    double? posteriorContribution,
     double? residual,
     double? totalInformation,
     double? thetaEstimate,
@@ -119,6 +133,7 @@ class QuestionRecord {
       difficultyIndex: difficultyIndex ?? this.difficultyIndex,
       discrimination: discrimination ?? this.discrimination,
       guessing: guessing ?? this.guessing,
+      upperAsymptote: upperAsymptote ?? this.upperAsymptote,
       itemId: itemId ?? this.itemId,
       selectionScore: selectionScore ?? this.selectionScore,
       thetaBefore: thetaBefore ?? this.thetaBefore,
@@ -127,6 +142,9 @@ class QuestionRecord {
       catSelectionScore: catSelectionScore ?? this.catSelectionScore,
       expectedProbability: expectedProbability ?? this.expectedProbability,
       likelihood: likelihood ?? this.likelihood,
+      logLikelihood: logLikelihood ?? this.logLikelihood,
+      posteriorContribution:
+          posteriorContribution ?? this.posteriorContribution,
       residual: residual ?? this.residual,
       totalInformation: totalInformation ?? this.totalInformation,
       thetaEstimate: thetaEstimate ?? this.thetaEstimate,

@@ -1,6 +1,12 @@
+import 'dart:math' as math;
+import 'dart:async';
+
 import '../../../core/domain/adaptive_difficulty_engine.dart';
 import '../../../core/domain/domain_result.dart';
 import '../../../core/domain/intelligence_domain.dart';
+import '../../calibration/domain/calibration_profile.dart';
+import '../../calibration/domain/calibration_repository.dart';
+import '../../calibration/domain/calibration_updater.dart';
 import '../../cat/domain/theta_estimator.dart';
 import '../domain/models/test_session.dart';
 import '../../hexaiq/domain/hexaiq_models.dart';
@@ -11,13 +17,18 @@ class TestSessionController {
     this.session, {
     AdaptiveDifficultyEngine? adaptiveDifficultyEngine,
     ThetaEstimator? thetaEstimator,
+    this.calibrationRepository,
+    CalibrationUpdater? calibrationUpdater,
   }) : _adaptiveDifficultyEngine =
            adaptiveDifficultyEngine ?? const AdaptiveDifficultyEngine(),
-       _thetaEstimator = thetaEstimator ?? const ThetaEstimator();
+       _thetaEstimator = thetaEstimator ?? const ThetaEstimator(),
+       _calibrationUpdater = calibrationUpdater ?? const CalibrationUpdater();
 
   TestSession session;
   final AdaptiveDifficultyEngine _adaptiveDifficultyEngine;
   final ThetaEstimator _thetaEstimator;
+  final CalibrationRepository? calibrationRepository;
+  final CalibrationUpdater _calibrationUpdater;
 
   void selectAnswer(int selectedOption) {
     final question = session.currentQuestion;
@@ -98,10 +109,12 @@ class TestSessionController {
 
   TestSession finish({DateTime? completedAt}) {
     _recordAdaptiveForCurrentQuestion();
-    session = session.copyWith(
-      completedAt: completedAt ?? DateTime.now(),
-      domainResults: _calculateDomainResults(),
-    );
+    session = session
+        .copyWith(
+          completedAt: completedAt ?? DateTime.now(),
+          domainResults: _calculateDomainResults(),
+        )
+        .withNormEstimate();
     return session;
   }
 
@@ -137,29 +150,49 @@ class TestSessionController {
     final thetaAfter = _thetaEstimator.estimate(
       history: baseHistory,
       current: thetaBefore,
+      method: session.thetaEstimationMethod,
     );
     final expectedProbability = _thetaEstimator.calculator.probability(
       theta: thetaAfter.theta,
       difficultyIndex: question.difficultyIndex,
       discrimination: question.discrimination,
+      guessing: question.guessing,
+      upperAsymptote: question.upperAsymptote,
+      modelType: _thetaEstimator.modelType,
     );
     final likelihood = _thetaEstimator.calculator.likelihood(
       theta: thetaAfter.theta,
       difficultyIndex: question.difficultyIndex,
       discrimination: question.discrimination,
       isCorrect: isCorrect,
+      guessing: question.guessing,
+      upperAsymptote: question.upperAsymptote,
+      modelType: _thetaEstimator.modelType,
     );
+    final logLikelihood = likelihood > 0 && likelihood.isFinite
+        ? math.log(likelihood.clamp(1e-12, 1.0).toDouble())
+        : 0.0;
+    final priorContribution = _thetaEstimator.prior.logDensity(
+      thetaAfter.theta,
+    );
+    final posteriorContribution =
+        logLikelihood + (priorContribution.isFinite ? priorContribution : 0.0);
     final residual = _thetaEstimator.calculator.residual(
       theta: thetaAfter.theta,
       difficultyIndex: question.difficultyIndex,
       discrimination: question.discrimination,
       isCorrect: isCorrect,
+      guessing: question.guessing,
+      upperAsymptote: question.upperAsymptote,
+      modelType: _thetaEstimator.modelType,
     );
     final itemInformation = _thetaEstimator.calculator.information(
       theta: thetaAfter.theta,
       difficultyIndex: question.difficultyIndex,
       discrimination: question.discrimination,
       guessing: question.guessing,
+      upperAsymptote: question.upperAsymptote,
+      modelType: _thetaEstimator.modelType,
     );
     final totalInformation = _thetaEstimator.totalInformation(
       history: baseHistory,
@@ -173,10 +206,19 @@ class TestSessionController {
         itemInformation: itemInformation,
         expectedProbability: expectedProbability,
         likelihood: likelihood,
+        logLikelihood: logLikelihood,
+        posteriorContribution: posteriorContribution.isFinite
+            ? posteriorContribution
+            : 0.0,
         residual: residual,
         totalInformation: totalInformation,
       ),
     ];
+    final recorded = questionHistory.last;
+    final calibrationRepository = this.calibrationRepository;
+    if (calibrationRepository != null) {
+      unawaited(_updateCalibration(calibrationRepository, recorded));
+    }
     final nextIndex = session.currentQuestionIndex + 1;
     if (nextIndex < nextQuestions.length) {
       nextQuestions[nextIndex] = nextQuestions[nextIndex].copyWith(
@@ -200,6 +242,23 @@ class TestSessionController {
         question.id,
       },
     );
+  }
+
+  Future<void> _updateCalibration(
+    CalibrationRepository repository,
+    QuestionRecord record,
+  ) async {
+    final current =
+        await repository.load(record.itemId) ??
+        CalibrationProfile(
+          itemId: record.itemId,
+          difficulty: record.difficultyIndex,
+          discrimination: record.discrimination,
+          guessing: record.guessing,
+          upperAsymptote: record.upperAsymptote,
+        );
+    final next = _calibrationUpdater.update(current: current, response: record);
+    await repository.save(next);
   }
 
   Map<IntelligenceDomain, DomainResult> _calculateDomainResults() {

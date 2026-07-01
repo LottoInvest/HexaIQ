@@ -1,9 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hexaiq_app/core/domain/intelligence_domain.dart';
 import 'package:hexaiq_app/core/domain/question_difficulty.dart';
+import 'package:hexaiq_app/features/cat/domain/theta_estimation_method.dart';
 import 'package:hexaiq_app/features/hexaiq/domain/hexaiq_models.dart';
 import 'package:hexaiq_app/features/hexaiq/domain/hexaiq_repository.dart';
 import 'package:hexaiq_app/features/hexaiq/presentation/state/hexaiq_app_state.dart';
+import 'package:hexaiq_app/features/norm/domain/ability_level.dart';
 import 'package:hexaiq_app/features/test/application/test_session_controller.dart';
 import 'package:hexaiq_app/features/test/domain/models/test_session.dart';
 
@@ -203,6 +205,9 @@ void main() {
       );
       expect(state.testSession?.thetaHistory.length, 5);
       expect(state.testSession?.thetaEstimate.theta, greaterThan(0));
+      expect(state.testSession?.estimatedIQ, inInclusiveRange(55, 145));
+      expect(state.testSession?.percentile, inInclusiveRange(1, 99));
+      expect(state.testSession?.abilityLevel, isA<AbilityLevel>());
       expect(state.topExposureStatuses, isNotEmpty);
       expect(state.mostUsedExposure?.exposureCount, greaterThan(0));
       expect(state.averageExposure, greaterThan(0));
@@ -214,6 +219,36 @@ void main() {
       expect(state.report?.averageDifficulty, isNot(QuestionDifficulty.normal));
     },
   );
+
+  test('AppState can run adaptive flow with MAP and EAP methods', () async {
+    for (final method in [
+      ThetaEstimationMethod.map,
+      ThetaEstimationMethod.eap,
+    ]) {
+      final state = HexaIQAppState(repository: _FakeRepository());
+      await Future<void>.delayed(Duration.zero);
+      state.setThetaEstimationMethod(method);
+      await state.startTest();
+
+      for (var i = 0; i < 4; i++) {
+        final question = state.currentQuestion!;
+        state.selectAnswer(question.answerIndex);
+        state.nextQuestion();
+        expect(state.testSession?.thetaEstimate.method, method);
+        expect(state.currentQuestion, isNotNull);
+      }
+
+      final lastQuestion = state.currentQuestion!;
+      state.selectAnswer(lastQuestion.answerIndex);
+      await state.submitTest();
+
+      expect(state.testSession?.isComplete, isTrue);
+      expect(state.testSession?.questionHistory.length, 5);
+      expect(state.testSession?.thetaHistory.length, 5);
+      expect(state.testSession?.thetaEstimate.method, method);
+      expect(state.report, isNotNull);
+    }
+  });
 }
 
 const _questions = [
@@ -254,6 +289,17 @@ const _adaptiveQuestions = [
 ];
 
 class _FakeRepository implements HexaIQRepository {
+  @override
+  Future<void> saveProfiles(List<UserProfile> profiles) async {}
+
+  @override
+  Future<void> saveTestResult(TestResultSummary result) async {}
+
+  @override
+  Future<List<TestResultSummary>> loadTestHistory(String profileId) async {
+    return const [];
+  }
+
   @override
   Future<ReportSummary> buildReport(List<QuestionResponse> responses) async {
     final correct = responses.where((response) => response.isCorrect).length;

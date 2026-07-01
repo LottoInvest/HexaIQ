@@ -82,6 +82,7 @@ class CATItemSelectionStrategy implements ItemSelectionStrategy {
       difficultyIndex: item.difficultyIndex,
       discrimination: item.discrimination,
       guessing: item.guessing,
+      upperAsymptote: item.upperAsymptote,
     );
     final exposureScore =
         exposureStatus?.selectionScore ??

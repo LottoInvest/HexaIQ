@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hexaiq_app/core/theme/app_theme.dart';
+import 'package:hexaiq_app/core/widgets/hexagon_chart.dart';
 import 'package:hexaiq_app/features/hexaiq/data/mock_hexaiq_repository.dart';
 import 'package:hexaiq_app/features/hexaiq/domain/hexaiq_models.dart';
 import 'package:hexaiq_app/features/hexaiq/presentation/screens/onboarding_screen.dart';
@@ -126,6 +127,10 @@ void main() {
     final chartGap = tester.widget<SizedBox>(
       find.byKey(const Key('intro-chart-body-gap')),
     );
+    final chartSafeArea = tester.widget<SizedBox>(
+      find.byKey(const Key('intro-chart-safe-area')),
+    );
+    final chart = tester.widget<HexagonChart>(find.byType(HexagonChart).last);
     final bodyGap = tester.widget<SizedBox>(
       find.byKey(const Key('intro-body-domain-gap')),
     );
@@ -133,6 +138,9 @@ void main() {
       find.byKey(const Key('intro-domain-bottom-gap')),
     );
 
+    expect(chartSafeArea.height, 170);
+    expect(chart.size, 156);
+    expect(chart.labelFontSize, 14);
     expect(chartGap.height, 18);
     expect(bodyGap.height, 20);
     expect(bottomGap.height, 16);
@@ -232,7 +240,7 @@ void main() {
     await tester.pump();
 
     const arithmeticHint = '등차수열입니다. 앞뒤 숫자의 차이가 일정한지 확인해보세요.';
-    const cubeHint = '세제곱수 규칙입니다. 2³, 3³, 4³처럼 생각해보세요.';
+    const cubeHint = '2³, 3³, 4³처럼 세제곱 규칙을 찾아보세요.';
     expect(find.text(arithmeticHint), findsNothing);
     await tester.pump(const Duration(milliseconds: 10));
     expect(find.text(arithmeticHint), findsOneWidget);

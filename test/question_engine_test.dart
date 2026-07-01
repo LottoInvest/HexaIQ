@@ -42,7 +42,7 @@ void main() {
     },
   );
 
-  test('NumericalGenerator provides specific cube hint', () {
+  test('NumericalGenerator provides structured cube hint data', () {
     final generator = NumericalGenerator();
 
     final question = generator.generate(
@@ -57,7 +57,18 @@ void main() {
       ),
     );
 
-    expect(question.hint, '세제곱수 규칙입니다. 2³, 3³, 4³처럼 생각해보세요.');
+    expect(question.ruleName, '세제곱수');
+    expect(question.hint, '2³, 3³, 4³처럼 세제곱 규칙을 찾아보세요.');
+    expect(question.solution, question.answer);
+    expect(question.solutionExplanation, contains('다음은'));
+    expect(question.solutionExplanation, contains('³입니다.'));
+    expect(question.variables['ruleName'], '세제곱수');
+    expect(question.variables['solution'], question.answer);
+    expect(
+      question.variables['solutionExplanation'],
+      question.solutionExplanation,
+    );
+    expect(question.metadata.ruleName, '세제곱수');
   });
 
   test('AgeMapper clamps level to age group range', () {
@@ -210,6 +221,10 @@ void main() {
 
     expect(question.itemId, isNotNull);
     expect(question.variables['itemId'], question.itemId);
+    expect(question.ruleName.trim(), isNotEmpty);
+    expect(question.solution, question.answer);
+    expect(question.solutionExplanation.trim(), isNotEmpty);
+    expect(question.hint?.trim(), isNotEmpty);
     expect(question.metadata.version, 'v0.6.0');
   });
 

@@ -406,17 +406,25 @@ class QuestionEngine {
       difficultyIndex: item.difficultyIndex,
       discrimination: item.discrimination,
       guessing: item.guessing,
+      upperAsymptote: item.upperAsymptote,
       expectedSolveTime: item.expectedSolveTime,
       itemId: item.id,
       selectionScore: selectionScore,
       itemInformation: itemInformation,
       catSelectionScore: catSelectionScore,
+      hint: item.hint,
+      ruleName: item.ruleName,
+      solution: item.solution ?? item.answer,
+      solutionExplanation: item.solutionExplanation ?? item.explanation,
       variables: {
         'itemId': item.id,
         'itemVersion': item.version,
         'selectionScore': selectionScore,
         'itemInformation': itemInformation,
         'catSelectionScore': catSelectionScore,
+        if (item.ruleName != null) 'ruleName': item.ruleName,
+        'solution': item.solution ?? item.answer,
+        'solutionExplanation': item.solutionExplanation ?? item.explanation,
       },
       isStub: item.hasTag('stub'),
     );
@@ -502,15 +510,30 @@ class QuestionEngine {
             .toDouble(),
         discrimination: 1,
         guessing: 0.25,
+        upperAsymptote: 1,
       ),
       catSelectionScore: 0,
+      hint: '앞뒤 숫자의 차이가 일정한지 확인해보세요.',
+      ruleName: '등차수열',
+      solution: '$answer',
+      solutionExplanation:
+          '${terms.join(', ')}처럼 매번 $diff씩 증가하므로 다음 값은 $answer입니다.',
       metadata: QuestionMetadataDto(
         rule: 'NR01-fallback',
+        ruleName: '등차수열',
         difficultyFactors: const ['arithmetic_sequence', 'fallback'],
         status: 'fallback',
         message: 'Generated after validation retries were exhausted.',
       ),
-      variables: {'terms': terms, 'diff': diff, 'fallback': true},
+      variables: {
+        'terms': terms,
+        'diff': diff,
+        'fallback': true,
+        'ruleName': '등차수열',
+        'solution': '$answer',
+        'solutionExplanation':
+            '${terms.join(', ')}처럼 매번 $diff씩 증가하므로 다음 값은 $answer입니다.',
+      },
     );
   }
 

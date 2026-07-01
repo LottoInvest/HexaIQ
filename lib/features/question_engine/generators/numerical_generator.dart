@@ -82,12 +82,14 @@ class NumericalGenerator implements QuestionGenerator {
     String? hint,
     String? ruleName,
     String? solution,
+    String? solutionExplanation,
     Map<String, Object?> variables = const {},
   }) {
     final level = request.level ?? 1;
     final resolvedRuleName = ruleName ?? _ruleNameFor(typeCode);
     final resolvedHint = hint ?? _hintFor(typeCode, resolvedRuleName);
     final resolvedSolution = solution ?? answer;
+    final resolvedSolutionExplanation = solutionExplanation ?? explanation;
     debugPrint('[Hint] Rule=$resolvedRuleName Hint=$resolvedHint');
     return GeneratedQuestionDto.fromLegacyChoices(
       id: '${request.testId}-$typeCode-${request.seed}-${request.index}',
@@ -105,6 +107,7 @@ class NumericalGenerator implements QuestionGenerator {
       hint: resolvedHint,
       ruleName: resolvedRuleName,
       solution: resolvedSolution,
+      solutionExplanation: resolvedSolutionExplanation,
       metadata: QuestionMetadataDto(
         rule: typeCode,
         ruleName: resolvedRuleName,
@@ -118,6 +121,7 @@ class NumericalGenerator implements QuestionGenerator {
         ...variables,
         'ruleName': resolvedRuleName,
         'solution': resolvedSolution,
+        'solutionExplanation': resolvedSolutionExplanation,
       },
     );
   }
@@ -310,7 +314,7 @@ class NumericalGenerator implements QuestionGenerator {
       answer: '$answer',
       explanation: '연속된 자연수의 제곱입니다.',
       factors: const ['squares'],
-      hint: '제곱수 규칙입니다. 2², 3², 4²처럼 생각해보세요.',
+      hint: '2², 3², 4²처럼 제곱수 규칙을 찾아보세요.',
       variables: {'start': n},
     );
   }
@@ -331,7 +335,13 @@ class NumericalGenerator implements QuestionGenerator {
       answer: '$answer',
       explanation: '연속된 자연수의 세제곱입니다.',
       factors: const ['cubes'],
-      hint: '세제곱수 규칙입니다. 2³, 3³, 4³처럼 생각해보세요.',
+      hint: '2³, 3³, 4³처럼 세제곱 규칙을 찾아보세요.',
+      solutionExplanation:
+          '${terms[0]}=$n³\n'
+          '${terms[1]}=${n + 1}³\n'
+          '${terms[2]}=${n + 2}³\n'
+          '${terms[3]}=${n + 3}³\n'
+          '다음은 ${n + 4}³입니다.',
       variables: {'start': n},
     );
   }

@@ -68,7 +68,7 @@ class ReportSummaryScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     _MetricTile(
                       label: '전체 문항',
-                      value: '${session?.questionHistory.length ?? 0}',
+                      value: '${state.totalQuestionCount}',
                     ),
                     const SizedBox(height: 8),
                     _MetricTile(
@@ -85,6 +85,8 @@ class ReportSummaryScreen extends StatelessWidget {
                     if (session != null) ...[
                       const SizedBox(height: 8),
                       _ThetaSummary(session: session),
+                      const SizedBox(height: 8),
+                      _NormSummary(session: session),
                     ],
                     const SizedBox(height: 12),
                     Center(
@@ -100,6 +102,26 @@ class ReportSummaryScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(report.summary),
+                    if (report.recommendations.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        '다음 추천 훈련',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      for (final recommendation in report.recommendations)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Text('- $recommendation'),
+                        ),
+                    ],
+                    if (session != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        '현재 IQ는 초기 추정값입니다. 향후 데이터가 축적되면 더 정확해집니다.',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
                       icon: const Icon(Icons.radar),
@@ -152,6 +174,34 @@ class ReportSummaryScreen extends StatelessWidget {
       return '$minutes분';
     }
     return '$minutes분 $remaining초';
+  }
+}
+
+class _NormSummary extends StatelessWidget {
+  const _NormSummary({required this.session});
+
+  final TestSession session;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _MetricTile(label: '예상 IQ', value: '${session.estimatedIQ}'),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _MetricTile(label: '백분위', value: '상위 ${session.percentile}%'),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _MetricTile(
+            label: '능력 수준',
+            value: session.abilityLevel.labelKo,
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -292,20 +342,41 @@ class _DebugMetricsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('개발 디버그', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            for (var i = 0; i < session.questionHistory.length; i++)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Text(_debugLine(i, session.questionHistory[i])),
+      child: ExpansionTile(
+        title: const Text('Debug Metrics'),
+        subtitle: const Text('Theta / IRT / CAT / Calibration'),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Model 2PL'),
+              Text('Theta Method ${session.thetaEstimate.method.label}'),
+              Text(
+                'Posterior Peak '
+                '${session.thetaEstimate.posteriorPeak.toStringAsExponential(2)}',
               ),
-          ],
-        ),
+              Text(
+                'Posterior Mean '
+                '${session.thetaEstimate.posteriorMean.toStringAsFixed(2)}',
+              ),
+              Text(
+                'Posterior Variance '
+                '${session.thetaEstimate.posteriorVariance.toStringAsFixed(2)}',
+              ),
+              Text('Scaled Score ${session.scaledScore.toStringAsFixed(2)}'),
+              Text('Estimated IQ ${session.estimatedIQ}'),
+              Text('Percentile ${session.percentile}%'),
+              Text('Ability Level ${session.abilityLevel.labelKo}'),
+              const SizedBox(height: 8),
+              for (var i = 0; i < session.questionHistory.length; i++)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text(_debugLine(i, session.questionHistory[i])),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -313,10 +384,16 @@ class _DebugMetricsCard extends StatelessWidget {
   String _debugLine(int index, QuestionRecord record) {
     return 'Q${index + 1} | item ${record.itemId} | '
         'theta=${record.thetaBefore.toStringAsFixed(2)}'
-        '→${record.thetaAfter.toStringAsFixed(2)} | '
+        '->${record.thetaAfter.toStringAsFixed(2)} | '
         'p=${record.expectedProbability.toStringAsFixed(2)} | '
         'likelihood=${record.likelihood.toStringAsFixed(2)} | '
+        'logLikelihood=${record.logLikelihood.toStringAsFixed(2)} | '
+        'posterior=${record.posteriorContribution.toStringAsFixed(2)} | '
         'info=${record.itemInformation.toStringAsFixed(2)} | '
+        'IRT(a=${record.discrimination.toStringAsFixed(2)}, '
+        'b=${record.difficultyIndex.toStringAsFixed(2)}, '
+        'c=${record.guessing.toStringAsFixed(2)}) | '
+        'Calibration(n/a) | '
         'CAT=${record.catSelectionScore.toStringAsFixed(2)}';
   }
 }

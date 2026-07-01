@@ -1,19 +1,34 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../../../core/domain/domain_result.dart';
 import '../../../core/domain/intelligence_domain.dart';
 import '../../../core/domain/question_difficulty.dart';
+import '../../../core/persistence/hexa_iq_database.dart';
 import '../../question_engine/data/mock_question_api.dart';
 import '../../question_engine/domain/question_engine_models.dart';
 import '../domain/hexaiq_models.dart';
 import '../domain/hexaiq_repository.dart';
 
 class MockHexaIQRepository implements HexaIQRepository {
-  MockHexaIQRepository({MockQuestionApi? questionApi})
+  MockHexaIQRepository({MockQuestionApi? questionApi, this.database})
     : _questionApi = questionApi ?? MockQuestionApi();
 
   final MockQuestionApi _questionApi;
+  final HexaIQDatabase? database;
 
   @override
   Future<List<UserProfile>> loadProfiles() async {
+    final database = this.database;
+    if (database != null) {
+      final db = await database.open();
+      final rows = await db.query('profiles', orderBy: 'id ASC');
+      if (rows.isNotEmpty) {
+        return rows.map(UserProfile.fromMap).toList(growable: false);
+      }
+      final defaults = await MockHexaIQRepository().loadProfiles();
+      await saveProfiles(defaults);
+      return defaults;
+    }
     return const [
       UserProfile(
         id: 'profile-1',
@@ -30,6 +45,54 @@ class MockHexaIQRepository implements HexaIQRepository {
         avatar: 'S',
       ),
     ];
+  }
+
+  @override
+  Future<void> saveProfiles(List<UserProfile> profiles) async {
+    final database = this.database;
+    if (database == null) {
+      return;
+    }
+    final db = await database.open();
+    final batch = db.batch();
+    for (final profile in profiles) {
+      batch.insert(
+        'profiles',
+        profile.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> saveTestResult(TestResultSummary result) async {
+    final database = this.database;
+    if (database == null) {
+      return;
+    }
+    final db = await database.open();
+    await db.insert(
+      'test_results',
+      result.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  @override
+  Future<List<TestResultSummary>> loadTestHistory(String profileId) async {
+    final database = this.database;
+    if (database == null) {
+      return const [];
+    }
+    final db = await database.open();
+    final rows = await db.query(
+      'test_results',
+      where: 'profile_id = ?',
+      whereArgs: [profileId],
+      orderBy: 'completed_at DESC',
+    );
+    return rows.map(TestResultSummary.fromMap).toList(growable: false);
   }
 
   @override
@@ -67,7 +130,7 @@ class MockHexaIQRepository implements HexaIQRepository {
         percentile: isComingSoon ? 0 : (score * 0.9).round().clamp(1, 99),
         growth: isComingSoon ? 0 : 2.5 + domainCatalog.indexOf(info) * 0.7,
         comment: isComingSoon
-            ? '${info.label} 영역은 Coming Soon입니다.'
+            ? '${info.label} 영역은 곧 확장될 예정입니다.'
             : '${info.label}는 ${info.description}과 관련된 참고 지표입니다. 반복 검사로 변화 추이를 확인하세요.',
         isComingSoon: isComingSoon,
       );
@@ -82,12 +145,11 @@ class MockHexaIQRepository implements HexaIQRepository {
 
     return ReportSummary(
       overallScore: overall,
-      summary:
-          '이번 MVP 검사에서는 Numerical 결과를 실제 계산하고, 나머지 영역은 Coming Soon으로 표시합니다.',
+      summary: '이번 MVP 검사에서는 수리 결과를 실제 계산하고, 나머지 영역은 곧 확장될 예정입니다.',
       domainScores: scores,
       recommendations: const [
-        'Numerical 영역은 Basic 재검사로 변화 추이를 확인하세요.',
-        'Verbal, Spatial, Memory, Logic, Processing은 이후 실제 문항으로 확장됩니다.',
+        '수리 영역은 기본 재검사로 변화 추이를 확인하세요.',
+        '언어, 공간, 기억, 논리, 처리속도는 이후 실제 문항으로 확장됩니다.',
         '강한 영역은 심화 문항으로 넓히고, 약한 영역은 짧게 반복하는 훈련이 좋습니다.',
       ],
       domainResults: domainResults,
@@ -97,6 +159,17 @@ class MockHexaIQRepository implements HexaIQRepository {
 
   @override
   Future<List<GrowthPoint>> loadGrowth(UserProfile profile) async {
+    final history = await loadTestHistory(profile.id);
+    if (history.isNotEmpty) {
+      final recent = history.take(6).toList(growable: false);
+      return [
+        for (var i = 0; i < recent.length; i++)
+          GrowthPoint(
+            month: 'T${recent.length - i}',
+            score: recent[i].estimatedIQ,
+          ),
+      ].reversed.toList(growable: false);
+    }
     return const [
       GrowthPoint(month: '3월', score: 61),
       GrowthPoint(month: '4월', score: 64),
@@ -135,6 +208,7 @@ class MockHexaIQRepository implements HexaIQRepository {
       difficultyIndex: dto.difficultyIndex,
       discrimination: dto.discrimination,
       guessing: dto.guessing,
+      upperAsymptote: dto.upperAsymptote,
       expectedSolveTime: dto.expectedSolveTime,
       itemId: dto.itemId,
       selectionScore: dto.selectionScore,
@@ -143,6 +217,7 @@ class MockHexaIQRepository implements HexaIQRepository {
       hint: dto.hint,
       ruleName: dto.ruleName,
       solution: dto.solution,
+      solutionExplanation: dto.solutionExplanation,
     );
   }
 

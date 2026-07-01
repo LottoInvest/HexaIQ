@@ -36,12 +36,16 @@ class HexaIQIntroCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: HexagonChart(
-                values: const [72, 68, 70, 64, 74, 66],
-                labels: domainCatalog.map((item) => item.shortLabel).toList(),
-                size: chartSize,
-                labelFontSize: compact ? 13 : 14,
+            SizedBox(
+              key: const Key('intro-chart-safe-area'),
+              height: chartSize + 14,
+              child: Center(
+                child: HexagonChart(
+                  values: const [72, 68, 70, 64, 74, 66],
+                  labels: domainCatalog.map((item) => item.shortLabel).toList(),
+                  size: chartSize,
+                  labelFontSize: compact ? 13 : 14,
+                ),
               ),
             ),
             const SizedBox(key: Key('intro-chart-body-gap'), height: 18),

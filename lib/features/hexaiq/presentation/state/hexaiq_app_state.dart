@@ -1,10 +1,17 @@
+import 'dart:convert';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/domain/difficulty_profile.dart';
 import '../../../../core/domain/intelligence_domain.dart';
 import '../../../../core/domain/question_difficulty.dart';
+import '../../../../core/persistence/settings_repository.dart';
+import '../../../calibration/domain/calibration_repository.dart';
 import '../../../cat/domain/theta_estimate.dart';
+import '../../../cat/domain/theta_estimation_method.dart';
 import '../../../item_bank/domain/exposure_status.dart';
+import '../../../norm/domain/norm_profile.dart';
 import '../../../question_engine/core/question_engine.dart';
 import '../../../question_engine/domain/question_engine_models.dart';
 import '../../../test/application/test_session_controller.dart';
@@ -15,13 +22,20 @@ import '../../domain/hexaiq_repository.dart';
 enum SubmitResult { nextQuestion, domainComplete }
 
 class HexaIQAppState extends ChangeNotifier {
-  HexaIQAppState({required this.repository, QuestionEngine? questionEngine})
-    : questionEngine = questionEngine ?? QuestionEngine() {
+  HexaIQAppState({
+    required this.repository,
+    QuestionEngine? questionEngine,
+    this.calibrationRepository,
+    SettingsRepository? settingsRepository,
+  }) : questionEngine = questionEngine ?? QuestionEngine(),
+       settingsRepository = settingsRepository ?? InMemorySettingsRepository() {
     loadInitialData();
   }
 
   final HexaIQRepository repository;
   final QuestionEngine questionEngine;
+  final CalibrationRepository? calibrationRepository;
+  final SettingsRepository settingsRepository;
   static const int _targetQuestionCount = 5;
 
   List<UserProfile> profiles = [];
@@ -39,6 +53,8 @@ class HexaIQAppState extends ChangeNotifier {
   bool isBusy = false;
   bool profilesLoaded = false;
   ThemeMode themeMode = ThemeMode.dark;
+  ThetaEstimationMethod thetaEstimationMethod =
+      ThetaEstimationMethod.newtonRaphson;
 
   TestQuestion? get currentQuestion {
     return testSessionController?.session.currentQuestion;
@@ -180,10 +196,17 @@ class HexaIQAppState extends ChangeNotifier {
 
   void setThemeMode(ThemeMode mode) {
     themeMode = mode;
+    unawaited(settingsRepository.saveThemeMode(mode));
+    notifyListeners();
+  }
+
+  void setThetaEstimationMethod(ThetaEstimationMethod method) {
+    thetaEstimationMethod = method;
     notifyListeners();
   }
 
   Future<void> loadInitialData() async {
+    themeMode = await settingsRepository.loadThemeMode();
     profiles = await repository.loadProfiles();
     selectedProfile = profiles.isNotEmpty ? profiles.first : null;
     if (selectedProfile != null) {
@@ -210,6 +233,7 @@ class HexaIQAppState extends ChangeNotifier {
     );
     profiles = [...profiles, profile];
     selectedProfile = profile;
+    await repository.saveProfiles(profiles);
     growth = await repository.loadGrowth(profile);
     notifyListeners();
   }
@@ -222,6 +246,7 @@ class HexaIQAppState extends ChangeNotifier {
           ? const []
           : await repository.loadGrowth(selectedProfile!);
     }
+    await repository.saveProfiles(profiles);
     notifyListeners();
   }
 
@@ -277,7 +302,10 @@ class HexaIQAppState extends ChangeNotifier {
         difficultyByQuestionId: {firstQuestion.id: firstQuestion.difficulty},
         usedItemIds: {if (firstQuestion.itemId != null) firstQuestion.itemId!},
         baseSeed: baseSeed,
+        thetaEstimationMethod: thetaEstimationMethod,
+        normProfile: NormProfile.forAgeGroup(AgeGroup.parse(profile.ageGroup)),
       ),
+      calibrationRepository: calibrationRepository,
     );
     questions = [firstQuestion];
     responses = [];
@@ -397,7 +425,62 @@ class HexaIQAppState extends ChangeNotifier {
       domainResults: session.domainResults,
       averageDifficulty: session.averageDifficulty,
     );
+    final profile = selectedProfile;
+    if (profile != null) {
+      final completedAt = session.completedAt ?? DateTime.now();
+      final result = TestResultSummary(
+        id: session.sessionId,
+        profileId: profile.id,
+        startedAt: session.startedAt,
+        completedAt: completedAt,
+        theta: session.thetaEstimate.theta,
+        standardError: session.thetaEstimate.standardError,
+        estimatedIQ: session.estimatedIQ,
+        percentile: session.percentile,
+        abilityLevel: session.abilityLevel.labelKo,
+        averageDifficulty: session.averageDifficulty,
+        averageElapsedSeconds: session.averageElapsedSeconds,
+        questionCount: session.questionHistory.length,
+        payloadJson: _encodeResultPayload(session),
+      );
+      await repository.saveTestResult(result);
+      final updatedProfile = profile.copyWith(
+        recentIQ: session.estimatedIQ,
+        recentPercentile: session.percentile,
+        recentAbilityLevel: session.abilityLevel.labelKo,
+        lastTestAt: completedAt,
+        testCount: profile.testCount + 1,
+      );
+      profiles = [
+        for (final item in profiles)
+          item.id == updatedProfile.id ? updatedProfile : item,
+      ];
+      selectedProfile = updatedProfile;
+      await repository.saveProfiles(profiles);
+      growth = await repository.loadGrowth(updatedProfile);
+    }
     notifyListeners();
+  }
+
+  String _encodeResultPayload(TestSession session) {
+    return jsonEncode({
+      'sessionId': session.sessionId,
+      'theta': session.thetaEstimate.theta,
+      'estimatedIQ': session.estimatedIQ,
+      'percentile': session.percentile,
+      'abilityLevel': session.abilityLevel.labelKo,
+      'questions': [
+        for (final record in session.questionHistory)
+          {
+            'questionId': record.question.id,
+            'itemId': record.itemId,
+            'correct': record.correct,
+            'thetaAfter': record.thetaAfter,
+            'likelihood': record.likelihood,
+            'information': record.itemInformation,
+          },
+      ],
+    });
   }
 
   TestQuestion _generateDynamicQuestion({
@@ -488,6 +571,7 @@ class HexaIQAppState extends ChangeNotifier {
       difficultyIndex: dto.difficultyIndex,
       discrimination: dto.discrimination,
       guessing: dto.guessing,
+      upperAsymptote: dto.upperAsymptote,
       expectedSolveTime: dto.expectedSolveTime,
       itemId: dto.itemId,
       selectionScore: dto.selectionScore,
@@ -496,6 +580,7 @@ class HexaIQAppState extends ChangeNotifier {
       hint: dto.hint,
       ruleName: dto.ruleName,
       solution: dto.solution,
+      solutionExplanation: dto.solutionExplanation,
     );
   }
 
