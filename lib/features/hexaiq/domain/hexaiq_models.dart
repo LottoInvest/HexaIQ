@@ -4,7 +4,7 @@ import '../../../core/domain/question_difficulty.dart';
 
 typedef CognitiveDomain = IntelligenceDomain;
 
-enum TestType { basic, advanced, professional }
+enum TestType { basic, quickIq, advanced, professional }
 
 class DomainInfo {
   const DomainInfo({
@@ -25,37 +25,43 @@ final domainCatalog = [
     domain: IntelligenceDomain.numerical,
     label: IntelligenceDomain.numerical.label,
     shortLabel: IntelligenceDomain.numerical.shortLabel,
-    description: '수열, 계산 규칙, 비율을 빠르게 파악하는 힘',
+    description:
+        '\uC218\uC5F4, \uACC4\uC0B0 \uADDC\uCE59, \uBE44\uC728\uC744 \uBE60\uB974\uAC8C \uD30C\uC545\uD558\uB294 \uB2A5\uB825',
   ),
   DomainInfo(
     domain: IntelligenceDomain.verbal,
     label: IntelligenceDomain.verbal.label,
     shortLabel: IntelligenceDomain.verbal.shortLabel,
-    description: '단어 관계와 문장의 의미를 이해하고 추론하는 힘',
+    description:
+        '\uB2E8\uC5B4 \uAD00\uACC4\uC640 \uBB38\uC7A5 \uB9E5\uB77D\uC744 \uC774\uD574\uD558\uACE0 \uCD94\uB860\uD558\uB294 \uB2A5\uB825',
   ),
   DomainInfo(
     domain: IntelligenceDomain.spatial,
     label: IntelligenceDomain.spatial.label,
     shortLabel: IntelligenceDomain.spatial.shortLabel,
-    description: '도형의 회전, 위치, 관계를 머릿속에서 다루는 힘',
+    description:
+        '\uB3C4\uD615\uC758 \uD68C\uC804, \uC704\uCE58, \uAD00\uACC4\uB97C \uBA38\uB9BF\uC18D\uC5D0\uC11C \uB2E4\uB8E8\uB294 \uB2A5\uB825',
   ),
   DomainInfo(
     domain: IntelligenceDomain.memory,
     label: IntelligenceDomain.memory.label,
     shortLabel: IntelligenceDomain.memory.shortLabel,
-    description: '정보를 잠시 유지하고 다시 처리하는 힘',
+    description:
+        '\uC815\uBCF4\uB97C \uC7A0\uC2DC \uC720\uC9C0\uD558\uACE0 \uB2E4\uC2DC \uCC98\uB9AC\uD558\uB294 \uB2A5\uB825',
   ),
   DomainInfo(
     domain: IntelligenceDomain.logic,
     label: IntelligenceDomain.logic.label,
     shortLabel: IntelligenceDomain.logic.shortLabel,
-    description: '조건과 규칙을 차분하게 연결해 결론을 찾는 힘',
+    description:
+        '\uC870\uAC74\uACFC \uADDC\uCE59\uC744 \uCC28\uBD84\uD558\uAC8C \uC5F0\uACB0\uD574 \uACB0\uB860\uC744 \uCC3E\uB294 \uB2A5\uB825',
   ),
   DomainInfo(
     domain: IntelligenceDomain.processing,
     label: IntelligenceDomain.processing.label,
     shortLabel: IntelligenceDomain.processing.shortLabel,
-    description: '간단한 판단을 빠르고 안정적으로 처리하는 힘',
+    description:
+        '\uAC04\uB2E8\uD55C \uD310\uB2E8\uC744 \uBE60\uB974\uACE0 \uC548\uC815\uC801\uC73C\uB85C \uCC98\uB9AC\uD558\uB294 \uB2A5\uB825',
   ),
 ];
 
@@ -69,17 +75,23 @@ String domainShortLabel(IntelligenceDomain domain) {
 
 String testTypeLabel(TestType type) {
   return switch (type) {
-    TestType.basic => 'Basic',
-    TestType.advanced => 'Advanced',
-    TestType.professional => 'Professional',
+    TestType.basic => '기본 검사',
+    TestType.quickIq => '빠른 IQ',
+    TestType.advanced => '심화 검사',
+    TestType.professional => '전문 검사',
   };
 }
 
 String testTypeDescription(TestType type) {
   return switch (type) {
-    TestType.basic => '6개 영역을 빠르게 훑는 무료 기본 검사',
-    TestType.advanced => '문항 수를 늘려 영역별 경향을 더 자세히 보는 검사',
-    TestType.professional => '광고 없이 긴 문항과 상세 리포트를 제공하는 검사',
+    TestType.basic =>
+      '\uC218\uB9AC \uC601\uC5ED\uC744 \uBE60\uB974\uAC8C \uC810\uAC80\uD558\uB294 \uBB34\uB8CC \uAE30\uBCF8 \uAC80\uC0AC',
+    TestType.quickIq =>
+      '6\uAC1C \uC601\uC5ED\uC744 18\uBB38\uD56D\uC73C\uB85C \uD63C\uD569 \uCE21\uC815\uD558\uB294 \uC801\uC751\uD615 \uAC80\uC0AC',
+    TestType.advanced =>
+      '\uBB38\uD56D \uC218\uB97C \uB298\uB824 \uC601\uC5ED\uBCC4 \uACBD\uD5A5\uC744 \uB354 \uC790\uC138\uD788 \uBCF4\uB294 \uAC80\uC0AC',
+    TestType.professional =>
+      '\uAD11\uACE0 \uC5C6\uC774 \uAE34 \uBB38\uD56D\uACFC \uC0C1\uC138 \uB9AC\uD3EC\uD2B8\uB97C \uC81C\uACF5\uD558\uB294 \uAC80\uC0AC',
   };
 }
 
@@ -93,9 +105,13 @@ class UserProfile {
     this.age = 0,
     this.recentIQ = 100,
     this.recentPercentile = 50,
-    this.recentAbilityLevel = '평균',
+    this.recentAbilityLevel = '\uD3C9\uADE0',
     this.lastTestAt,
     this.testCount = 0,
+    this.domainBestScores = const {},
+    this.domainAverageScores = const {},
+    this.domainRecentScores = const {},
+    this.domainGrowthRates = const {},
   });
 
   final String id;
@@ -109,6 +125,10 @@ class UserProfile {
   final String recentAbilityLevel;
   final DateTime? lastTestAt;
   final int testCount;
+  final Map<IntelligenceDomain, int> domainBestScores;
+  final Map<IntelligenceDomain, int> domainAverageScores;
+  final Map<IntelligenceDomain, int> domainRecentScores;
+  final Map<IntelligenceDomain, double> domainGrowthRates;
 
   UserProfile copyWith({
     String? id,
@@ -123,6 +143,10 @@ class UserProfile {
     DateTime? lastTestAt,
     bool clearLastTestAt = false,
     int? testCount,
+    Map<IntelligenceDomain, int>? domainBestScores,
+    Map<IntelligenceDomain, int>? domainAverageScores,
+    Map<IntelligenceDomain, int>? domainRecentScores,
+    Map<IntelligenceDomain, double>? domainGrowthRates,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -136,6 +160,10 @@ class UserProfile {
       recentAbilityLevel: recentAbilityLevel ?? this.recentAbilityLevel,
       lastTestAt: clearLastTestAt ? null : lastTestAt ?? this.lastTestAt,
       testCount: testCount ?? this.testCount,
+      domainBestScores: domainBestScores ?? this.domainBestScores,
+      domainAverageScores: domainAverageScores ?? this.domainAverageScores,
+      domainRecentScores: domainRecentScores ?? this.domainRecentScores,
+      domainGrowthRates: domainGrowthRates ?? this.domainGrowthRates,
     );
   }
 
@@ -165,7 +193,8 @@ class UserProfile {
       age: map['age'] as int? ?? 0,
       recentIQ: map['recent_iq'] as int? ?? 100,
       recentPercentile: map['recent_percentile'] as int? ?? 50,
-      recentAbilityLevel: map['recent_ability_level'] as String? ?? '평균',
+      recentAbilityLevel:
+          map['recent_ability_level'] as String? ?? '\uD3C9\uADE0',
       lastTestAt: DateTime.tryParse(map['last_test_at'] as String? ?? ''),
       testCount: map['test_count'] as int? ?? 0,
     );
@@ -197,6 +226,12 @@ class TestQuestion {
     this.ruleName,
     this.solution,
     this.solutionExplanation,
+    this.variables = const {},
+    this.stimulus,
+    this.stimulusDuration,
+    this.requiresMemoryPhase = false,
+    this.timeLimit,
+    this.reactionScore,
   });
 
   final IntelligenceDomain domain;
@@ -222,6 +257,12 @@ class TestQuestion {
   final String? ruleName;
   final String? solution;
   final String? solutionExplanation;
+  final Map<String, Object?> variables;
+  final String? stimulus;
+  final Duration? stimulusDuration;
+  final bool requiresMemoryPhase;
+  final Duration? timeLimit;
+  final double? reactionScore;
 
   TestQuestion copyWith({
     QuestionDifficulty? difficulty,
@@ -239,6 +280,12 @@ class TestQuestion {
     String? ruleName,
     String? solution,
     String? solutionExplanation,
+    Map<String, Object?>? variables,
+    String? stimulus,
+    Duration? stimulusDuration,
+    bool? requiresMemoryPhase,
+    Duration? timeLimit,
+    double? reactionScore,
   }) {
     return TestQuestion(
       id: id,
@@ -264,6 +311,12 @@ class TestQuestion {
       ruleName: ruleName ?? this.ruleName,
       solution: solution ?? this.solution,
       solutionExplanation: solutionExplanation ?? this.solutionExplanation,
+      variables: variables ?? this.variables,
+      stimulus: stimulus ?? this.stimulus,
+      stimulusDuration: stimulusDuration ?? this.stimulusDuration,
+      requiresMemoryPhase: requiresMemoryPhase ?? this.requiresMemoryPhase,
+      timeLimit: timeLimit ?? this.timeLimit,
+      reactionScore: reactionScore ?? this.reactionScore,
     );
   }
 }

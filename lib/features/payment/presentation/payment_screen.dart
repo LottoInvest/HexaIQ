@@ -11,7 +11,7 @@ class PaymentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<HexaIQAppState>();
     return Scaffold(
-      appBar: AppBar(title: const Text('Professional 결제')),
+      appBar: AppBar(title: const Text('전문 검사 결제')),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -30,7 +30,7 @@ class PaymentScreen extends StatelessWidget {
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 12),
-                      const Text('결제와 영수증 검증은 서버 연동 전 mock으로 처리합니다.'),
+                      const Text('이번 버전에서는 결제 검증을 mock으로 처리합니다.'),
                       const SizedBox(height: 24),
                       FilledButton.icon(
                         icon: const Icon(Icons.lock_open),

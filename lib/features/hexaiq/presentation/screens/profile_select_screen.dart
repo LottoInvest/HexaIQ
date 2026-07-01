@@ -40,7 +40,8 @@ class _ProfileSelectScreenState extends State<ProfileSelectScreen> {
                       ActionCard(
                         icon: Icons.account_circle,
                         title: profile.name,
-                        body: '${profile.grade} · ${profile.ageGroup}',
+                        body:
+                            '${profile.grade} · ${_ageGroupLabel(profile.ageGroup)}',
                         trailing: IconButton(
                           tooltip: '삭제',
                           icon: const Icon(Icons.delete_outline),
@@ -68,7 +69,7 @@ class _ProfileSelectScreenState extends State<ProfileSelectScreen> {
                       label: Text(
                         state.canCreateProfile
                             ? '프로필 추가'
-                            : '프로필은 최대 3개까지 가능합니다',
+                            : '프로필은 최대 3개까지 만들 수 있습니다',
                       ),
                     ),
                   ],
@@ -111,5 +112,16 @@ class _ProfileSelectScreenState extends State<ProfileSelectScreen> {
     if (context.mounted && context.read<HexaIQAppState>().profiles.isEmpty) {
       Navigator.of(context).pushReplacementNamed(AppRoutes.profileCreate);
     }
+  }
+
+  String _ageGroupLabel(String value) {
+    return switch (value) {
+      'grade3_4' => '초등 3-4학년',
+      'grade5_6' => '초등 5-6학년',
+      'middle' => '중학생',
+      'high' => '고등학생',
+      'adult' => '성인',
+      _ => value,
+    };
   }
 }

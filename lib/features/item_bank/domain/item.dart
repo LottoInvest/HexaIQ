@@ -24,6 +24,12 @@ class Item {
     this.ruleName,
     this.solution,
     this.solutionExplanation,
+    this.variables = const {},
+    this.stimulus,
+    this.stimulusDuration,
+    this.requiresMemoryPhase = false,
+    this.timeLimit,
+    this.reactionScore,
   });
 
   factory Item.fromGeneratedQuestion(
@@ -50,6 +56,12 @@ class Item {
       ruleName: question.ruleName,
       solution: question.solution,
       solutionExplanation: question.solutionExplanation,
+      variables: question.variables,
+      stimulus: question.stimulus,
+      stimulusDuration: question.stimulusDuration,
+      requiresMemoryPhase: question.requiresMemoryPhase,
+      timeLimit: question.timeLimit,
+      reactionScore: question.reactionScore,
       tags: [
         question.domain.name,
         question.typeCode,
@@ -79,6 +91,12 @@ class Item {
   final String? ruleName;
   final String? solution;
   final String? solutionExplanation;
+  final Map<String, Object?> variables;
+  final String? stimulus;
+  final Duration? stimulusDuration;
+  final bool requiresMemoryPhase;
+  final Duration? timeLimit;
+  final double? reactionScore;
   final List<String> tags;
   final String version;
   final DateTime createdAt;
@@ -112,6 +130,12 @@ class Item {
     String? ruleName,
     String? solution,
     String? solutionExplanation,
+    Map<String, Object?>? variables,
+    String? stimulus,
+    Duration? stimulusDuration,
+    bool? requiresMemoryPhase,
+    Duration? timeLimit,
+    double? reactionScore,
     List<String>? tags,
     String? version,
     DateTime? createdAt,
@@ -134,6 +158,12 @@ class Item {
       ruleName: ruleName ?? this.ruleName,
       solution: solution ?? this.solution,
       solutionExplanation: solutionExplanation ?? this.solutionExplanation,
+      variables: variables ?? this.variables,
+      stimulus: stimulus ?? this.stimulus,
+      stimulusDuration: stimulusDuration ?? this.stimulusDuration,
+      requiresMemoryPhase: requiresMemoryPhase ?? this.requiresMemoryPhase,
+      timeLimit: timeLimit ?? this.timeLimit,
+      reactionScore: reactionScore ?? this.reactionScore,
       tags: tags ?? this.tags,
       version: version ?? this.version,
       createdAt: createdAt ?? this.createdAt,

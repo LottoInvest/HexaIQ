@@ -22,6 +22,7 @@ class TestTypeSelectScreen extends StatelessWidget {
               ActionCard(
                 icon: switch (type) {
                   TestType.basic => Icons.bolt_outlined,
+                  TestType.quickIq => Icons.hub_outlined,
                   TestType.advanced => Icons.auto_graph,
                   TestType.professional => Icons.workspace_premium_outlined,
                 },

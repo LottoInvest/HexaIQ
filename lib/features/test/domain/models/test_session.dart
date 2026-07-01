@@ -28,6 +28,7 @@ class TestSession {
     this.difficultyByQuestionId = const {},
     this.questionHistory = const [],
     ThetaEstimate? thetaEstimate,
+    this.domainThetaEstimates = const {},
     List<ThetaEstimate>? thetaHistory,
     this.adaptiveRecordedQuestionIds = const {},
     this.usedItemIds = const {},
@@ -57,6 +58,7 @@ class TestSession {
   final Map<String, QuestionDifficulty> difficultyByQuestionId;
   final List<QuestionRecord> questionHistory;
   final ThetaEstimate thetaEstimate;
+  final Map<IntelligenceDomain, ThetaEstimate> domainThetaEstimates;
   final List<ThetaEstimate> thetaHistory;
   final Set<String> adaptiveRecordedQuestionIds;
   final Set<String> usedItemIds;
@@ -75,6 +77,25 @@ class TestSession {
       profile: normProfile,
     );
   }
+
+  ThetaEstimate thetaForDomain(IntelligenceDomain domain) {
+    return domainThetaEstimates[domain] ?? thetaEstimate;
+  }
+
+  ThetaEstimate get thetaNumerical =>
+      thetaForDomain(IntelligenceDomain.numerical);
+  ThetaEstimate get thetaVerbal => thetaForDomain(IntelligenceDomain.verbal);
+  ThetaEstimate get thetaSpatial => thetaForDomain(IntelligenceDomain.spatial);
+  ThetaEstimate get thetaMemory => thetaForDomain(IntelligenceDomain.memory);
+  ThetaEstimate get thetaLogical => thetaForDomain(IntelligenceDomain.logic);
+  ThetaEstimate get thetaProcessing =>
+      thetaForDomain(IntelligenceDomain.processing);
+  ThetaEstimate get thetaNR => thetaNumerical;
+  ThetaEstimate get thetaLR => thetaVerbal;
+  ThetaEstimate get thetaSR => thetaSpatial;
+  ThetaEstimate get thetaMR => thetaMemory;
+  ThetaEstimate get thetaLG => thetaLogical;
+  ThetaEstimate get thetaPS => thetaProcessing;
 
   List<TestQuestion> get activeQuestions {
     return generatedQuestions.isNotEmpty ? generatedQuestions : questions;
@@ -168,6 +189,7 @@ class TestSession {
     Map<String, QuestionDifficulty>? difficultyByQuestionId,
     List<QuestionRecord>? questionHistory,
     ThetaEstimate? thetaEstimate,
+    Map<IntelligenceDomain, ThetaEstimate>? domainThetaEstimates,
     List<ThetaEstimate>? thetaHistory,
     Set<String>? adaptiveRecordedQuestionIds,
     Set<String>? usedItemIds,
@@ -197,6 +219,7 @@ class TestSession {
           difficultyByQuestionId ?? this.difficultyByQuestionId,
       questionHistory: questionHistory ?? this.questionHistory,
       thetaEstimate: thetaEstimate ?? this.thetaEstimate,
+      domainThetaEstimates: domainThetaEstimates ?? this.domainThetaEstimates,
       thetaHistory: thetaHistory ?? this.thetaHistory,
       adaptiveRecordedQuestionIds:
           adaptiveRecordedQuestionIds ?? this.adaptiveRecordedQuestionIds,

@@ -12,9 +12,9 @@ class TestIntroScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<HexaIQAppState>();
     final type = state.selectedTestType;
-    const itemCount = 5;
+    final itemCount = type == TestType.quickIq ? 18 : 5;
     return Scaffold(
-      appBar: AppBar(title: Text('${testTypeLabel(type)} 검사 안내')),
+      appBar: AppBar(title: Text('${testTypeLabel(type)} 안내')),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),

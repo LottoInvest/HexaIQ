@@ -52,7 +52,7 @@ class ReportSummaryScreen extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: _MetricTile(
-                            label: '정확도',
+                            label: '정답률',
                             value: '${(state.accuracy * 100).round()}%',
                           ),
                         ),
@@ -66,21 +66,31 @@ class ReportSummaryScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    _MetricTile(
-                      label: '전체 문항',
-                      value: '${state.totalQuestionCount}',
-                    ),
-                    const SizedBox(height: 8),
-                    _MetricTile(
-                      label: '평균 난이도',
-                      value: report.averageDifficulty.labelKo,
-                    ),
-                    const SizedBox(height: 8),
-                    _MetricTile(
-                      label: '평균 풀이 시간',
-                      value: _formatElapsed(
-                        session?.averageElapsedSeconds ?? 0,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MetricTile(
+                            label: '전체 문항',
+                            value: '${state.totalQuestionCount}',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _MetricTile(
+                            label: '평균 난이도',
+                            value: report.averageDifficulty.labelKo,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _MetricTile(
+                            label: '평균 풀이 시간',
+                            value: _formatElapsed(
+                              session?.averageElapsedSeconds ?? 0,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     if (session != null) ...[
                       const SizedBox(height: 8),
@@ -88,7 +98,7 @@ class ReportSummaryScreen extends StatelessWidget {
                       const SizedBox(height: 8),
                       _NormSummary(session: session),
                     ],
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     Center(
                       child: HexagonChart(
                         values: report.domainScores
@@ -139,6 +149,7 @@ class ReportSummaryScreen extends StatelessWidget {
               _DomainResultCard(
                 score: score,
                 result: report.domainResults[score.domain],
+                session: session,
                 onTap: () =>
                     Navigator.of(context).pushNamed(AppRoutes.domainDetail),
               ),
@@ -163,18 +174,18 @@ class ReportSummaryScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  String _formatElapsed(int seconds) {
-    final minutes = seconds ~/ 60;
-    final remaining = seconds % 60;
-    if (minutes == 0) {
-      return '$remaining초';
-    }
-    if (remaining == 0) {
-      return '$minutes분';
-    }
-    return '$minutes분 $remaining초';
+String _formatElapsed(int seconds) {
+  final minutes = seconds ~/ 60;
+  final remaining = seconds % 60;
+  if (minutes == 0) {
+    return '$remaining초';
   }
+  if (remaining == 0) {
+    return '$minutes분';
+  }
+  return '$minutes분 $remaining초';
 }
 
 class _NormSummary extends StatelessWidget {
@@ -230,7 +241,7 @@ class _ThetaSummary extends StatelessWidget {
         const SizedBox(width: 8),
         Expanded(
           child: _MetricTile(
-            label: '평균 정보량',
+            label: '평균 문항 정보량',
             value: session.averageItemInformation.toStringAsFixed(2),
           ),
         ),
@@ -256,28 +267,58 @@ class _DomainResultCard extends StatelessWidget {
   const _DomainResultCard({
     required this.score,
     required this.result,
+    required this.session,
     required this.onTap,
   });
 
   final DomainScore score;
   final DomainResult? result;
+  final TestSession? session;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final resolved = result ?? const DomainResult();
-    final body = score.isComingSoon
-        ? '준비 중'
-        : '${resolved.correct}/${resolved.total}  ${(resolved.accuracy * 100).round()}%';
+    final records =
+        session?.questionHistory
+            .where((record) => record.domain == score.domain)
+            .toList(growable: false) ??
+        const <QuestionRecord>[];
+    final averageTime = records.isEmpty
+        ? 0
+        : (records.fold<int>(0, (sum, record) => sum + record.elapsedSeconds) /
+                  records.length)
+              .round();
+    final averageDifficulty = _averageDifficulty(records);
+    final ability = session?.thetaForDomain(score.domain).theta ?? 0;
+    final body =
+        '정답률 ${(resolved.accuracy * 100).round()}% · '
+        '평균 시간 ${_formatElapsed(averageTime)} · '
+        '평균 난이도 ${averageDifficulty.labelKo} · '
+        '능력 추정 ${ability.toStringAsFixed(2)}';
     return ActionCard(
-      icon: score.isComingSoon
-          ? Icons.hourglass_empty_outlined
-          : Icons.analytics_outlined,
+      icon: Icons.analytics_outlined,
       title: domainLabel(score.domain),
       body: body,
-      trailing: score.isComingSoon ? const Text('예정') : Text('${score.score}'),
+      trailing: Text('${score.score}'),
       onTap: onTap,
     );
+  }
+
+  QuestionDifficulty _averageDifficulty(List<QuestionRecord> records) {
+    if (records.isEmpty) {
+      return QuestionDifficulty.normal;
+    }
+    final average =
+        records
+            .map((record) => record.difficulty.level)
+            .reduce((a, b) => a + b) /
+        records.length;
+    return QuestionDifficulty.values.reduce((nearest, difficulty) {
+      final nearestDistance = (nearest.level - average).abs();
+      final currentDistance = (difficulty.level - average).abs();
+      return currentDistance < nearestDistance ? difficulty : nearest;
+    });
   }
 }
 
@@ -300,7 +341,7 @@ class _QuestionHistoryCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Text(
-                  '${i + 1}번 문항 | '
+                  '${i + 1}번 문제 | '
                   '${domainLabel(session.questionHistory[i].domain)} | '
                   '${session.questionHistory[i].difficulty.labelKo} | '
                   '${_answerLabel(session.questionHistory[i].correct)} | '
@@ -311,18 +352,6 @@ class _QuestionHistoryCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatElapsed(int seconds) {
-    final minutes = seconds ~/ 60;
-    final remaining = seconds % 60;
-    if (minutes == 0) {
-      return '$remaining초';
-    }
-    if (remaining == 0) {
-      return '$minutes분';
-    }
-    return '$minutes분 $remaining초';
   }
 
   String _answerLabel(bool? correct) {
@@ -343,7 +372,7 @@ class _DebugMetricsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: ExpansionTile(
-        title: const Text('Debug Metrics'),
+        title: const Text('개발 지표'),
         subtitle: const Text('Theta / IRT / CAT / Calibration'),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         children: [

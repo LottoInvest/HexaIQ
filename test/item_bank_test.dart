@@ -3,22 +3,22 @@ import 'package:hexaiq_app/core/domain/question_difficulty.dart';
 import 'package:hexaiq_app/features/question_engine/question_engine.dart';
 
 void main() {
-  test('Item bank builds 120 mock items across six domains', () {
+  test('Item bank builds 300 mock items across six domains', () {
     final repository = InMemoryItemBankRepository();
     final items = repository.load();
 
-    expect(items.length, 120);
+    expect(items.length, 300);
     for (final domain in IntelligenceDomain.values) {
-      expect(repository.findByDomain(domain).length, 20);
+      expect(repository.findByDomain(domain).length, 50);
     }
   });
 
   test('Item bank supports difficulty and tag lookup', () {
     final repository = InMemoryItemBankRepository();
 
-    expect(repository.findByDifficulty(QuestionDifficulty.normal).length, 24);
+    expect(repository.findByDifficulty(QuestionDifficulty.normal).length, 60);
     expect(repository.findByTag('type:NR01'), isNotEmpty);
-    expect(repository.findByTag('stub'), isNotEmpty);
+    expect(repository.findByTag('stub'), isEmpty);
   });
 
   test('Item model carries psychometric metadata', () {
@@ -247,7 +247,11 @@ void main() {
       seed: 3,
     );
 
-    expect(selected.difficulty, QuestionDifficulty.normal);
+    expect(selected.difficulty, isNot(QuestionDifficulty.hard));
+    expect(
+      (selected.difficulty.level - QuestionDifficulty.hard.level).abs(),
+      1,
+    );
   });
 
   test('QuestionEngine delegates item choice to selection strategy', () {

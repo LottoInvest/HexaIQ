@@ -11,15 +11,7 @@ extension QuestionDifficultyInfo on QuestionDifficulty {
     };
   }
 
-  String get label {
-    return switch (this) {
-      QuestionDifficulty.veryEasy => 'Very Easy',
-      QuestionDifficulty.easy => 'Easy',
-      QuestionDifficulty.normal => 'Normal',
-      QuestionDifficulty.hard => 'Hard',
-      QuestionDifficulty.veryHard => 'Very Hard',
-    };
-  }
+  String get label => labelKo;
 
   int get level {
     return switch (this) {

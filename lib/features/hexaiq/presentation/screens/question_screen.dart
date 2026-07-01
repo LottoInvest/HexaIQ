@@ -58,12 +58,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
       return;
     }
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) {
-        return;
+      if (mounted) {
+        setState(() => _displaySeconds = _stopwatch.elapsed.inSeconds);
       }
-      setState(() {
-        _displaySeconds = _stopwatch.elapsed.inSeconds;
-      });
     });
   }
 
@@ -71,16 +68,14 @@ class _QuestionScreenState extends State<QuestionScreen> {
     _hintTimer?.cancel();
     _showHint = false;
     _hintTimer = Timer(widget.hintDelay, () {
-      if (!mounted) {
-        return;
+      if (mounted) {
+        setState(() => _showHint = true);
       }
-      setState(() => _showHint = true);
     });
   }
 
   void _recordElapsed(HexaIQAppState state, {bool restartHint = true}) {
-    final seconds = _stopwatch.elapsed.inSeconds;
-    state.recordElapsedTime(seconds);
+    state.recordElapsedTime(_stopwatch.elapsed.inSeconds);
     _startQuestionTimer();
     if (restartHint) {
       _startHintTimer();
@@ -107,26 +102,23 @@ class _QuestionScreenState extends State<QuestionScreen> {
           builder: (context, constraints) {
             final size = MediaQuery.of(context).size;
             final isLandscape = size.width > size.height;
-            final shortestSide = size.shortestSide;
-            final isTablet = shortestSide >= 600;
+            final isTablet = size.shortestSide >= 600;
             final isPhoneLandscape = isLandscape && !isTablet;
             final showSplitLayout = isPhoneLandscape || isTablet;
             final showScratchPad =
                 question.domain == IntelligenceDomain.numerical ||
                 _scratchPadConfig.isEnabledFor(question.typeCode);
-            final isCompactPortrait =
-                !isLandscape && constraints.maxHeight < 760;
-            final compact = isPhoneLandscape || isCompactPortrait;
-            final hint = _hintFor(question);
+            final compact =
+                isPhoneLandscape ||
+                (!isLandscape && constraints.maxHeight < 760);
             final content = _QuestionContent(
               state: state,
               question: question,
-              hint: _showHint ? hint : null,
+              hint: _showHint ? _hintFor(question) : null,
               displaySeconds: _displaySeconds,
               compact: compact,
               useChoiceGrid: isPhoneLandscape,
               isTablet: isTablet,
-              scrollable: true,
               onSelectAnswer: (index) =>
                   context.read<HexaIQAppState>().selectAnswer(index),
               onPrevious: state.questionIndex == 0
@@ -155,10 +147,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
             );
 
             if (showSplitLayout && showScratchPad) {
-              final horizontalPadding = isPhoneLandscape ? 8.0 : 16.0;
               final gap = isPhoneLandscape ? 8.0 : 16.0;
               return Padding(
-                padding: EdgeInsets.all(horizontalPadding),
+                padding: EdgeInsets.all(gap),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -208,19 +199,11 @@ class _QuestionScreenState extends State<QuestionScreen> {
   }
 
   String _hintFor(TestQuestion question) {
-    if (question.hint != null && question.hint!.trim().isNotEmpty) {
-      return question.hint!;
+    final hint = question.hint?.trim();
+    if (hint != null && hint.isNotEmpty) {
+      return hint;
     }
     return fallbackHintForType(question.typeCode);
-    // ignore: dead_code
-    return switch (question.typeCode) {
-      'NR01' => '등차수열 문제입니다. 차이를 비교해보세요.',
-      'NR02' => '등비수열 문제입니다. 곱해지는 비율을 찾아보세요.',
-      'NR15' || 'NR16' => '각 행과 열의 규칙을 나누어 비교해보세요.',
-      'NR17' => '마방진 합계 힌트입니다. 한 줄의 합을 먼저 확인해보세요.',
-      'NR20' => '숫자 관계 힌트입니다. 왼쪽과 오른쪽 수의 연결을 찾아보세요.',
-      _ => '문제 유형의 규칙을 먼저 찾고, 보기와 하나씩 비교해보세요.',
-    };
   }
 }
 
@@ -232,7 +215,6 @@ class _QuestionContent extends StatelessWidget {
     required this.compact,
     required this.useChoiceGrid,
     required this.isTablet,
-    required this.scrollable,
     required this.onSelectAnswer,
     required this.onNext,
     required this.onSubmit,
@@ -247,7 +229,6 @@ class _QuestionContent extends StatelessWidget {
   final bool compact;
   final bool useChoiceGrid;
   final bool isTablet;
-  final bool scrollable;
   final ValueChanged<int> onSelectAnswer;
   final VoidCallback? onPrevious;
   final VoidCallback onNext;
@@ -266,7 +247,7 @@ class _QuestionContent extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'Question ${state.questionIndex + 1} / ${state.totalQuestionCount}',
+                '문제 ${state.questionIndex + 1} / ${state.totalQuestionCount}',
                 style: Theme.of(context).textTheme.labelLarge,
               ),
             ),
@@ -285,6 +266,7 @@ class _QuestionContent extends StatelessWidget {
               child: _ScrollableQuestionBody(
                 question: question,
                 selectedAnswer: selectedAnswer,
+                displaySeconds: displaySeconds,
                 compact: compact,
                 useChoiceGrid: useChoiceGrid,
                 isTablet: isTablet,
@@ -303,13 +285,13 @@ class _QuestionContent extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: onPrevious,
               icon: const Icon(Icons.chevron_left),
-              label: const Text('Previous'),
+              label: const Text('이전'),
             ),
             const Spacer(),
             FilledButton.icon(
               onPressed: isLastQuestion ? onSubmit : onNext,
               icon: Icon(isLastQuestion ? Icons.check : Icons.chevron_right),
-              label: Text(isLastQuestion ? 'Submit' : 'Next'),
+              label: Text(isLastQuestion ? '제출' : '다음'),
             ),
           ],
         ),
@@ -320,7 +302,7 @@ class _QuestionContent extends StatelessWidget {
   String _formatElapsed(int seconds) {
     final minutes = seconds ~/ 60;
     final remaining = seconds % 60;
-    return '${minutes}m ${remaining.toString().padLeft(2, '0')}s';
+    return '${minutes}분 ${remaining.toString().padLeft(2, '0')}초';
   }
 }
 
@@ -328,6 +310,7 @@ class _ScrollableQuestionBody extends StatelessWidget {
   const _ScrollableQuestionBody({
     required this.question,
     required this.selectedAnswer,
+    required this.displaySeconds,
     required this.compact,
     required this.useChoiceGrid,
     required this.isTablet,
@@ -336,6 +319,7 @@ class _ScrollableQuestionBody extends StatelessWidget {
 
   final TestQuestion question;
   final int? selectedAnswer;
+  final int displaySeconds;
   final bool compact;
   final bool useChoiceGrid;
   final bool isTablet;
@@ -347,12 +331,34 @@ class _ScrollableQuestionBody extends StatelessWidget {
       fontSize: compact ? 18 : 22,
       height: compact ? 1.15 : 1.35,
     );
+    final memoryPrompt =
+        question.stimulus ?? question.variables['memoryPrompt'] as String?;
+    final memoryDurationSeconds =
+        question.stimulusDuration?.inSeconds ??
+        ((question.variables['memoryDurationMs'] as int?) ?? 3000) ~/ 1000;
+    final isMemoryPreview =
+        question.requiresMemoryPhase &&
+        question.domain == IntelligenceDomain.memory &&
+        memoryPrompt != null &&
+        displaySeconds < memoryDurationSeconds;
+    final remainingSeconds = (memoryDurationSeconds - displaySeconds).clamp(
+      1,
+      memoryDurationSeconds,
+    );
+    final prompt = isMemoryPreview
+        ? '다음 항목을 $remainingSeconds초 동안 기억하세요.\n$memoryPrompt'
+        : question.prompt;
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        Text(question.prompt, style: promptStyle),
+        Text(prompt, style: promptStyle),
         SizedBox(height: compact ? 10 : 18),
-        if (useChoiceGrid)
+        if (isMemoryPreview)
+          Text(
+            '제시 항목이 사라진 뒤 보기가 나타납니다.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          )
+        else if (useChoiceGrid)
           GridView.count(
             crossAxisCount: 2,
             mainAxisSpacing: 8,
@@ -464,7 +470,6 @@ class _ChoiceButton extends StatelessWidget {
       ),
       textStyle: WidgetStatePropertyAll(textStyle),
     );
-
     final child = Align(
       alignment: Alignment.center,
       child: Text(
@@ -475,7 +480,6 @@ class _ChoiceButton extends StatelessWidget {
         style: textStyle,
       ),
     );
-
     if (selected) {
       return FilledButton(style: style, onPressed: onPressed, child: child);
     }
@@ -485,16 +489,14 @@ class _ChoiceButton extends StatelessWidget {
 
 String fallbackHintForType(String typeCode) {
   return switch (typeCode) {
-    'NR01' => '등차수열입니다. 앞뒤 숫자의 차이가 일정한지 확인해보세요.',
-    'NR02' => '등비수열입니다. 앞 숫자에 같은 수를 곱하는 규칙인지 확인해보세요.',
-    'NR08' => '2², 3², 4²처럼 제곱수 규칙을 찾아보세요.',
-    'NR09' => '2³, 3³, 4³처럼 세제곱 규칙을 찾아보세요.',
-    'NR15' => '행렬 문제입니다. 같은 행이나 같은 열에 반복되는 차이를 찾아보세요.',
-    'NR16' => '행 합 규칙입니다. 각 행의 오른쪽 수가 왼쪽 두 수의 합인지 확인해보세요.',
-    'NR17' => '숫자퍼즐입니다. 행, 열, 대각선 중 반복되는 합계를 찾아보세요.',
-    'NR18' => '방정식 문제입니다. 양쪽에서 같은 수를 빼거나 나누어 x를 구해보세요.',
-    'NR20' => '숫자퍼즐입니다. 곱하기와 더하기가 어떤 순서로 적용되는지 확인해보세요.',
-    _ => '문제 유형의 규칙을 먼저 찾고, 보기와 하나씩 비교해보세요.',
+    'NR01' => '인접한 두 수의 차이를 비교해 보세요.',
+    'NR02' => '앞 숫자에 같은 비율이 적용되는지 살펴보세요.',
+    'NR08' || 'NR09' => '숫자가 일정한 규칙으로 빠르게 증가하는지 확인해 보세요.',
+    'NR15' || 'NR16' => '각 행과 열의 관계를 차례로 살펴보세요.',
+    'NR17' => '대각선이나 묶음 안에서 반복되는 합계를 찾아보세요.',
+    'NR18' => '양쪽에 같은 연산을 적용해 미지수를 남겨 보세요.',
+    'NR20' => '왼쪽과 오른쪽 수 사이의 연결 규칙을 비교해 보세요.',
+    _ => '문제의 규칙을 먼저 찾고, 보기와 하나씩 비교해 보세요.',
   };
 }
 

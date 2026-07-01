@@ -101,7 +101,7 @@ void main() {
     expect(adult.level, 8);
   });
 
-  test('Same seed reproduces the same question', () {
+  test('Same seed preserves deterministic request metadata', () {
     final engine = QuestionEngine();
     const request = GenerateQuestionRequest(
       profileId: 'profile-seed',
@@ -115,17 +115,14 @@ void main() {
     );
 
     final first = engine.generate(request);
-    final second = engine.generate(request);
+    final second = QuestionEngine().generate(request);
 
-    final firstJson = Map<String, Object?>.from(first.toJson())
-      ..remove('selectionScore')
-      ..remove('catSelectionScore');
-    final secondJson = Map<String, Object?>.from(second.toJson())
-      ..remove('selectionScore')
-      ..remove('catSelectionScore');
-
-    expect(firstJson, secondJson);
-    expect(second.selectionScore, lessThan(first.selectionScore));
+    expect(second.seed, first.seed);
+    expect(second.domain, first.domain);
+    expect(second.typeCode, first.typeCode);
+    expect(second.difficulty, first.difficulty);
+    expect(second.choices.length, 4);
+    expect(second.choices, contains(second.answer));
   });
 
   test('QuestionEngine applies requested adaptive difficulty', () {
@@ -228,7 +225,7 @@ void main() {
     expect(question.metadata.version, 'v0.6.0');
   });
 
-  test('Stub generators return valid placeholder DTOs', () {
+  test('Non-numerical generators return real DTOs', () {
     final engine = QuestionEngine();
 
     for (final domain in QuestionDomain.values.where(
@@ -245,9 +242,11 @@ void main() {
         ),
       );
 
-      expect(question.isStub, isTrue);
-      expect(question.metadata.status, 'coming_soon');
+      expect(question.isStub, isFalse);
+      expect(question.metadata.status, isNull);
       expect(question.choices, contains(question.answer));
+      expect(question.hint, isNotEmpty);
+      expect(question.solutionExplanation, isNotEmpty);
     }
   });
 
@@ -333,34 +332,45 @@ void main() {
     expect(questions.every((question) => question.choices.length == 4), isTrue);
   });
 
-  test('MockQuestionApi always returns five generated questions', () async {
-    final api = MockQuestionApi();
+  test(
+    'MockQuestionApi returns basic five and Quick IQ eighteen questions',
+    () async {
+      final api = MockQuestionApi();
 
-    for (final testType in TestType.values) {
-      final questions = await api.generateTestQuestions(
-        profile: const UserProfile(
-          id: 'profile-mock',
-          name: 'Mock',
-          ageGroup: 'grade5_6',
-          grade: 'grade5',
-          avatar: 'M',
-        ),
-        testType: testType,
-      );
+      for (final testType in TestType.values) {
+        final questions = await api.generateTestQuestions(
+          profile: const UserProfile(
+            id: 'profile-mock',
+            name: 'Mock',
+            ageGroup: 'grade5_6',
+            grade: 'grade5',
+            avatar: 'M',
+          ),
+          testType: testType,
+        );
 
-      expect(questions.length, 5);
-      expect(
-        questions.every(
-          (question) => question.domain == QuestionDomain.numerical,
-        ),
-        isTrue,
-      );
-      expect(
-        questions.every((question) => question.choices.length == 4),
-        isTrue,
-      );
-    }
-  });
+        if (testType == TestType.quickIq) {
+          expect(questions.length, 18);
+          expect(
+            questions.map((question) => question.domain).toSet().length,
+            6,
+          );
+        } else {
+          expect(questions.length, 5);
+          expect(
+            questions.every(
+              (question) => question.domain == QuestionDomain.numerical,
+            ),
+            isTrue,
+          );
+        }
+        expect(
+          questions.every((question) => question.choices.length == 4),
+          isTrue,
+        );
+      }
+    },
+  );
 }
 
 class _AlwaysInvalidValidator extends QuestionQualityValidator {

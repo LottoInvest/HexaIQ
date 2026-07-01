@@ -399,7 +399,7 @@ class QuestionEngine {
         version: item.version,
         status: item.hasTag('stub') ? 'coming_soon' : null,
         message: item.hasTag('stub')
-            ? '${item.domain.label} domain is coming soon.'
+            ? '${item.domain.label} 영역은 준비 중입니다.'
             : null,
       ),
       difficulty: request.difficulty,
@@ -416,7 +416,13 @@ class QuestionEngine {
       ruleName: item.ruleName,
       solution: item.solution ?? item.answer,
       solutionExplanation: item.solutionExplanation ?? item.explanation,
+      stimulus: item.stimulus,
+      stimulusDuration: item.stimulusDuration,
+      requiresMemoryPhase: item.requiresMemoryPhase,
+      timeLimit: item.timeLimit,
+      reactionScore: item.reactionScore,
       variables: {
+        ...item.variables,
         'itemId': item.id,
         'itemVersion': item.version,
         'selectionScore': selectionScore,
@@ -483,7 +489,7 @@ class QuestionEngine {
       level: level,
       ageGroup: ageGroup,
       seed: seed,
-      questionText: 'Find the next number: ${terms.join(', ')}, ?',
+      questionText: '다음 수를 찾으세요: ${terms.join(', ')}, ?',
       choices: [
         '$answer',
         '${answer + diff}',

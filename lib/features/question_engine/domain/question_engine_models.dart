@@ -4,6 +4,8 @@ import '../../../core/domain/question_difficulty.dart';
 import '../../cat/domain/theta_estimate.dart';
 
 typedef QuestionDomain = IntelligenceDomain;
+typedef QuestionRequest = GenerateQuestionRequest;
+typedef QuestionDto = GeneratedQuestionDto;
 
 class GenerateQuestionRequest {
   const GenerateQuestionRequest({
@@ -134,6 +136,11 @@ class GeneratedQuestionDto {
     String? solution,
     String? solutionExplanation,
     this.variables = const {},
+    this.stimulus,
+    this.stimulusDuration,
+    this.requiresMemoryPhase = false,
+    this.timeLimit,
+    this.reactionScore,
     this.isStub = false,
   }) : expectedSolveTime =
            expectedSolveTime ?? Duration(seconds: estimatedTimeSec),
@@ -171,6 +178,11 @@ class GeneratedQuestionDto {
     String? solution,
     String? solutionExplanation,
     Map<String, Object?> variables = const {},
+    String? stimulus,
+    Duration? stimulusDuration,
+    bool requiresMemoryPhase = false,
+    Duration? timeLimit,
+    double? reactionScore,
     bool isStub = false,
   }) {
     const keys = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -210,6 +222,11 @@ class GeneratedQuestionDto {
       solution: solution ?? answer,
       solutionExplanation: solutionExplanation ?? explanation,
       variables: variables,
+      stimulus: stimulus,
+      stimulusDuration: stimulusDuration,
+      requiresMemoryPhase: requiresMemoryPhase,
+      timeLimit: timeLimit,
+      reactionScore: reactionScore,
       isStub: isStub,
     );
   }
@@ -241,6 +258,11 @@ class GeneratedQuestionDto {
   final String solution;
   final String solutionExplanation;
   final Map<String, Object?> variables;
+  final String? stimulus;
+  final Duration? stimulusDuration;
+  final bool requiresMemoryPhase;
+  final Duration? timeLimit;
+  final double? reactionScore;
   final bool isStub;
 
   String get question => questionText;
@@ -275,6 +297,13 @@ class GeneratedQuestionDto {
       'ruleName': ruleName,
       'solution': solution,
       'solutionExplanation': solutionExplanation,
+      'variables': variables,
+      if (stimulus != null) 'stimulus': stimulus,
+      if (stimulusDuration != null)
+        'stimulusDurationMs': stimulusDuration!.inMilliseconds,
+      'requiresMemoryPhase': requiresMemoryPhase,
+      if (timeLimit != null) 'timeLimitMs': timeLimit!.inMilliseconds,
+      if (reactionScore != null) 'reactionScore': reactionScore,
       'ageGroup': ageGroup,
       'questionText': questionText,
       'choices': choiceDtos.map((choice) => choice.toJson()).toList(),

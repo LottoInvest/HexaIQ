@@ -50,7 +50,7 @@ class InMemoryItemBankRepository implements ItemBankRepository {
     final createdAt = DateTime.utc(2026, 1);
     return [
       for (final domain in IntelligenceDomain.values)
-        for (var index = 0; index < 20; index++)
+        for (var index = 0; index < 50; index++)
           _buildItem(
             domain: domain,
             index: index,

@@ -1,10 +1,10 @@
 import '../../../core/domain/intelligence_domain.dart';
+import '../generators/logical_generator.dart';
+import '../generators/memory_generator.dart';
 import '../generators/numerical_generator.dart';
-import '../generators/logic/logic_generator.dart';
-import '../generators/memory/memory_generator.dart';
-import '../generators/processing/processing_generator.dart';
-import '../generators/spatial/spatial_generator.dart';
-import '../generators/verbal/verbal_generator.dart';
+import '../generators/processing_speed_generator.dart';
+import '../generators/spatial_generator.dart';
+import '../generators/verbal_generator.dart';
 import 'question_generator.dart';
 
 class GeneratorFactory {
@@ -13,18 +13,17 @@ class GeneratorFactory {
     SpatialGenerator? spatialGenerator,
     VerbalGenerator? verbalGenerator,
     MemoryGenerator? memoryGenerator,
-    LogicGenerator? logicGenerator,
-    ProcessingGenerator? processingGenerator,
+    LogicalGenerator? logicalGenerator,
+    ProcessingSpeedGenerator? processingGenerator,
   }) : _generators = {
          IntelligenceDomain.numerical:
              numericalGenerator ?? NumericalGenerator(),
-         IntelligenceDomain.verbal: verbalGenerator ?? const VerbalGenerator(),
-         IntelligenceDomain.spatial:
-             spatialGenerator ?? const SpatialGenerator(),
-         IntelligenceDomain.memory: memoryGenerator ?? const MemoryGenerator(),
-         IntelligenceDomain.logic: logicGenerator ?? const LogicGenerator(),
+         IntelligenceDomain.verbal: verbalGenerator ?? VerbalGenerator(),
+         IntelligenceDomain.spatial: spatialGenerator ?? SpatialGenerator(),
+         IntelligenceDomain.memory: memoryGenerator ?? MemoryGenerator(),
+         IntelligenceDomain.logic: logicalGenerator ?? LogicalGenerator(),
          IntelligenceDomain.processing:
-             processingGenerator ?? const ProcessingGenerator(),
+             processingGenerator ?? ProcessingSpeedGenerator(),
        };
 
   final Map<IntelligenceDomain, QuestionGenerator> _generators;

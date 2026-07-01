@@ -36,7 +36,8 @@ class HexaIQAppState extends ChangeNotifier {
   final QuestionEngine questionEngine;
   final CalibrationRepository? calibrationRepository;
   final SettingsRepository settingsRepository;
-  static const int _targetQuestionCount = 5;
+  static const int _basicQuestionCount = 5;
+  static const int _quickIqQuestionCount = 18;
 
   List<UserProfile> profiles = [];
   UserProfile? selectedProfile;
@@ -186,6 +187,7 @@ class HexaIQAppState extends ChangeNotifier {
 
   int get requiredAds => switch (selectedTestType) {
     TestType.basic => 2,
+    TestType.quickIq => 2,
     TestType.advanced => 6,
     TestType.professional => 0,
   };
@@ -279,12 +281,14 @@ class HexaIQAppState extends ChangeNotifier {
     final startedAt = DateTime.now();
     final sessionId = 'session-${startedAt.millisecondsSinceEpoch}';
     final baseSeed = startedAt.millisecondsSinceEpoch & 0x7fffffff;
+    final targetQuestionCount = _targetQuestionCountFor(selectedTestType);
+    final firstDomain = _domainForQuestionIndex(0);
     final firstQuestion = _generateDynamicQuestion(
       profile: profile,
       sessionId: sessionId,
       baseSeed: baseSeed,
       index: 0,
-      domain: IntelligenceDomain.numerical,
+      domain: firstDomain,
       difficulty: QuestionDifficulty.normal,
       difficultyProfile: DifficultyProfile.initial(),
       usedSeeds: const {},
@@ -295,10 +299,10 @@ class HexaIQAppState extends ChangeNotifier {
       TestSession(
         sessionId: sessionId,
         startedAt: startedAt,
-        domain: CognitiveDomain.numerical,
+        domain: firstDomain,
         questions: [firstQuestion],
         generatedQuestions: [firstQuestion],
-        targetQuestionCount: _targetQuestionCount,
+        targetQuestionCount: targetQuestionCount,
         difficultyByQuestionId: {firstQuestion.id: firstQuestion.difficulty},
         usedItemIds: {if (firstQuestion.itemId != null) firstQuestion.itemId!},
         baseSeed: baseSeed,
@@ -373,7 +377,7 @@ class HexaIQAppState extends ChangeNotifier {
           sessionId: session.sessionId,
           baseSeed: session.baseSeed,
           index: index,
-          domain: session.domain,
+          domain: _domainForQuestionIndex(index),
           difficulty: difficulty,
           difficultyProfile: session.difficultyProfile,
           usedSeeds: {
@@ -386,7 +390,7 @@ class HexaIQAppState extends ChangeNotifier {
               if (question.itemId != null) question.itemId!,
             for (final record in session.questionHistory) record.itemId,
           },
-          thetaEstimate: session.thetaEstimate,
+          thetaEstimate: session.thetaForDomain(_domainForQuestionIndex(index)),
         );
         debugPrint(
           '[QuestionEngine] Generated Question${index + 1} '
@@ -541,9 +545,25 @@ class HexaIQAppState extends ChangeNotifier {
   int _testTypeOffset(TestType type) {
     return switch (type) {
       TestType.basic => 0,
+      TestType.quickIq => 0,
       TestType.advanced => 1,
       TestType.professional => 1,
     };
+  }
+
+  int _targetQuestionCountFor(TestType type) {
+    return switch (type) {
+      TestType.quickIq => _quickIqQuestionCount,
+      _ => _basicQuestionCount,
+    };
+  }
+
+  IntelligenceDomain _domainForQuestionIndex(int index) {
+    if (selectedTestType != TestType.quickIq) {
+      return IntelligenceDomain.numerical;
+    }
+    final domains = IntelligenceDomain.values;
+    return domains[index % domains.length];
   }
 
   String _adaptiveReason(TestSession session) {
@@ -581,6 +601,12 @@ class HexaIQAppState extends ChangeNotifier {
       ruleName: dto.ruleName,
       solution: dto.solution,
       solutionExplanation: dto.solutionExplanation,
+      variables: dto.variables,
+      stimulus: dto.stimulus,
+      stimulusDuration: dto.stimulusDuration,
+      requiresMemoryPhase: dto.requiresMemoryPhase,
+      timeLimit: dto.timeLimit,
+      reactionScore: dto.reactionScore,
     );
   }
 

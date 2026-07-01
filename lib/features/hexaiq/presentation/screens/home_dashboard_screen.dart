@@ -94,7 +94,7 @@ class HomeDashboardScreen extends StatelessWidget {
           final startAction = ActionCard(
             icon: Icons.play_arrow,
             title: '검사 시작',
-            body: 'Basic 검사로 전체 인지 프로필을 확인합니다.',
+            body: '빠른 IQ 검사로 6개 영역을 함께 확인합니다.',
             onTap: () =>
                 Navigator.of(context).pushNamed(AppRoutes.testTypeSelect),
           );
@@ -174,13 +174,7 @@ class HomeDashboardScreen extends StatelessWidget {
   }
 
   void _handleDomainTap(BuildContext context, IntelligenceDomain domain) {
-    if (domain.isAvailable) {
-      Navigator.of(context).pushNamed(AppRoutes.testTypeSelect);
-      return;
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${domain.label} 영역은 Coming Soon입니다')),
-    );
+    Navigator.of(context).pushNamed(AppRoutes.testTypeSelect);
   }
 }
 

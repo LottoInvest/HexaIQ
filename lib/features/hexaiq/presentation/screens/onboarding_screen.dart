@@ -92,14 +92,8 @@ class OnboardingScreen extends StatelessWidget {
   }
 
   void _handleDomainTap(BuildContext context, IntelligenceDomain domain) {
-    if (domain.isAvailable) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Numerical 검사는 Basic 검사에서 시작할 수 있습니다.')),
-      );
-      return;
-    }
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${domain.label} 영역은 Coming Soon입니다.')),
+      SnackBar(content: Text('${domain.label} 영역은 빠른 IQ 검사에서 함께 출제됩니다.')),
     );
   }
 }

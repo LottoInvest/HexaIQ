@@ -7,13 +7,13 @@ abstract class QuestionGenerator {
 
   Set<String> get supportedTypeCodes;
 
-  GeneratedQuestionDto generate(GenerateQuestionRequest request);
+  QuestionDto generate(QuestionRequest request);
 
-  Item generateItem(GenerateQuestionRequest request) {
+  Item generateItem(QuestionRequest request) {
     return Item.fromGeneratedQuestion(generate(request));
   }
 
-  GeneratedQuestionDto generateFallback(GenerateQuestionRequest request) {
+  QuestionDto generateFallback(QuestionRequest request) {
     return generate(request);
   }
 }

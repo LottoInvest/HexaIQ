@@ -84,8 +84,8 @@ class _ScratchPadWidgetState extends State<ScratchPadWidget> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Scratch Work를 지울까요?'),
-          content: const Text('작성한 풀이 메모는 복구할 수 없습니다.'),
+          title: const Text('풀이 메모를 지울까요?'),
+          content: const Text('작성한 메모와 그림은 되돌릴 수 없습니다.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -118,7 +118,7 @@ class _ScratchPadWidgetState extends State<ScratchPadWidget> {
               children: [
                 Expanded(
                   child: Text(
-                    'Scratch Work',
+                    '풀이 메모',
                     style:
                         (widget.compact
                                 ? theme.textTheme.labelMedium
@@ -130,20 +130,20 @@ class _ScratchPadWidgetState extends State<ScratchPadWidget> {
                   ),
                 ),
                 _ModeButton(
-                  label: 'Text',
+                  label: '글',
                   selected: _mode == ScratchPadMode.text,
                   compact: widget.compact,
                   onPressed: () => setState(() => _mode = ScratchPadMode.text),
                 ),
                 _ModeButton(
-                  label: 'Draw',
+                  label: '그림',
                   selected: _mode == ScratchPadMode.drawing,
                   compact: widget.compact,
                   onPressed: () =>
                       setState(() => _mode = ScratchPadMode.drawing),
                 ),
                 IconButton(
-                  tooltip: 'Clear',
+                  tooltip: '지우기',
                   iconSize: widget.compact ? 18 : 22,
                   visualDensity: widget.compact
                       ? VisualDensity.compact

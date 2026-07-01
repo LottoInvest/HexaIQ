@@ -32,17 +32,17 @@ class MockHexaIQRepository implements HexaIQRepository {
     return const [
       UserProfile(
         id: 'profile-1',
-        name: '민지',
-        ageGroup: '초등 5-6',
-        grade: '초등 5학년',
-        avatar: 'M',
+        name: '민아',
+        ageGroup: 'grade5_6',
+        grade: '초5',
+        avatar: '민',
       ),
       UserProfile(
         id: 'profile-2',
         name: '서연',
-        ageGroup: '초등 3-4',
-        grade: '초등 3학년',
-        avatar: 'S',
+        ageGroup: 'grade3_4',
+        grade: '초3',
+        avatar: '서',
       ),
     ];
   }
@@ -101,13 +101,18 @@ class MockHexaIQRepository implements HexaIQRepository {
     UserProfile? profile,
   }) async {
     final resolvedProfile = profile ?? (await loadProfiles()).first;
-    final generated = await _questionApi.generateQuestions(
-      profile: resolvedProfile,
-      domain: IntelligenceDomain.numerical,
-      count: 5,
-      testType: testType,
-    );
-    return generated.map(_toTestQuestion).toList();
+    final generated = testType == TestType.quickIq
+        ? await _questionApi.generateTestQuestions(
+            profile: resolvedProfile,
+            testType: testType,
+          )
+        : await _questionApi.generateQuestions(
+            profile: resolvedProfile,
+            domain: IntelligenceDomain.numerical,
+            count: 5,
+            testType: testType,
+          );
+    return generated.map(_toTestQuestion).toList(growable: false);
   }
 
   @override
@@ -117,26 +122,28 @@ class MockHexaIQRepository implements HexaIQRepository {
         info.domain: _buildDomainResult(responses, info.domain),
     };
 
-    final scores = domainCatalog.map((info) {
-      final result = domainResults[info.domain] ?? const DomainResult();
-      final isComingSoon = info.domain != IntelligenceDomain.numerical;
-      final base = 52 + domainCatalog.indexOf(info) * 3;
-      final score = isComingSoon
-          ? 0
-          : (base + result.accuracy * 35).round().clamp(0, 100);
-      return DomainScore(
-        domain: info.domain,
-        score: score,
-        percentile: isComingSoon ? 0 : (score * 0.9).round().clamp(1, 99),
-        growth: isComingSoon ? 0 : 2.5 + domainCatalog.indexOf(info) * 0.7,
-        comment: isComingSoon
-            ? '${info.label} 영역은 곧 확장될 예정입니다.'
-            : '${info.label}는 ${info.description}과 관련된 참고 지표입니다. 반복 검사로 변화 추이를 확인하세요.',
-        isComingSoon: isComingSoon,
-      );
-    }).toList();
+    final scores = domainCatalog
+        .map((info) {
+          final result = domainResults[info.domain] ?? const DomainResult();
+          final hasData = result.total > 0;
+          final base = 52 + domainCatalog.indexOf(info) * 3;
+          final score = hasData
+              ? (base + result.accuracy * 35).round().clamp(0, 100)
+              : 0;
+          return DomainScore(
+            domain: info.domain,
+            score: score,
+            percentile: hasData ? (score * 0.9).round().clamp(1, 99) : 0,
+            growth: hasData ? 2.5 + domainCatalog.indexOf(info) * 0.7 : 0,
+            comment: hasData
+                ? '${info.label}: ${info.description}'
+                : '${info.label}: 응답이 쌓이면 영역 결과가 표시됩니다.',
+            isComingSoon: false,
+          );
+        })
+        .toList(growable: false);
 
-    final activeScores = scores.where((score) => !score.isComingSoon).toList();
+    final activeScores = scores.where((score) => score.score > 0).toList();
     final overall = activeScores.isEmpty
         ? 0
         : (activeScores.map((score) => score.score).reduce((a, b) => a + b) /
@@ -145,12 +152,12 @@ class MockHexaIQRepository implements HexaIQRepository {
 
     return ReportSummary(
       overallScore: overall,
-      summary: '이번 MVP 검사에서는 수리 결과를 실제 계산하고, 나머지 영역은 곧 확장될 예정입니다.',
+      summary: '응답이 기록된 영역을 기준으로 결과를 계산했습니다.',
       domainScores: scores,
       recommendations: const [
-        '수리 영역은 기본 재검사로 변화 추이를 확인하세요.',
-        '언어, 공간, 기억, 논리, 처리속도는 이후 실제 문항으로 확장됩니다.',
-        '강한 영역은 심화 문항으로 넓히고, 약한 영역은 짧게 반복하는 훈련이 좋습니다.',
+        '빠른 IQ로 6개 영역을 짧게 반복 점검해 보세요.',
+        '점수가 낮은 영역은 같은 유형을 다시 풀어 안정도를 높여 보세요.',
+        '처리속도 영역은 정답률과 풀이 시간을 함께 확인해 보세요.',
       ],
       domainResults: domainResults,
       averageDifficulty: _averageDifficulty(responses),
@@ -171,10 +178,10 @@ class MockHexaIQRepository implements HexaIQRepository {
       ].reversed.toList(growable: false);
     }
     return const [
-      GrowthPoint(month: '3월', score: 61),
-      GrowthPoint(month: '4월', score: 64),
-      GrowthPoint(month: '5월', score: 68),
-      GrowthPoint(month: '6월', score: 72),
+      GrowthPoint(month: 'T1', score: 61),
+      GrowthPoint(month: 'T2', score: 64),
+      GrowthPoint(month: 'T3', score: 68),
+      GrowthPoint(month: 'T4', score: 72),
     ];
   }
 
@@ -218,6 +225,12 @@ class MockHexaIQRepository implements HexaIQRepository {
       ruleName: dto.ruleName,
       solution: dto.solution,
       solutionExplanation: dto.solutionExplanation,
+      variables: dto.variables,
+      stimulus: dto.stimulus,
+      stimulusDuration: dto.stimulusDuration,
+      requiresMemoryPhase: dto.requiresMemoryPhase,
+      timeLimit: dto.timeLimit,
+      reactionScore: dto.reactionScore,
     );
   }
 

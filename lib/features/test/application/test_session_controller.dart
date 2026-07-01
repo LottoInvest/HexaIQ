@@ -7,6 +7,7 @@ import '../../../core/domain/intelligence_domain.dart';
 import '../../calibration/domain/calibration_profile.dart';
 import '../../calibration/domain/calibration_repository.dart';
 import '../../calibration/domain/calibration_updater.dart';
+import '../../cat/domain/theta_estimate.dart';
 import '../../cat/domain/theta_estimator.dart';
 import '../domain/models/test_session.dart';
 import '../../hexaiq/domain/hexaiq_models.dart';
@@ -133,7 +134,7 @@ class TestSessionController {
       profile: session.difficultyProfile,
       isCorrect: isCorrect,
     );
-    final thetaBefore = session.thetaEstimate;
+    final thetaBefore = session.thetaForDomain(question.domain);
     final nextQuestions = [...session.activeQuestions];
     final nextDifficultyByQuestionId = {
       ...session.difficultyByQuestionId,
@@ -147,8 +148,11 @@ class TestSessionController {
       thetaAfter: thetaBefore.theta,
     );
     final baseHistory = [...session.questionHistory, baseRecord];
+    final domainHistory = baseHistory
+        .where((record) => record.domain == question.domain)
+        .toList(growable: false);
     final thetaAfter = _thetaEstimator.estimate(
-      history: baseHistory,
+      history: domainHistory,
       current: thetaBefore,
       method: session.thetaEstimationMethod,
     );
@@ -195,7 +199,7 @@ class TestSessionController {
       modelType: _thetaEstimator.modelType,
     );
     final totalInformation = _thetaEstimator.totalInformation(
-      history: baseHistory,
+      history: domainHistory,
       theta: thetaAfter.theta,
     );
     final questionHistory = [
@@ -227,6 +231,14 @@ class TestSessionController {
       nextDifficultyByQuestionId[nextQuestions[nextIndex].id] =
           nextProfile.currentDifficulty;
     }
+    final domainThetaEstimates = {
+      ...session.domainThetaEstimates,
+      question.domain: thetaAfter,
+    };
+    final combinedTheta = _combineDomainTheta(
+      domainThetaEstimates,
+      fallback: session.thetaEstimate,
+    );
     session = session.copyWith(
       questions: nextQuestions,
       generatedQuestions: session.generatedQuestions.isNotEmpty
@@ -235,12 +247,46 @@ class TestSessionController {
       difficultyProfile: nextProfile,
       difficultyByQuestionId: nextDifficultyByQuestionId,
       questionHistory: questionHistory,
-      thetaEstimate: thetaAfter,
-      thetaHistory: [...session.thetaHistory, thetaAfter],
+      thetaEstimate: combinedTheta,
+      domainThetaEstimates: domainThetaEstimates,
+      thetaHistory: [...session.thetaHistory, combinedTheta],
       adaptiveRecordedQuestionIds: {
         ...session.adaptiveRecordedQuestionIds,
         question.id,
       },
+    );
+  }
+
+  ThetaEstimate _combineDomainTheta(
+    Map<IntelligenceDomain, ThetaEstimate> estimates, {
+    required ThetaEstimate fallback,
+  }) {
+    final active = estimates.values.toList(growable: false);
+    if (active.isEmpty) {
+      return fallback;
+    }
+    final theta =
+        active.fold<double>(0, (sum, estimate) => sum + estimate.theta) /
+        active.length;
+    final standardError =
+        active.fold<double>(
+          0,
+          (sum, estimate) => sum + estimate.standardError,
+        ) /
+        active.length;
+    final answeredCount = active.fold<int>(
+      0,
+      (sum, estimate) => sum + estimate.answeredCount,
+    );
+    return fallback.copyWith(
+      theta: theta.clamp(-3.0, 3.0).toDouble(),
+      standardError: standardError.clamp(0.25, double.infinity).toDouble(),
+      answeredCount: answeredCount,
+      method: active.last.method,
+      posteriorPeak: active.last.posteriorPeak,
+      posteriorMean: active.last.posteriorMean,
+      posteriorVariance: active.last.posteriorVariance,
+      updatedAt: DateTime.now(),
     );
   }
 

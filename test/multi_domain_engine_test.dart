@@ -24,7 +24,10 @@ void main() {
       IntelligenceDomain.processing,
     ]);
     expect(IntelligenceDomain.numerical.label, '수리논리');
-    expect(IntelligenceDomain.processing.generatorPrefix, 'PR');
+    expect(IntelligenceDomain.verbal.generatorPrefix, 'LR');
+    expect(IntelligenceDomain.spatial.generatorPrefix, 'SR');
+    expect(IntelligenceDomain.logic.generatorPrefix, 'LG');
+    expect(IntelligenceDomain.processing.generatorPrefix, 'PS');
   });
 
   test('GeneratedQuestionDto stores IntelligenceDomain and typeCode', () {
@@ -64,7 +67,7 @@ void main() {
     expect(dto.toJson()['solutionExplanation'], '1, 2 다음은 3입니다.');
   });
 
-  test('GeneratorFactory returns numerical and five mock generators', () {
+  test('GeneratorFactory returns numerical and five real generators', () {
     final factory = GeneratorFactory();
 
     expect(
@@ -105,7 +108,7 @@ void main() {
       isTrue,
     );
     expect(verbal.length, 2);
-    expect(verbal.every((question) => question.isStub), isTrue);
+    expect(verbal.every((question) => question.isStub), isFalse);
     expect(
       verbal.every((question) => question.domain == IntelligenceDomain.verbal),
       isTrue,
@@ -129,27 +132,30 @@ void main() {
     expect(result.elapsedSeconds, 91);
   });
 
-  test('Report includes numerical result and coming soon domains', () async {
-    final repository = MockHexaIQRepository();
-    final questions = await repository.loadQuestions(
-      TestType.basic,
-      profile: profile,
-    );
-    final report = await repository.buildReport([
-      for (final question in questions)
-        QuestionResponse(
-          question: question,
-          selectedIndex: question.answerIndex,
-        ),
-    ]);
+  test(
+    'Report includes numerical result without coming soon domains',
+    () async {
+      final repository = MockHexaIQRepository();
+      final questions = await repository.loadQuestions(
+        TestType.basic,
+        profile: profile,
+      );
+      final report = await repository.buildReport([
+        for (final question in questions)
+          QuestionResponse(
+            question: question,
+            selectedIndex: question.answerIndex,
+          ),
+      ]);
 
-    expect(report.domainScores.length, IntelligenceDomain.values.length);
-    expect(report.domainResults[IntelligenceDomain.numerical]?.correct, 5);
-    expect(
-      report.domainScores
-          .where((score) => score.domain != IntelligenceDomain.numerical)
-          .every((score) => score.isComingSoon),
-      isTrue,
-    );
-  });
+      expect(report.domainScores.length, IntelligenceDomain.values.length);
+      expect(report.domainResults[IntelligenceDomain.numerical]?.correct, 5);
+      expect(
+        report.domainScores
+            .where((score) => score.domain != IntelligenceDomain.numerical)
+            .every((score) => !score.isComingSoon),
+        isTrue,
+      );
+    },
+  );
 }
