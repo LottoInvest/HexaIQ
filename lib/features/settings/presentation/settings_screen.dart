@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/app_routes.dart';
+import '../../../app/release_config.dart';
+import '../../../app/version_info.dart';
 import '../../../core/responsive/responsive_page.dart';
 import '../../hexaiq/presentation/state/hexaiq_app_state.dart';
 import '../../hexaiq/presentation/widgets/dashboard_nav.dart';
+import 'widgets/legal_links_section.dart';
 import 'widgets/theme_mode_selector.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -36,21 +39,25 @@ class SettingsScreen extends StatelessWidget {
             child: ThemeModeSelector(),
           ),
           const Divider(),
-          SwitchListTile(
-            value: true,
-            onChanged: (_) {},
-            title: const Text('학습 알림'),
-            subtitle: const Text('MVP mock 설정입니다.'),
+          const ListTile(
+            leading: Icon(Icons.campaign_outlined),
+            title: Text('광고 안내'),
+            subtitle: Text('무료 검사에는 일부 구간에서 광고가 표시될 수 있습니다.'),
           ),
           const ListTile(
-            leading: Icon(Icons.privacy_tip_outlined),
-            title: Text('개인정보 처리방침'),
-            subtitle: Text('출시 전 문서 연결 예정'),
+            leading: Icon(Icons.workspace_premium_outlined),
+            title: Text('전문 검사'),
+            subtitle: Text('${ReleaseConfig.professionalPriceLabel} 일회성 결제'),
           ),
-          const ListTile(
-            leading: Icon(Icons.info_outline),
-            title: Text('앱 버전'),
-            subtitle: Text('1.0.0 MVP'),
+          const Divider(),
+          const LegalLinksSection(),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: const Text('앱 버전'),
+            subtitle: Text(
+              '${VersionInfo.current.displayName}\n${VersionInfo.current.releaseName}',
+            ),
           ),
         ],
       ),

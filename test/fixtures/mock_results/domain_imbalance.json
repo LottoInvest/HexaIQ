@@ -1,0 +1,10 @@
+{
+  "name": "domain_imbalance",
+  "testType": "basic",
+  "responses": [
+    {"domain": "pattern", "correct": true, "difficulty": "hard"},
+    {"domain": "pattern", "correct": true, "difficulty": "hard"},
+    {"domain": "speed", "correct": false, "difficulty": "easy"},
+    {"domain": "speed", "correct": false, "difficulty": "easy"}
+  ]
+}

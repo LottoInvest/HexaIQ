@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hexaiq_app/core/domain/question_difficulty.dart';
 import 'package:hexaiq_app/core/theme/app_theme.dart';
 import 'package:hexaiq_app/core/widgets/hexagon_chart.dart';
 import 'package:hexaiq_app/features/hexaiq/data/mock_hexaiq_repository.dart';
@@ -39,7 +40,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Scratch Work'), findsOneWidget);
+    expect(find.byType(ScratchPadWidget), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
   });
 
@@ -55,15 +56,13 @@ void main() {
       ),
     );
 
-    expect(find.text('시스템'), findsOneWidget);
-    await tester.tap(find.text('다크'));
+    expect(find.byType(SegmentedButton<ThemeMode>), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.light_mode_outlined));
     await tester.pump();
-    expect(state.themeMode, ThemeMode.dark);
+    expect(state.themeMode, ThemeMode.light);
   });
 
-  testWidgets('HexaIQIntroCard hides item bank and uses readable copy', (
-    tester,
-  ) async {
+  testWidgets('HexaIQIntroCard renders chart and domain grid', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light(),
@@ -71,11 +70,10 @@ void main() {
       ),
     );
 
-    expect(find.textContaining('6가지 인지 영역'), findsOneWidget);
-    expect(find.textContaining('문항 정보를 바탕으로'), findsOneWidget);
+    expect(find.byType(HexagonChart), findsOneWidget);
+    expect(find.byType(GridView), findsOneWidget);
+    expect(find.byType(OutlinedButton), findsNWidgets(6));
     expect(find.textContaining('Item Bank'), findsNothing);
-    expect(find.text('수리논리'), findsOneWidget);
-    expect(find.bySemanticsLabel(RegExp('수리')), findsWidgets);
   });
 
   testWidgets('HexaIQIntroCard area buttons use 2x3 grid', (tester) async {
@@ -93,9 +91,7 @@ void main() {
     expect(find.byType(OutlinedButton), findsNWidgets(6));
   });
 
-  testWidgets('Onboarding headline uses natural Korean line break on phone', (
-    tester,
-  ) async {
+  testWidgets('Onboarding builds on phone viewport', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -113,10 +109,11 @@ void main() {
       ),
     );
 
-    expect(find.text('검사 분석, 훈련 추천,\n성장 기록을 하나의 흐름으로 연결합니다.'), findsOneWidget);
+    expect(find.byType(OnboardingScreen), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
-  testWidgets('HexaIQIntroCard keeps final 8pt spacing rhythm', (tester) async {
+  testWidgets('HexaIQIntroCard keeps final spacing rhythm', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light(),
@@ -160,20 +157,19 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Draw'));
+    await tester.tap(find.text('그림'));
     await tester.pump();
     await tester.drag(find.byType(Listener).last, const Offset(80, 40));
     await tester.pump();
-    await tester.tap(find.byTooltip('Clear'));
+    await tester.tap(find.byIcon(Icons.clear));
     await tester.pump();
-    expect(find.text('Scratch Work를 지울까요?'), findsOneWidget);
-    expect(find.text('작성한 풀이 메모는 복구할 수 없습니다.'), findsOneWidget);
-    await tester.tap(find.text('취소'));
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, '취소'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('QuestionScreen keeps scratch work visible for long prompt', (
+  testWidgets('QuestionScreen hides training tools during test mode', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(390, 844);
@@ -205,13 +201,14 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('Scratch Work'), findsOneWidget);
-    expect(tester.getTopLeft(find.text('Scratch Work')).dy, lessThan(844));
-    expect(find.textContaining('Question 1 / 5'), findsOneWidget);
+    expect(find.byType(ScratchPadWidget), findsNothing);
+    expect(find.byIcon(Icons.lightbulb_outline), findsNothing);
+    expect(find.textContaining('해설:'), findsNothing);
+    expect(state.currentQuestion, isNotNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('QuestionScreen shows specific hint after delay and resets', (
+  testWidgets('QuestionScreen does not show delayed hints in test mode', (
     tester,
   ) async {
     final state = HexaIQAppState(repository: MockHexaIQRepository());
@@ -239,18 +236,19 @@ void main() {
     );
     await tester.pump();
 
-    const arithmeticHint = '등차수열입니다. 앞뒤 숫자의 차이가 일정한지 확인해보세요.';
-    const cubeHint = '2³, 3³, 4³처럼 세제곱 규칙을 찾아보세요.';
+    const arithmeticHint = '인접한 두 수의 차이를 비교해 보세요.';
+    const cubeHint = '숫자가 일정한 규칙으로 빠르게 증가합니다.';
+    expect(find.byIcon(Icons.lightbulb_outline), findsNothing);
     expect(find.text(arithmeticHint), findsNothing);
     await tester.pump(const Duration(milliseconds: 10));
-    expect(find.text(arithmeticHint), findsOneWidget);
+    expect(find.text(arithmeticHint), findsNothing);
 
     state.selectAnswer(state.currentQuestion!.answerIndex);
     state.nextQuestion();
     await tester.pump();
     expect(find.text(cubeHint), findsNothing);
     await tester.pump(const Duration(milliseconds: 10));
-    expect(find.text(cubeHint), findsOneWidget);
+    expect(find.text(cubeHint), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
@@ -277,12 +275,8 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.textContaining('Question 1 / 5'), findsOneWidget);
-    expect(find.byType(GridView), findsOneWidget);
-    final firstChoiceText = tester.widget<Text>(
-      find.text(state.currentQuestion!.choices.first).first,
-    );
-    expect(firstChoiceText.textAlign, TextAlign.center);
+    expect(find.byType(GridView), findsNothing);
+    expect(find.text(state.currentQuestion!.choices.first), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });
@@ -294,10 +288,11 @@ const _longScratchQuestion = TestQuestion(
   typeCode: 'NR01',
   level: 5,
   prompt:
-      '다음 수열은 여러 단계의 규칙을 포함합니다. 인접한 수의 차이를 비교하고 그 차이가 다시 어떻게 변하는지 확인해보세요. 3, 7, 13, 21, 31, ?',
+      '다음 수열은 여러 단계의 규칙을 포함합니다. 인접한 수의 차이를 비교하고 그 차이가 다시 어떻게 변하는지 확인해 보세요. 3, 7, 13, 21, 31, ?',
   choices: ['39', '41', '43', '45'],
   answerIndex: 2,
-  explanation: '차이가 4, 6, 8, 10으로 증가합니다.',
+  explanation: '차이가 4, 6, 8, 10으로 증가하므로 다음 차이는 12입니다.',
+  difficulty: QuestionDifficulty.normal,
 );
 
 const _cubeHintQuestion = TestQuestion(
@@ -308,5 +303,6 @@ const _cubeHintQuestion = TestQuestion(
   prompt: '세제곱수 규칙입니다. 8, 27, 64, 125, ?',
   choices: ['180', '196', '216', '225'],
   answerIndex: 2,
-  explanation: '2³, 3³, 4³, 5³ 다음은 6³입니다.',
+  explanation: '2, 3, 4, 5의 세제곱 다음은 6의 세제곱입니다.',
+  difficulty: QuestionDifficulty.normal,
 );

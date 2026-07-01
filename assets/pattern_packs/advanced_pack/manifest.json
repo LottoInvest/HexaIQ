@@ -1,0 +1,11 @@
+{
+  "packId": "advanced_pack",
+  "name": "Advanced Pattern Pack",
+  "version": "1.0.0",
+  "target": "advanced",
+  "difficultyRange": ["normal", "hard", "expert"],
+  "questionCount": 20,
+  "supportedElements": ["shape", "icon", "emoji", "svg"],
+  "requiresPremium": false,
+  "enabled": true
+}

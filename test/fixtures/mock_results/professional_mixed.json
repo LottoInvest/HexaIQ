@@ -1,0 +1,12 @@
+{
+  "name": "professional_mixed",
+  "testType": "professional",
+  "responses": [
+    {"domain": "verbal", "correct": true, "difficulty": "expert"},
+    {"domain": "numerical", "correct": true, "difficulty": "hard"},
+    {"domain": "spatial", "correct": false, "difficulty": "expert"},
+    {"domain": "pattern", "correct": true, "difficulty": "expert"},
+    {"domain": "memory", "correct": false, "difficulty": "hard"},
+    {"domain": "speed", "correct": true, "difficulty": "normal"}
+  ]
+}

@@ -29,7 +29,11 @@ class DomainDetailScreen extends StatelessWidget {
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 8),
-                      Text('점수 ${score.score} · 참고 백분위 ${score.percentile}'),
+                      Text(
+                        score.score > 0
+                            ? '능력점수 ${score.score} · 참고 지표 ${score.percentile}'
+                            : '데이터 없음',
+                      ),
                       const SizedBox(height: 8),
                       Text(score.comment),
                     ],

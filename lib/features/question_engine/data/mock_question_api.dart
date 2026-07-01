@@ -45,38 +45,52 @@ class MockQuestionApi {
     required UserProfile profile,
     required TestType testType,
   }) async {
-    final questionCount = testType == TestType.quickIq ? 18 : 5;
-    if (testType == TestType.quickIq) {
-      final level = engine.difficultyManager.resolveLevel(
-        ageGroup: profile.ageGroup,
-        requestedLevel: null,
-        testTypeOffset: 0,
-      );
-      final baseSeed = DateTime.now().millisecondsSinceEpoch & 0x7fffffff;
-      final generated = <GeneratedQuestionDto>[];
-      for (var index = 0; index < questionCount; index++) {
-        final domain =
-            IntelligenceDomain.values[index % IntelligenceDomain.values.length];
-        generated.add(
-          engine.generateOne(
-            seed: baseSeed + index * 1009,
-            domain: domain,
-            difficulty: QuestionDifficulty.normal,
-            profileId: profile.id,
-            testId: 'mock-${profile.id}-${testType.name}-$baseSeed',
-            ageGroup: profile.ageGroup,
-            index: index,
-            level: level,
-          ),
-        );
-      }
-      return generated;
-    }
-    return generateQuestions(
-      profile: profile,
-      domain: IntelligenceDomain.numerical,
-      count: questionCount,
-      testType: testType,
+    final questionCount = switch (testType) {
+      TestType.basic => 30,
+      TestType.quickIq => 60,
+      TestType.advanced => 90,
+      TestType.professional => 120,
+    };
+    final levelOffset = switch (testType) {
+      TestType.advanced || TestType.professional => 1,
+      _ => 0,
+    };
+    final level = engine.difficultyManager.resolveLevel(
+      ageGroup: profile.ageGroup,
+      requestedLevel: null,
+      testTypeOffset: levelOffset,
     );
+    final baseSeed = DateTime.now().millisecondsSinceEpoch & 0x7fffffff;
+    final generated = <GeneratedQuestionDto>[];
+    for (var index = 0; index < questionCount; index++) {
+      final domain = _domainForIndex(testType, index);
+      generated.add(
+        engine.generateOne(
+          seed: baseSeed + index * 1009,
+          domain: domain,
+          difficulty: QuestionDifficulty.normal,
+          profileId: profile.id,
+          testId: 'mock-${profile.id}-${testType.name}-$baseSeed',
+          ageGroup: profile.ageGroup,
+          index: index,
+          level: level,
+        ),
+      );
+    }
+    return generated;
+  }
+
+  IntelligenceDomain _domainForIndex(TestType testType, int index) {
+    final domains = switch (testType) {
+      TestType.quickIq => IntelligenceDomain.values,
+      _ => IntelligenceDomain.values,
+    };
+    final perDomain = switch (testType) {
+      TestType.basic => 5,
+      TestType.quickIq => 10,
+      TestType.advanced => 15,
+      TestType.professional => 20,
+    };
+    return domains[(index ~/ perDomain).clamp(0, domains.length - 1)];
   }
 }

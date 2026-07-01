@@ -11,10 +11,27 @@ class InMemoryItemBankRepository implements ItemBankRepository {
 
   final GeneratorFactory _generatorFactory;
   List<Item>? _items;
+  static List<Item>? _sharedItems;
+
+  static const Map<IntelligenceDomain, int> minimumDomainCounts = {
+    IntelligenceDomain.verbal: 500,
+    IntelligenceDomain.numerical: 500,
+    IntelligenceDomain.spatial: 500,
+    IntelligenceDomain.memory: 300,
+    IntelligenceDomain.processing: 300,
+    IntelligenceDomain.logic: 500,
+  };
+
+  static const _adaptiveDifficulties = [
+    QuestionDifficulty.easy,
+    QuestionDifficulty.normal,
+    QuestionDifficulty.hard,
+    QuestionDifficulty.veryHard,
+  ];
 
   @override
   List<Item> load() {
-    _items ??= _buildMockItems();
+    _items ??= _sharedItems ??= _buildMockItems();
     return List.unmodifiable(_items!);
   }
 
@@ -50,12 +67,12 @@ class InMemoryItemBankRepository implements ItemBankRepository {
     final createdAt = DateTime.utc(2026, 1);
     return [
       for (final domain in IntelligenceDomain.values)
-        for (var index = 0; index < 50; index++)
+        for (var index = 0; index < minimumDomainCounts[domain]!; index++)
           _buildItem(
             domain: domain,
             index: index,
-            difficulty: QuestionDifficulty
-                .values[index % QuestionDifficulty.values.length],
+            difficulty:
+                _adaptiveDifficulties[index % _adaptiveDifficulties.length],
             createdAt: createdAt,
           ),
     ];
@@ -87,6 +104,7 @@ class InMemoryItemBankRepository implements ItemBankRepository {
     return Item.fromGeneratedQuestion(
       generated,
       id: '${domain.generatorPrefix}-${(index + 1).toString().padLeft(3, '0')}',
+      version: 'v0.9.4',
       now: createdAt,
     );
   }

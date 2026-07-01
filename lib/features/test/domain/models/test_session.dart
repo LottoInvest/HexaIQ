@@ -9,17 +9,23 @@ import '../../../norm/domain/ability_level.dart';
 import '../../../norm/domain/iq_scale_converter.dart';
 import '../../../norm/domain/norm_profile.dart';
 import '../../../norm/domain/percentile_converter.dart';
+import 'test_item.dart';
+import 'test_mode.dart';
+import 'test_response.dart';
 import 'question_record.dart';
 
 class TestSession {
   TestSession({
     required this.sessionId,
     required this.startedAt,
+    this.mode = TestMode.quickIq,
     this.domain = IntelligenceDomain.numerical,
     this.completedAt,
     this.currentQuestionIndex = 0,
     this.questions = const [],
     this.generatedQuestions = const [],
+    this.items = const [],
+    this.responses = const [],
     this.targetQuestionCount = 5,
     this.selectedAnswers = const {},
     this.elapsedSeconds = const {},
@@ -45,11 +51,14 @@ class TestSession {
 
   final String sessionId;
   final DateTime startedAt;
+  final TestMode mode;
   final IntelligenceDomain domain;
   final DateTime? completedAt;
   final int currentQuestionIndex;
   final List<TestQuestion> questions;
   final List<TestQuestion> generatedQuestions;
+  final List<TestItem> items;
+  final List<TestResponse> responses;
   final int targetQuestionCount;
   final Map<String, int> selectedAnswers;
   final Map<String, int> elapsedSeconds;
@@ -175,12 +184,15 @@ class TestSession {
   TestSession copyWith({
     String? sessionId,
     DateTime? startedAt,
+    TestMode? mode,
     IntelligenceDomain? domain,
     DateTime? completedAt,
     bool clearCompletedAt = false,
     int? currentQuestionIndex,
     List<TestQuestion>? questions,
     List<TestQuestion>? generatedQuestions,
+    List<TestItem>? items,
+    List<TestResponse>? responses,
     int? targetQuestionCount,
     Map<String, int>? selectedAnswers,
     Map<String, int>? elapsedSeconds,
@@ -205,11 +217,14 @@ class TestSession {
     return TestSession(
       sessionId: sessionId ?? this.sessionId,
       startedAt: startedAt ?? this.startedAt,
+      mode: mode ?? this.mode,
       domain: domain ?? this.domain,
       completedAt: clearCompletedAt ? null : completedAt ?? this.completedAt,
       currentQuestionIndex: currentQuestionIndex ?? this.currentQuestionIndex,
       questions: questions ?? this.questions,
       generatedQuestions: generatedQuestions ?? this.generatedQuestions,
+      items: items ?? this.items,
+      responses: responses ?? this.responses,
       targetQuestionCount: targetQuestionCount ?? this.targetQuestionCount,
       selectedAnswers: selectedAnswers ?? this.selectedAnswers,
       elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
@@ -237,17 +252,22 @@ class TestSession {
   }
 
   TestSession withNormEstimate() {
+    final answeredCount = questionHistory.length;
+    final accuracy = answeredCount == 0
+        ? 0.5
+        : questionHistory.where((record) => record.correct == true).length /
+              answeredCount;
     final iq = const IQScaleConverter().estimatedIQ(
       theta: thetaEstimate.theta,
+      accuracy: accuracy,
       profile: normProfile,
     );
-    final percentile = const PercentileConverter().percentile(
-      theta: thetaEstimate.theta,
-      profile: normProfile,
+    final topPercent = const PercentileConverter().topPercentFromAccuracy(
+      accuracy,
     );
     return copyWith(
       estimatedIQ: iq,
-      percentile: percentile,
+      percentile: topPercent,
       abilityLevel: AbilityLevel.fromIQ(iq),
     );
   }

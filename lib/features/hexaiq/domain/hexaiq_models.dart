@@ -84,14 +84,10 @@ String testTypeLabel(TestType type) {
 
 String testTypeDescription(TestType type) {
   return switch (type) {
-    TestType.basic =>
-      '\uC218\uB9AC \uC601\uC5ED\uC744 \uBE60\uB974\uAC8C \uC810\uAC80\uD558\uB294 \uBB34\uB8CC \uAE30\uBCF8 \uAC80\uC0AC',
-    TestType.quickIq =>
-      '6\uAC1C \uC601\uC5ED\uC744 18\uBB38\uD56D\uC73C\uB85C \uD63C\uD569 \uCE21\uC815\uD558\uB294 \uC801\uC751\uD615 \uAC80\uC0AC',
-    TestType.advanced =>
-      '\uBB38\uD56D \uC218\uB97C \uB298\uB824 \uC601\uC5ED\uBCC4 \uACBD\uD5A5\uC744 \uB354 \uC790\uC138\uD788 \uBCF4\uB294 \uAC80\uC0AC',
-    TestType.professional =>
-      '\uAD11\uACE0 \uC5C6\uC774 \uAE34 \uBB38\uD56D\uACFC \uC0C1\uC138 \uB9AC\uD3EC\uD2B8\uB97C \uC81C\uACF5\uD558\uB294 \uAC80\uC0AC',
+    TestType.basic => '광고 없이 6개 영역을 30문항으로 측정하는 기본 검사',
+    TestType.quickIq => '6개 영역을 60문항으로 균형 있게 측정하는 종합 IQ 검사',
+    TestType.advanced => '6개 영역을 영역별 15문항으로 자세히 보는 심화 검사',
+    TestType.professional => '광고 없이 영역별 20문항과 상세 리포트를 제공하는 전문 검사',
   };
 }
 

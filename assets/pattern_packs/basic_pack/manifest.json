@@ -1,0 +1,11 @@
+{
+  "packId": "basic_pack",
+  "name": "Basic Pattern Pack",
+  "version": "1.0.0",
+  "target": "basic",
+  "difficultyRange": ["easy", "normal"],
+  "questionCount": 20,
+  "supportedElements": ["shape", "icon", "emoji"],
+  "requiresPremium": false,
+  "enabled": true
+}

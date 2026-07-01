@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/domain/intelligence_domain.dart';
 import '../domain/question_engine_models.dart';
 import 'age_mapper.dart';
 import 'difficulty_manager.dart';
@@ -47,6 +48,10 @@ class QuestionQualityValidator {
   }
 
   void _validateEstimatedTime(GeneratedQuestionDto question) {
+    if (question.domain == IntelligenceDomain.processing &&
+        (question.timeLimit != null || question.reactionScore != null)) {
+      return;
+    }
     final expected = difficultyManager.estimatedTimeSec(question.level);
     final diff = (question.estimatedTimeSec - expected).abs();
     if (diff > 20) {

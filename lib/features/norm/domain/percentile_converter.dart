@@ -20,11 +20,72 @@ class PercentileConverter {
     return value.clamp(1, 99);
   }
 
+  int topPercentFromAccuracy(double accuracy) {
+    final safeAccuracy = accuracy.isFinite ? accuracy.clamp(0.0, 1.0) : 0.5;
+    if (safeAccuracy <= 0.10) {
+      return _interpolateTopPercent(safeAccuracy, 0.00, 0.10, 99, 95);
+    }
+    if (safeAccuracy <= 0.25) {
+      return _interpolateTopPercent(safeAccuracy, 0.11, 0.25, 94, 80);
+    }
+    if (safeAccuracy <= 0.40) {
+      return _interpolateTopPercent(safeAccuracy, 0.26, 0.40, 79, 60);
+    }
+    if (safeAccuracy <= 0.60) {
+      return _interpolateTopPercent(safeAccuracy, 0.41, 0.60, 59, 40);
+    }
+    if (safeAccuracy <= 0.75) {
+      return _interpolateTopPercent(safeAccuracy, 0.61, 0.75, 39, 20);
+    }
+    if (safeAccuracy <= 0.90) {
+      return _interpolateTopPercent(safeAccuracy, 0.76, 0.90, 19, 5);
+    }
+    return _interpolateTopPercent(safeAccuracy, 0.91, 1.00, 4, 1);
+  }
+
+  String bandLabelFromTopPercent(int topPercent) {
+    final safeTop = topPercent.clamp(1, 99);
+    if (safeTop <= 4) {
+      return '매우 우수';
+    }
+    if (safeTop <= 19) {
+      return '우수';
+    }
+    if (safeTop <= 39) {
+      return '평균 이상';
+    }
+    if (safeTop <= 59) {
+      return '평균권';
+    }
+    if (safeTop <= 79) {
+      return '평균 이하';
+    }
+    return '낮은 구간';
+  }
+
   double _normalCdf(double z) {
     final sign = z < 0 ? -1 : 1;
     final x = z.abs() / math.sqrt2;
     final erf = _erfApproximation(x);
     return 0.5 * (1 + sign * erf);
+  }
+
+  int _interpolateTopPercent(
+    double accuracy,
+    double minAccuracy,
+    double maxAccuracy,
+    int lowAccuracyTopPercent,
+    int highAccuracyTopPercent,
+  ) {
+    final span = maxAccuracy - minAccuracy;
+    if (span <= 0) {
+      return lowAccuracyTopPercent.clamp(1, 99);
+    }
+    final ratio = ((accuracy - minAccuracy) / span).clamp(0.0, 1.0);
+    final value =
+        lowAccuracyTopPercent +
+        (highAccuracyTopPercent - lowAccuracyTopPercent) * ratio;
+    return value.round().clamp(1, 99);
   }
 
   double _erfApproximation(double x) {

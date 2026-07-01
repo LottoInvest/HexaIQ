@@ -3,20 +3,29 @@ import 'package:hexaiq_app/core/domain/question_difficulty.dart';
 import 'package:hexaiq_app/features/question_engine/question_engine.dart';
 
 void main() {
-  test('Item bank builds 300 mock items across six domains', () {
+  test('Item bank builds v0.9.4 massive items across six domains', () {
     final repository = InMemoryItemBankRepository();
     final items = repository.load();
 
-    expect(items.length, 300);
-    for (final domain in IntelligenceDomain.values) {
-      expect(repository.findByDomain(domain).length, 50);
-    }
+    expect(items.length, 2600);
+    expect(repository.findByDomain(IntelligenceDomain.verbal), hasLength(500));
+    expect(
+      repository.findByDomain(IntelligenceDomain.numerical),
+      hasLength(500),
+    );
+    expect(repository.findByDomain(IntelligenceDomain.spatial), hasLength(500));
+    expect(repository.findByDomain(IntelligenceDomain.memory), hasLength(300));
+    expect(
+      repository.findByDomain(IntelligenceDomain.processing),
+      hasLength(300),
+    );
+    expect(repository.findByDomain(IntelligenceDomain.logic), hasLength(500));
   });
 
   test('Item bank supports difficulty and tag lookup', () {
     final repository = InMemoryItemBankRepository();
 
-    expect(repository.findByDifficulty(QuestionDifficulty.normal).length, 60);
+    expect(repository.findByDifficulty(QuestionDifficulty.normal).length, 650);
     expect(repository.findByTag('type:NR01'), isNotEmpty);
     expect(repository.findByTag('stub'), isEmpty);
   });
@@ -31,7 +40,9 @@ void main() {
     expect(item.discrimination, greaterThan(0));
     expect(item.guessing, greaterThan(0));
     expect(item.expectedSolveTime, isNot(Duration.zero));
-    expect(item.version, 'v0.6.0');
+    expect(item.subCategory, isNotEmpty);
+    expect(item.usageCount, 0);
+    expect(item.version, 'v0.9.4');
   });
 
   test('ItemStatistics calculates accuracy', () {

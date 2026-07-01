@@ -1,0 +1,12 @@
+{
+  "name": "all_wrong",
+  "testType": "basic",
+  "responses": [
+    {"domain": "verbal", "correct": false, "difficulty": "normal"},
+    {"domain": "numerical", "correct": false, "difficulty": "normal"},
+    {"domain": "spatial", "correct": false, "difficulty": "normal"},
+    {"domain": "pattern", "correct": false, "difficulty": "normal"},
+    {"domain": "memory", "correct": false, "difficulty": "normal"},
+    {"domain": "speed", "correct": false, "difficulty": "normal"}
+  ]
+}

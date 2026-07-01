@@ -130,18 +130,18 @@ void main() {
     }
   });
 
-  test('Quick IQ mock API generates 18 mixed-domain questions', () async {
+  test('Quick IQ mock API generates 60 six-domain questions', () async {
     final api = MockQuestionApi();
     final questions = await api.generateTestQuestions(
       profile: profile,
       testType: TestType.quickIq,
     );
 
-    expect(questions.length, 18);
+    expect(questions.length, 60);
     for (final domain in IntelligenceDomain.values) {
       expect(
         questions.where((question) => question.domain == domain).length,
-        3,
+        10,
       );
     }
   });
@@ -153,7 +153,7 @@ void main() {
       profile: profile,
     );
 
-    expect(questions.length, 18);
+    expect(questions.length, 60);
     expect(questions.map((question) => question.domain).toSet().length, 6);
   });
 
@@ -172,19 +172,19 @@ void main() {
     ]);
 
     for (final domain in IntelligenceDomain.values) {
-      expect(report.domainResults[domain]?.total, 3);
+      expect(report.domainResults[domain]?.total, 10);
       expect(report.domainResults[domain]?.accuracy, 1.0);
     }
     expect(report.domainScores.every((score) => !score.isComingSoon), isTrue);
   });
 
-  test('AppState starts Quick IQ with 18 target questions', () async {
+  test('AppState starts Quick IQ with 60 target questions', () async {
     final state = HexaIQAppState(repository: MockHexaIQRepository());
     await state.loadInitialData();
     state.selectTestType(TestType.quickIq);
     await state.startTest();
 
-    expect(state.totalQuestionCount, 18);
+    expect(state.totalQuestionCount, 60);
     expect(state.currentQuestion?.domain, IntelligenceDomain.numerical);
   });
 
@@ -193,9 +193,10 @@ void main() {
     await state.loadInitialData();
     state.selectTestType(TestType.quickIq);
     await state.startTest();
-    final first = state.currentQuestion!;
-    state.selectAnswer(first.answerIndex);
-    state.nextQuestion();
+    for (var index = 0; index < 10; index++) {
+      state.selectAnswer(state.currentQuestion!.answerIndex);
+      state.nextQuestion();
+    }
 
     expect(state.currentQuestion?.domain, IntelligenceDomain.verbal);
   });
@@ -206,15 +207,14 @@ void main() {
     state.selectTestType(TestType.quickIq);
     await state.startTest();
 
-    final first = state.currentQuestion!;
-    state.selectAnswer(first.answerIndex);
-    state.nextQuestion();
-    final second = state.currentQuestion!;
-    state.selectAnswer(second.answerIndex);
-    state.nextQuestion();
+    for (var index = 0; index < 11; index++) {
+      final question = state.currentQuestion!;
+      state.selectAnswer(question.answerIndex);
+      state.nextQuestion();
+    }
 
     final estimates = state.testSession!.domainThetaEstimates;
-    expect(estimates.containsKey(IntelligenceDomain.numerical), isTrue);
     expect(estimates.containsKey(IntelligenceDomain.verbal), isTrue);
+    expect(estimates.containsKey(IntelligenceDomain.numerical), isTrue);
   });
 }

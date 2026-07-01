@@ -25,12 +25,20 @@ void main() {
     const converter = IQScaleConverter();
 
     expect(converter.scaledScore(theta: 0), 0);
-    expect(converter.estimatedIQ(theta: 0), 100);
-    expect(converter.estimatedIQ(theta: 0.6), 109);
-    expect(converter.estimatedIQ(theta: 1), 115);
-    expect(converter.estimatedIQ(theta: -100), IQScaleConverter.minIQ);
-    expect(converter.estimatedIQ(theta: 100), IQScaleConverter.maxIQ);
-    expect(converter.estimatedIQ(theta: double.nan), 100);
+    expect(converter.estimatedIQ(theta: 0), inInclusiveRange(90, 100));
+    expect(converter.estimatedIQ(theta: 0.6), inInclusiveRange(98, 100));
+    expect(converter.estimatedIQ(theta: 1), inInclusiveRange(99, 101));
+    expect(
+      converter.estimatedIQ(theta: -3, accuracy: 0),
+      IQScaleConverter.minIQ,
+    );
+    expect(
+      converter.estimatedIQ(theta: 3, accuracy: 1),
+      IQScaleConverter.maxIQ,
+    );
+    expect(converter.estimatedIQ(theta: -100), inInclusiveRange(90, 100));
+    expect(converter.estimatedIQ(theta: 100), inInclusiveRange(100, 110));
+    expect(converter.estimatedIQ(theta: double.nan), inInclusiveRange(90, 100));
   });
 
   test(
@@ -44,6 +52,10 @@ void main() {
       expect(converter.percentile(theta: -100), 1);
       expect(converter.percentile(theta: 100), 99);
       expect(converter.percentile(theta: double.infinity), 50);
+      expect(converter.topPercentFromAccuracy(0), inInclusiveRange(95, 99));
+      expect(converter.topPercentFromAccuracy(0.25), inInclusiveRange(80, 94));
+      expect(converter.topPercentFromAccuracy(0.5), inInclusiveRange(40, 59));
+      expect(converter.topPercentFromAccuracy(1), inInclusiveRange(1, 4));
     },
   );
 

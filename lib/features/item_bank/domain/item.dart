@@ -17,7 +17,10 @@ class Item {
     required this.answer,
     required this.explanation,
     required this.tags,
+    this.subCategory = '',
     required this.version,
+    this.usageCount = 0,
+    this.lastUsed,
     required this.createdAt,
     required this.updatedAt,
     this.hint,
@@ -69,6 +72,7 @@ class Item {
         'difficulty:${question.difficulty.name}',
         ...question.metadata.difficultyFactors,
       ],
+      subCategory: question.metadata.ruleName ?? question.metadata.rule,
       version: version,
       createdAt: timestamp,
       updatedAt: timestamp,
@@ -98,7 +102,10 @@ class Item {
   final Duration? timeLimit;
   final double? reactionScore;
   final List<String> tags;
+  final String subCategory;
   final String version;
+  final int usageCount;
+  final DateTime? lastUsed;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -137,7 +144,10 @@ class Item {
     Duration? timeLimit,
     double? reactionScore,
     List<String>? tags,
+    String? subCategory,
     String? version,
+    int? usageCount,
+    DateTime? lastUsed,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -165,7 +175,10 @@ class Item {
       timeLimit: timeLimit ?? this.timeLimit,
       reactionScore: reactionScore ?? this.reactionScore,
       tags: tags ?? this.tags,
+      subCategory: subCategory ?? this.subCategory,
       version: version ?? this.version,
+      usageCount: usageCount ?? this.usageCount,
+      lastUsed: lastUsed ?? this.lastUsed,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

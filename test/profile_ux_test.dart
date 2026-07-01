@@ -8,6 +8,9 @@ import 'package:hexaiq_app/features/hexaiq/domain/hexaiq_repository.dart';
 import 'package:hexaiq_app/features/hexaiq/presentation/screens/profile_create_screen.dart';
 import 'package:hexaiq_app/features/hexaiq/presentation/screens/profile_select_screen.dart';
 import 'package:hexaiq_app/features/hexaiq/presentation/state/hexaiq_app_state.dart';
+import 'package:hexaiq_app/features/payment/domain/purchase_status.dart';
+import 'package:hexaiq_app/features/test/domain/models/test_session.dart';
+import 'package:hexaiq_app/features/training/domain/training_result.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -119,6 +122,32 @@ class _ProfileRepository implements HexaIQRepository {
   Future<List<TestResultSummary>> loadTestHistory(String profileId) async {
     return const [];
   }
+
+  @override
+  Future<void> saveTrainingResult(TrainingResult result) async {}
+
+  @override
+  Future<List<TrainingResult>> loadTrainingHistory(String profileId) async {
+    return const [];
+  }
+
+  @override
+  Future<void> saveActiveTestSession({
+    required String profileId,
+    required TestSession session,
+  }) async {}
+
+  @override
+  Future<TestSession?> loadActiveTestSession(String profileId) async => null;
+
+  @override
+  Future<void> clearActiveTestSession(String profileId) async {}
+
+  @override
+  Future<PurchaseStatus> loadPurchaseStatus() async => PurchaseStatus.free;
+
+  @override
+  Future<void> savePurchaseStatus(PurchaseStatus status) async {}
 
   @override
   Future<ReportSummary> buildReport(List<QuestionResponse> responses) async {

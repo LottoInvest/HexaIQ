@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -12,14 +11,24 @@ import '../../../cat/domain/theta_estimate.dart';
 import '../../../cat/domain/theta_estimation_method.dart';
 import '../../../item_bank/domain/exposure_status.dart';
 import '../../../norm/domain/norm_profile.dart';
+import '../../../payment/domain/purchase_status.dart';
 import '../../../question_engine/core/question_engine.dart';
 import '../../../question_engine/domain/question_engine_models.dart';
+import '../../../report/domain/domain_score_calculator.dart';
+import '../../../report/domain/report_localization.dart';
+import '../../../result/domain/result_integrity_validator.dart';
+import '../../../result/domain/test_result_builder.dart';
 import '../../../test/application/test_session_controller.dart';
+import '../../../test/domain/adaptive/adaptive_engine.dart' as adaptive_v094;
+import '../../../test/domain/generators/multi_domain_item_engine.dart';
 import '../../../test/domain/models/test_session.dart';
+import '../../../test/domain/models/test_mode.dart';
 import '../../domain/hexaiq_models.dart';
 import '../../domain/hexaiq_repository.dart';
 
 enum SubmitResult { nextQuestion, domainComplete }
+
+enum DomainProgressStatus { pending, current, completed }
 
 class HexaIQAppState extends ChangeNotifier {
   HexaIQAppState({
@@ -36,8 +45,12 @@ class HexaIQAppState extends ChangeNotifier {
   final QuestionEngine questionEngine;
   final CalibrationRepository? calibrationRepository;
   final SettingsRepository settingsRepository;
-  static const int _basicQuestionCount = 5;
-  static const int _quickIqQuestionCount = 18;
+  static const int _basicQuestionCount = 30;
+  static const int _quickIqQuestionCount = 60;
+  static const int _advancedQuestionCount = 90;
+  static const int _professionalQuestionCount = 120;
+  static const MultiDomainItemEngine _multiDomainItemEngine =
+      MultiDomainItemEngine();
 
   List<UserProfile> profiles = [];
   UserProfile? selectedProfile;
@@ -51,6 +64,8 @@ class HexaIQAppState extends ChangeNotifier {
   int questionIndex = 0;
   int rewardedAdsCompleted = 0;
   bool hasProfessionalAccess = false;
+  PurchaseStatus purchaseStatus = PurchaseStatus.free;
+  Set<int> _shownMidAdBreakpoints = {};
   bool isBusy = false;
   bool profilesLoaded = false;
   ThemeMode themeMode = ThemeMode.dark;
@@ -186,13 +201,38 @@ class HexaIQAppState extends ChangeNotifier {
   }
 
   int get requiredAds => switch (selectedTestType) {
-    TestType.basic => 2,
+    TestType.basic => 0,
     TestType.quickIq => 2,
-    TestType.advanced => 6,
+    TestType.advanced => 3,
     TestType.professional => 0,
   };
 
   bool get hasMoreQuestions => currentQuestion != null;
+
+  List<IntelligenceDomain> get activeDomainSequence {
+    return _domainSequenceFor(selectedTestType);
+  }
+
+  Map<IntelligenceDomain, DomainProgressStatus> get domainProgress {
+    final sequence = activeDomainSequence;
+    final status = <IntelligenceDomain, DomainProgressStatus>{
+      for (final domain in sequence) domain: DomainProgressStatus.pending,
+    };
+    final session = testSession;
+    if (session != null) {
+      for (final question in session.activeQuestions) {
+        if (session.selectedAnswerFor(question.id) != null &&
+            status.containsKey(question.domain)) {
+          status[question.domain] = DomainProgressStatus.completed;
+        }
+      }
+    }
+    final current = currentQuestion?.domain;
+    if (current != null && status.containsKey(current)) {
+      status[current] = DomainProgressStatus.current;
+    }
+    return status;
+  }
 
   bool get canCreateProfile => profiles.length < 3;
 
@@ -209,6 +249,8 @@ class HexaIQAppState extends ChangeNotifier {
 
   Future<void> loadInitialData() async {
     themeMode = await settingsRepository.loadThemeMode();
+    purchaseStatus = await repository.loadPurchaseStatus();
+    hasProfessionalAccess = purchaseStatus.hasProfessionalAccess;
     profiles = await repository.loadProfiles();
     selectedProfile = profiles.isNotEmpty ? profiles.first : null;
     if (selectedProfile != null) {
@@ -226,8 +268,9 @@ class HexaIQAppState extends ChangeNotifier {
     if (!canCreateProfile) {
       return;
     }
+    final createdAt = DateTime.now();
     final profile = UserProfile(
-      id: 'profile-${profiles.length + 1}',
+      id: 'profile-${createdAt.microsecondsSinceEpoch}',
       name: name,
       ageGroup: ageGroup,
       grade: grade,
@@ -235,6 +278,7 @@ class HexaIQAppState extends ChangeNotifier {
     );
     profiles = [...profiles, profile];
     selectedProfile = profile;
+    _clearProfileScopedState();
     await repository.saveProfiles(profiles);
     growth = await repository.loadGrowth(profile);
     notifyListeners();
@@ -244,6 +288,7 @@ class HexaIQAppState extends ChangeNotifier {
     profiles = profiles.where((item) => item.id != profile.id).toList();
     if (selectedProfile?.id == profile.id) {
       selectedProfile = profiles.isNotEmpty ? profiles.first : null;
+      _clearProfileScopedState();
       growth = selectedProfile == null
           ? const []
           : await repository.loadGrowth(selectedProfile!);
@@ -254,12 +299,14 @@ class HexaIQAppState extends ChangeNotifier {
 
   Future<void> selectProfile(UserProfile profile) async {
     selectedProfile = profile;
+    _clearProfileScopedState();
     growth = await repository.loadGrowth(profile);
     notifyListeners();
   }
 
   void selectTestType(TestType type) {
     selectedTestType = type;
+    _shownMidAdBreakpoints = {};
     notifyListeners();
   }
 
@@ -282,7 +329,13 @@ class HexaIQAppState extends ChangeNotifier {
     final sessionId = 'session-${startedAt.millisecondsSinceEpoch}';
     final baseSeed = startedAt.millisecondsSinceEpoch & 0x7fffffff;
     final targetQuestionCount = _targetQuestionCountFor(selectedTestType);
+    final testMode = testModeFromTestType(selectedTestType);
     final firstDomain = _domainForQuestionIndex(0);
+    final foundationItems = _multiDomainItemEngine.generate(
+      mode: testMode,
+      domain: firstDomain,
+      count: targetQuestionCount,
+    );
     final firstQuestion = _generateDynamicQuestion(
       profile: profile,
       sessionId: sessionId,
@@ -299,9 +352,11 @@ class HexaIQAppState extends ChangeNotifier {
       TestSession(
         sessionId: sessionId,
         startedAt: startedAt,
+        mode: testMode,
         domain: firstDomain,
         questions: [firstQuestion],
         generatedQuestions: [firstQuestion],
+        items: foundationItems,
         targetQuestionCount: targetQuestionCount,
         difficultyByQuestionId: {firstQuestion.id: firstQuestion.difficulty},
         usedItemIds: {if (firstQuestion.itemId != null) firstQuestion.itemId!},
@@ -316,9 +371,40 @@ class HexaIQAppState extends ChangeNotifier {
     report = null;
     questionIndex = 0;
     rewardedAdsCompleted = 0;
+    _shownMidAdBreakpoints = {};
     lastCompletedDomain = null;
     isBusy = false;
+    await _saveActiveSession();
     notifyListeners();
+  }
+
+  Future<bool> resumeActiveSession() async {
+    final profile = selectedProfile;
+    if (profile == null) {
+      return false;
+    }
+    final session = await repository.loadActiveTestSession(profile.id);
+    if (session == null) {
+      return false;
+    }
+    testSessionController = TestSessionController(
+      session,
+      calibrationRepository: calibrationRepository,
+    );
+    questions = session.activeQuestions;
+    responses = [
+      for (final question in session.activeQuestions)
+        if (session.selectedAnswerFor(question.id) != null)
+          QuestionResponse(
+            question: question,
+            selectedIndex: session.selectedAnswerFor(question.id)!,
+          ),
+    ];
+    report = null;
+    questionIndex = session.currentQuestionIndex;
+    lastCompletedDomain = null;
+    notifyListeners();
+    return true;
   }
 
   SubmitResult submitAnswer(int selectedIndex) {
@@ -346,11 +432,13 @@ class HexaIQAppState extends ChangeNotifier {
 
   void selectAnswer(int selectedIndex) {
     testSessionController?.selectAnswer(selectedIndex);
+    _saveActiveSessionSoon();
     notifyListeners();
   }
 
   void recordElapsedTime(int seconds) {
     testSessionController?.recordElapsedTime(seconds);
+    _saveActiveSessionSoon();
   }
 
   void nextQuestion() {
@@ -362,7 +450,14 @@ class HexaIQAppState extends ChangeNotifier {
     controller.nextQuestion(
       generateNextQuestion: (session) {
         final index = session.activeQuestions.length;
-        final difficulty = session.difficultyProfile.currentDifficulty;
+        final domain = _domainForQuestionIndex(index);
+        final thetaEstimate = session.thetaForDomain(domain);
+        final difficulty = _higherDifficulty(
+          session.difficultyProfile.currentDifficulty,
+          const adaptive_v094.AdaptiveEngine().difficultyForTheta(
+            thetaEstimate.theta,
+          ),
+        );
         final previousDifficulty = session.questionHistory.isEmpty
             ? QuestionDifficulty.normal
             : session.questionHistory.last.difficulty;
@@ -377,7 +472,7 @@ class HexaIQAppState extends ChangeNotifier {
           sessionId: session.sessionId,
           baseSeed: session.baseSeed,
           index: index,
-          domain: _domainForQuestionIndex(index),
+          domain: domain,
           difficulty: difficulty,
           difficultyProfile: session.difficultyProfile,
           usedSeeds: {
@@ -390,7 +485,7 @@ class HexaIQAppState extends ChangeNotifier {
               if (question.itemId != null) question.itemId!,
             for (final record in session.questionHistory) record.itemId,
           },
-          thetaEstimate: session.thetaForDomain(_domainForQuestionIndex(index)),
+          thetaEstimate: thetaEstimate,
         );
         debugPrint(
           '[QuestionEngine] Generated Question${index + 1} '
@@ -401,12 +496,42 @@ class HexaIQAppState extends ChangeNotifier {
     );
     questions = controller.session.activeQuestions;
     questionIndex = controller.session.currentQuestionIndex;
+    _saveActiveSessionSoon();
     notifyListeners();
+  }
+
+  bool consumeMidAdBreakForCurrentQuestion() {
+    final session = testSession;
+    if (session == null ||
+        (selectedTestType != TestType.quickIq &&
+            selectedTestType != TestType.advanced)) {
+      return false;
+    }
+    final completedQuestionCount = session.currentQuestionIndex + 1;
+    final perDomain = _questionsPerDomainFor(selectedTestType);
+    if (completedQuestionCount % perDomain != 0) {
+      return false;
+    }
+    final completedDomains = completedQuestionCount ~/ perDomain;
+    final isCheckpoint = switch (selectedTestType) {
+      TestType.quickIq => completedDomains == 3,
+      TestType.advanced => completedDomains == 2 || completedDomains == 4,
+      TestType.basic || TestType.professional => false,
+    };
+    if (!isCheckpoint) {
+      return false;
+    }
+    if (_shownMidAdBreakpoints.contains(completedDomains)) {
+      return false;
+    }
+    _shownMidAdBreakpoints = {..._shownMidAdBreakpoints, completedDomains};
+    return true;
   }
 
   void previousQuestion() {
     testSessionController?.previousQuestion();
     questionIndex = testSessionController?.session.currentQuestionIndex ?? 0;
+    _saveActiveSessionSoon();
     notifyListeners();
   }
 
@@ -425,34 +550,36 @@ class HexaIQAppState extends ChangeNotifier {
         ),
     ];
     final builtReport = await repository.buildReport(responses);
+    const domainScoreCalculator = DomainScoreCalculator();
     report = builtReport.copyWith(
       domainResults: session.domainResults,
+      domainScores: domainScoreCalculator.scoresFromResults(
+        session.domainResults,
+      ),
+      summary: ReportLocalization.summary,
+      recommendations: ReportLocalization.trainingRecommendations(
+        session.domainResults,
+      ),
       averageDifficulty: session.averageDifficulty,
     );
     final profile = selectedProfile;
     if (profile != null) {
-      final completedAt = session.completedAt ?? DateTime.now();
-      final result = TestResultSummary(
-        id: session.sessionId,
+      final result = const TestResultBuilder().build(
+        session: session,
         profileId: profile.id,
-        startedAt: session.startedAt,
-        completedAt: completedAt,
-        theta: session.thetaEstimate.theta,
-        standardError: session.thetaEstimate.standardError,
-        estimatedIQ: session.estimatedIQ,
-        percentile: session.percentile,
-        abilityLevel: session.abilityLevel.labelKo,
-        averageDifficulty: session.averageDifficulty,
-        averageElapsedSeconds: session.averageElapsedSeconds,
-        questionCount: session.questionHistory.length,
-        payloadJson: _encodeResultPayload(session),
       );
+      final integrity = const ResultIntegrityValidator().validate(result);
+      if (!integrity.isValid) {
+        throw StateError(
+          'Invalid TestResultSummary: ${integrity.errors.join(', ')}',
+        );
+      }
       await repository.saveTestResult(result);
       final updatedProfile = profile.copyWith(
         recentIQ: session.estimatedIQ,
         recentPercentile: session.percentile,
         recentAbilityLevel: session.abilityLevel.labelKo,
-        lastTestAt: completedAt,
+        lastTestAt: result.completedAt,
         testCount: profile.testCount + 1,
       );
       profiles = [
@@ -462,29 +589,9 @@ class HexaIQAppState extends ChangeNotifier {
       selectedProfile = updatedProfile;
       await repository.saveProfiles(profiles);
       growth = await repository.loadGrowth(updatedProfile);
+      await repository.clearActiveTestSession(updatedProfile.id);
     }
     notifyListeners();
-  }
-
-  String _encodeResultPayload(TestSession session) {
-    return jsonEncode({
-      'sessionId': session.sessionId,
-      'theta': session.thetaEstimate.theta,
-      'estimatedIQ': session.estimatedIQ,
-      'percentile': session.percentile,
-      'abilityLevel': session.abilityLevel.labelKo,
-      'questions': [
-        for (final record in session.questionHistory)
-          {
-            'questionId': record.question.id,
-            'itemId': record.itemId,
-            'correct': record.correct,
-            'thetaAfter': record.thetaAfter,
-            'likelihood': record.likelihood,
-            'information': record.itemInformation,
-          },
-      ],
-    });
   }
 
   TestQuestion _generateDynamicQuestion({
@@ -551,19 +658,71 @@ class HexaIQAppState extends ChangeNotifier {
     };
   }
 
+  QuestionDifficulty _higherDifficulty(
+    QuestionDifficulty current,
+    QuestionDifficulty thetaBased,
+  ) {
+    return current.level >= thetaBased.level ? current : thetaBased;
+  }
+
   int _targetQuestionCountFor(TestType type) {
     return switch (type) {
       TestType.quickIq => _quickIqQuestionCount,
+      TestType.advanced => _advancedQuestionCount,
+      TestType.professional => _professionalQuestionCount,
       _ => _basicQuestionCount,
     };
   }
 
   IntelligenceDomain _domainForQuestionIndex(int index) {
-    if (selectedTestType != TestType.quickIq) {
-      return IntelligenceDomain.numerical;
+    final domains = _domainSequenceFor(selectedTestType);
+    final perDomain = _questionsPerDomainFor(selectedTestType);
+    final domainIndex = (index ~/ perDomain).clamp(0, domains.length - 1);
+    return domains[domainIndex];
+  }
+
+  List<IntelligenceDomain> _domainSequenceFor(TestType type) {
+    return switch (type) {
+      TestType.quickIq => IntelligenceDomain.values,
+      _ => IntelligenceDomain.values,
+    };
+  }
+
+  int _questionsPerDomainFor(TestType type) {
+    return switch (type) {
+      TestType.basic => 5,
+      TestType.quickIq => 10,
+      TestType.advanced => 15,
+      TestType.professional => 20,
+    };
+  }
+
+  void _clearProfileScopedState() {
+    testSessionController = null;
+    questions = [];
+    responses = [];
+    report = null;
+    lastCompletedDomain = null;
+    questionIndex = 0;
+    rewardedAdsCompleted = 0;
+    _shownMidAdBreakpoints = {};
+    isBusy = false;
+  }
+
+  Future<void> _saveActiveSession() async {
+    final profile = selectedProfile;
+    final session = testSessionController?.session;
+    if (profile == null || session == null || session.isComplete) {
+      return;
     }
-    final domains = IntelligenceDomain.values;
-    return domains[index % domains.length];
+    await repository.saveActiveTestSession(
+      profileId: profile.id,
+      session: session,
+    );
+  }
+
+  void _saveActiveSessionSoon() {
+    unawaited(_saveActiveSession());
   }
 
   String _adaptiveReason(TestSession session) {
@@ -624,9 +783,14 @@ class HexaIQAppState extends ChangeNotifier {
   Future<void> purchaseProfessional() async {
     isBusy = true;
     notifyListeners();
-    hasProfessionalAccess = await repository.verifyPayment(
+    final verified = await repository.verifyPayment(
       testType: TestType.professional,
     );
+    if (verified) {
+      purchaseStatus = PurchaseStatus.professionalPurchased;
+      hasProfessionalAccess = true;
+      await repository.savePurchaseStatus(purchaseStatus);
+    }
     isBusy = false;
     notifyListeners();
   }

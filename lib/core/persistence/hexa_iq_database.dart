@@ -19,7 +19,7 @@ class HexaIQDatabase {
     _database = await factory.openDatabase(
       path,
       options: OpenDatabaseOptions(
-        version: 2,
+        version: 4,
         onCreate: (db, version) async {
           await _createSchema(db);
         },
@@ -60,9 +60,11 @@ class HexaIQDatabase {
     for (final table in [
       'profiles',
       'test_results',
+      'training_results',
       'calibration_profiles',
       'settings',
       'export_jobs',
+      'active_test_sessions',
     ]) {
       await db.delete(table);
     }
@@ -114,6 +116,17 @@ CREATE TABLE IF NOT EXISTS test_results (
 )
 ''');
     await db.execute('''
+CREATE TABLE IF NOT EXISTS training_results (
+  id TEXT PRIMARY KEY,
+  profile_id TEXT NOT NULL,
+  selected_domains TEXT NOT NULL,
+  selected_difficulty TEXT NOT NULL,
+  question_count INTEGER NOT NULL,
+  correct_count INTEGER NOT NULL,
+  completed_at TEXT NOT NULL
+)
+''');
+    await db.execute('''
 CREATE TABLE IF NOT EXISTS calibration_profiles (
   item_id TEXT PRIMARY KEY,
   response_count INTEGER NOT NULL,
@@ -140,6 +153,14 @@ CREATE TABLE IF NOT EXISTS export_jobs (
   format TEXT NOT NULL,
   created_at TEXT NOT NULL,
   payload TEXT NOT NULL
+)
+''');
+    await db.execute('''
+CREATE TABLE IF NOT EXISTS active_test_sessions (
+  profile_id TEXT PRIMARY KEY,
+  session_id TEXT NOT NULL,
+  payload_json TEXT NOT NULL,
+  updated_at TEXT NOT NULL
 )
 ''');
   }

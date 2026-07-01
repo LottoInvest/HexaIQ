@@ -1,0 +1,11 @@
+{
+  "packId": "kids_pack",
+  "name": "Kids Pattern Pack",
+  "version": "1.0.0",
+  "target": "kids",
+  "difficultyRange": ["easy", "normal"],
+  "questionCount": 20,
+  "supportedElements": ["shape", "icon", "emoji"],
+  "requiresPremium": false,
+  "enabled": true
+}

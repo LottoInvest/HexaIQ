@@ -1,0 +1,12 @@
+{
+  "name": "all_correct",
+  "testType": "quickIq",
+  "responses": [
+    {"domain": "verbal", "correct": true, "difficulty": "hard"},
+    {"domain": "numerical", "correct": true, "difficulty": "hard"},
+    {"domain": "spatial", "correct": true, "difficulty": "hard"},
+    {"domain": "pattern", "correct": true, "difficulty": "hard"},
+    {"domain": "memory", "correct": true, "difficulty": "hard"},
+    {"domain": "speed", "correct": true, "difficulty": "hard"}
+  ]
+}

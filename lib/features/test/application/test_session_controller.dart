@@ -9,9 +9,11 @@ import '../../calibration/domain/calibration_repository.dart';
 import '../../calibration/domain/calibration_updater.dart';
 import '../../cat/domain/theta_estimate.dart';
 import '../../cat/domain/theta_estimator.dart';
+import '../../report/domain/domain_score_calculator.dart';
 import '../domain/models/test_session.dart';
 import '../../hexaiq/domain/hexaiq_models.dart';
 import '../domain/models/question_record.dart';
+import '../domain/models/test_response.dart';
 
 class TestSessionController {
   TestSessionController(
@@ -36,11 +38,24 @@ class TestSessionController {
     if (question == null) {
       return;
     }
+    final response = TestResponse(
+      itemId: question.itemId ?? question.id,
+      domain: question.domain.name,
+      selectedIndex: selectedOption,
+      isCorrect: selectedOption == question.answerIndex,
+      elapsedMs: session.elapsedFor(question.id) * 1000,
+    );
+    final responses = [
+      for (final item in session.responses)
+        if (item.itemId != response.itemId) item,
+      response,
+    ];
     session = session.copyWith(
       selectedAnswers: {
         ...session.selectedAnswers,
         question.id: selectedOption,
       },
+      responses: responses,
     );
   }
 
@@ -308,29 +323,13 @@ class TestSessionController {
   }
 
   Map<IntelligenceDomain, DomainResult> _calculateDomainResults() {
+    const calculator = DomainScoreCalculator();
     final results = <IntelligenceDomain, DomainResult>{};
     for (final domain in IntelligenceDomain.values) {
-      final domainQuestions = session.activeQuestions
-          .where((question) => question.domain == domain)
+      final records = session.questionHistory
+          .where((record) => record.domain == domain)
           .toList(growable: false);
-      if (domainQuestions.isEmpty) {
-        results[domain] = const DomainResult();
-        continue;
-      }
-      final correct = domainQuestions.where((question) {
-        return session.selectedAnswerFor(question.id) == question.answerIndex;
-      }).length;
-      final wrong = domainQuestions.length - correct;
-      final elapsed = domainQuestions.fold<int>(
-        0,
-        (sum, question) => sum + session.elapsedFor(question.id),
-      );
-      results[domain] = DomainResult(
-        correct: correct,
-        wrong: wrong,
-        accuracy: correct / domainQuestions.length,
-        elapsed: elapsed,
-      );
+      results[domain] = calculator.calculate(domain: domain, records: records);
     }
     return results;
   }

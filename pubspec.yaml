@@ -2,7 +2,7 @@ name: hexaiq_app
 description: "HexaIQ MVP Flutter app scaffold for Android, iOS, phone, and tablet."
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.1+101
 
 environment:
   sdk: ^3.12.2
@@ -16,6 +16,7 @@ dependencies:
   provider: ^6.1.5
   sqflite: ^2.4.2
   sqflite_common_ffi: ^2.3.6
+  flutter_svg: ^2.0.0
 
 dev_dependencies:
   flutter_test:
@@ -24,3 +25,18 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/patterns/
+    - assets/patterns/shapes/
+    - assets/patterns/icons/
+    - assets/patterns/objects/
+    - assets/patterns/animals/
+    - assets/patterns/foods/
+    - assets/patterns/symbols/
+    - assets/patterns/vehicles/
+    - assets/pattern_packs/basic_pack/
+    - assets/pattern_packs/kids_pack/
+    - assets/pattern_packs/advanced_pack/
+    - assets/pattern_packs/professional_pack/
+    - assets/legal/
+    - assets/store/

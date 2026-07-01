@@ -1,0 +1,10 @@
+{
+  "name": "fast_guessing",
+  "testType": "advanced",
+  "responseTimeMs": 250,
+  "expectedTimeMs": 30000,
+  "responses": [
+    {"domain": "pattern", "correct": true, "difficulty": "expert"},
+    {"domain": "pattern", "correct": false, "difficulty": "expert"}
+  ]
+}

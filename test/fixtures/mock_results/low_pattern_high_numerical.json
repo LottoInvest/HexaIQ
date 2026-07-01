@@ -1,0 +1,10 @@
+{
+  "name": "low_pattern_high_numerical",
+  "testType": "basic",
+  "responses": [
+    {"domain": "pattern", "correct": false, "difficulty": "easy"},
+    {"domain": "pattern", "correct": false, "difficulty": "normal"},
+    {"domain": "numerical", "correct": true, "difficulty": "hard"},
+    {"domain": "numerical", "correct": true, "difficulty": "expert"}
+  ]
+}

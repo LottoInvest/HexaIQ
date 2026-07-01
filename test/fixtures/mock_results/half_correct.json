@@ -1,0 +1,12 @@
+{
+  "name": "half_correct",
+  "testType": "basic",
+  "responses": [
+    {"domain": "verbal", "correct": true, "difficulty": "normal"},
+    {"domain": "numerical", "correct": false, "difficulty": "normal"},
+    {"domain": "spatial", "correct": true, "difficulty": "normal"},
+    {"domain": "pattern", "correct": false, "difficulty": "normal"},
+    {"domain": "memory", "correct": true, "difficulty": "normal"},
+    {"domain": "speed", "correct": false, "difficulty": "normal"}
+  ]
+}

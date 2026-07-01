@@ -13,7 +13,7 @@ class RewardAdScreen extends StatelessWidget {
     final remaining = state.requiredAds - state.rewardedAdsCompleted;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('리포트 잠금 해제')),
+      appBar: AppBar(title: const Text('결과 준비')),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -29,15 +29,15 @@ class RewardAdScreen extends StatelessWidget {
                       const Icon(Icons.ondemand_video, size: 56),
                       const SizedBox(height: 16),
                       Text(
-                        '광고 확인 $remaining회 남음',
+                        '결과 확인까지 $remaining회 남았습니다.',
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 8),
-                      const Text('MVP에서는 서버 검증을 mock 처리합니다.'),
+                      const Text('잠시 후 검사 결과가 이어집니다.'),
                       const SizedBox(height: 24),
                       FilledButton.icon(
                         icon: const Icon(Icons.play_circle_outline),
-                        label: const Text('광고 완료 처리'),
+                        label: const Text('계속하기'),
                         onPressed: () async {
                           await context
                               .read<HexaIQAppState>()

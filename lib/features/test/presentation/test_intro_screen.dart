@@ -12,7 +12,18 @@ class TestIntroScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<HexaIQAppState>();
     final type = state.selectedTestType;
-    final itemCount = type == TestType.quickIq ? 18 : 5;
+    final itemCount = switch (type) {
+      TestType.basic => 30,
+      TestType.quickIq => 60,
+      TestType.advanced => 90,
+      TestType.professional => 120,
+    };
+    final domainPlan = switch (type) {
+      TestType.basic => '6개 영역 x 5문항',
+      TestType.quickIq => '6개 영역 x 10문항',
+      TestType.advanced => '6개 영역 x 15문항',
+      TestType.professional => '6개 영역 x 20문항',
+    };
     return Scaffold(
       appBar: AppBar(title: Text('${testTypeLabel(type)} 안내')),
       body: SafeArea(
@@ -29,10 +40,16 @@ class TestIntroScreen extends StatelessWidget {
                       '$itemCount문항',
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
+                    const SizedBox(height: 8),
+                    Text(domainPlan),
                     const SizedBox(height: 12),
                     Text(testTypeDescription(type)),
                     const SizedBox(height: 16),
-                    Text('리포트 접근 광고: ${state.requiredAds}회'),
+                    Text(
+                      state.requiredAds == 0
+                          ? '광고 없이 결과를 바로 확인합니다.'
+                          : '리포트 확인 전 광고: ${state.requiredAds}회',
+                    ),
                     const SizedBox(height: 24),
                     FilledButton.icon(
                       icon: const Icon(Icons.play_arrow),

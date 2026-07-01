@@ -1,0 +1,13 @@
+{
+  "packId": "professional_pack",
+  "name": "Professional Pattern Pack",
+  "version": "1.0.0",
+  "target": "professional",
+  "difficultyRange": ["hard", "expert"],
+  "questionCount": 3,
+  "supportedElements": ["shape", "icon"],
+  "requiresPremium": true,
+  "enabled": true,
+  "price": 4.9,
+  "currency": "USD"
+}

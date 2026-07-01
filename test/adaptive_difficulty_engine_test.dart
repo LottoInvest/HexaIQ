@@ -5,7 +5,7 @@ import 'package:hexaiq_app/features/question_engine/domain/difficulty_profile.da
 
 void main() {
   test('QuestionDifficulty exposes labels, levels, and weights', () {
-    expect(QuestionDifficulty.veryEasy.label, 'Very Easy');
+    expect(QuestionDifficulty.veryEasy.label, '매우 쉬움');
     expect(QuestionDifficulty.normal.labelKo, '보통');
     expect(QuestionDifficulty.normal.level, 3);
     expect(QuestionDifficulty.hard.weight, 1.2);

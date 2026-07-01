@@ -2,11 +2,14 @@ import '../../../../core/domain/intelligence_domain.dart';
 import '../../../../core/domain/question_difficulty.dart';
 import '../../cat/domain/theta_estimate.dart';
 import 'exposure_status.dart';
+import 'exposure_controller.dart';
 import 'item.dart';
 import 'item_selection_strategy.dart';
 
 class DefaultItemSelectionStrategy implements ItemSelectionStrategy {
   const DefaultItemSelectionStrategy();
+
+  static const _exposureController = ExposureController();
 
   @override
   Item selectNext({
@@ -31,6 +34,17 @@ class DefaultItemSelectionStrategy implements ItemSelectionStrategy {
     final targetIndex = _difficultyIndexFor(targetDifficulty);
     final ranked = [...available]
       ..sort((a, b) {
+        final recentCompare =
+            (_exposureController.isRecentlyUsed(exposureStatuses[a.id]) ? 1 : 0)
+                .compareTo(
+                  _exposureController.isRecentlyUsed(exposureStatuses[b.id])
+                      ? 1
+                      : 0,
+                );
+        if (recentCompare != 0) {
+          return recentCompare;
+        }
+
         final exposureCompare = _exposureCount(
           a,
           exposureStatuses,
@@ -77,9 +91,7 @@ class DefaultItemSelectionStrategy implements ItemSelectionStrategy {
   }) {
     final difficultyScore =
         1 / (1 + _difficultyDistance(item.difficulty, targetDifficulty));
-    final exposureScore =
-        exposureStatus?.selectionScore ??
-        const ExposureStatus(itemId: '').selectionScore;
+    final exposureScore = _exposureController.selectionScore(exposureStatus);
     return difficultyScore * exposureScore;
   }
 

@@ -1,6 +1,7 @@
 import '../../../core/domain/intelligence_domain.dart';
 import '../../../core/domain/question_difficulty.dart';
 import '../../item_bank/domain/exposure_status.dart';
+import '../../item_bank/domain/exposure_controller.dart';
 import '../../item_bank/domain/item.dart';
 import '../../item_bank/domain/item_selection_strategy.dart';
 import 'cat_selection_score.dart';
@@ -9,6 +10,8 @@ import 'theta_estimate.dart';
 
 class CATItemSelectionStrategy implements ItemSelectionStrategy {
   const CATItemSelectionStrategy();
+
+  static const _exposureController = ExposureController();
 
   @override
   Item selectNext({
@@ -84,9 +87,7 @@ class CATItemSelectionStrategy implements ItemSelectionStrategy {
       guessing: item.guessing,
       upperAsymptote: item.upperAsymptote,
     );
-    final exposureScore =
-        exposureStatus?.selectionScore ??
-        const ExposureStatus(itemId: '').selectionScore;
+    final exposureScore = _exposureController.selectionScore(exposureStatus);
     final difficultyMatchScore =
         1 /
         (1 +

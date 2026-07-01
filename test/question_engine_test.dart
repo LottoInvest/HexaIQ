@@ -58,10 +58,10 @@ void main() {
     );
 
     expect(question.ruleName, '세제곱수');
-    expect(question.hint, '2³, 3³, 4³처럼 세제곱 규칙을 찾아보세요.');
+    expect(question.hint, '숫자가 일정한 규칙으로 빠르게 증가합니다.');
     expect(question.solution, question.answer);
     expect(question.solutionExplanation, contains('다음은'));
-    expect(question.solutionExplanation, contains('³입니다.'));
+    expect(question.solutionExplanation, contains('³ ='));
     expect(question.variables['ruleName'], '세제곱수');
     expect(question.variables['solution'], question.answer);
     expect(
@@ -222,7 +222,7 @@ void main() {
     expect(question.solution, question.answer);
     expect(question.solutionExplanation.trim(), isNotEmpty);
     expect(question.hint?.trim(), isNotEmpty);
-    expect(question.metadata.version, 'v0.6.0');
+    expect(question.metadata.version, 'v0.9.4');
   });
 
   test('Non-numerical generators return real DTOs', () {
@@ -332,45 +332,40 @@ void main() {
     expect(questions.every((question) => question.choices.length == 4), isTrue);
   });
 
-  test(
-    'MockQuestionApi returns basic five and Quick IQ eighteen questions',
-    () async {
-      final api = MockQuestionApi();
+  test('MockQuestionApi returns v1.0.3 test mode question counts', () async {
+    final api = MockQuestionApi();
 
-      for (final testType in TestType.values) {
-        final questions = await api.generateTestQuestions(
-          profile: const UserProfile(
-            id: 'profile-mock',
-            name: 'Mock',
-            ageGroup: 'grade5_6',
-            grade: 'grade5',
-            avatar: 'M',
-          ),
-          testType: testType,
-        );
+    for (final testType in TestType.values) {
+      final questions = await api.generateTestQuestions(
+        profile: const UserProfile(
+          id: 'profile-mock',
+          name: 'Mock',
+          ageGroup: 'grade5_6',
+          grade: 'grade5',
+          avatar: 'M',
+        ),
+        testType: testType,
+      );
 
-        if (testType == TestType.quickIq) {
-          expect(questions.length, 18);
-          expect(
-            questions.map((question) => question.domain).toSet().length,
-            6,
-          );
-        } else {
-          expect(questions.length, 5);
-          expect(
-            questions.every(
-              (question) => question.domain == QuestionDomain.numerical,
-            ),
-            isTrue,
-          );
-        }
-        expect(
-          questions.every((question) => question.choices.length == 4),
-          isTrue,
-        );
+      if (testType == TestType.basic) {
+        expect(questions.length, 30);
+        expect(questions.map((question) => question.domain).toSet().length, 6);
+      } else if (testType == TestType.quickIq) {
+        expect(questions.length, 60);
+        expect(questions.map((question) => question.domain).toSet().length, 6);
+      } else if (testType == TestType.advanced) {
+        expect(questions.length, 90);
+        expect(questions.map((question) => question.domain).toSet().length, 6);
+      } else if (testType == TestType.professional) {
+        expect(questions.length, 120);
+        expect(questions.map((question) => question.domain).toSet().length, 6);
       }
-    },
-  );
+      expect(
+        questions.every((question) => question.choices.length == 4),
+        isTrue,
+      );
+    }
+  });
 }
 
 class _AlwaysInvalidValidator extends QuestionQualityValidator {

@@ -1,10 +1,11 @@
+import '../../report/domain/iq_calculator.dart';
 import 'norm_profile.dart';
 
 class IQScaleConverter {
   const IQScaleConverter();
 
-  static const minIQ = 55;
-  static const maxIQ = 145;
+  static const minIQ = IQCalculator.reliableMinIQ;
+  static const maxIQ = IQCalculator.reliableMaxIQ;
 
   double scaledScore({
     required double theta,
@@ -19,13 +20,13 @@ class IQScaleConverter {
 
   int estimatedIQ({
     required double theta,
+    double accuracy = 0.5,
     NormProfile profile = NormProfile.defaultProfile,
   }) {
-    final scaled = scaledScore(theta: theta, profile: profile);
-    final raw = profile.meanIQ + scaled * profile.sdIQ;
-    if (!raw.isFinite) {
-      return profile.meanIQ.clamp(minIQ, maxIQ);
-    }
-    return raw.round().clamp(minIQ, maxIQ);
+    return const IQCalculator().estimatedIQ(
+      theta: theta,
+      accuracy: accuracy,
+      profile: profile,
+    );
   }
 }

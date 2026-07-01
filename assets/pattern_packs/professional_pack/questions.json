@@ -1,0 +1,54 @@
+[
+  {
+    "id": "professional_shape_rotation_001",
+    "packId": "professional_pack",
+    "type": "matrix",
+    "domain": "visual_reasoning",
+    "difficulty": "expert",
+    "grid": "3x3",
+    "elements": ["hexagon", "star", "diamond"],
+    "rule": "rotation",
+    "answer": 2,
+    "premiumOnly": true,
+    "estimatedTime": 55,
+    "tags": ["professional", "rotation", "shape"],
+    "explanation": "각 칸의 도형은 시계 방향으로 일정하게 회전합니다. 회전 방향과 회전량을 함께 비교하면 정답 패턴을 찾을 수 있습니다.",
+    "version": "1.0.0"
+  },
+  {
+    "id": "professional_icon_logic_001",
+    "packId": "professional_pack",
+    "type": "matrix",
+    "domain": "visual_reasoning",
+    "difficulty": "hard",
+    "grid": "3x3",
+    "elements": [
+      {"type": "icon", "name": "psychology"},
+      {"type": "icon", "name": "extension"},
+      {"type": "icon", "name": "bolt"}
+    ],
+    "rule": "shape",
+    "answer": 1,
+    "premiumOnly": true,
+    "estimatedTime": 50,
+    "tags": ["professional", "logic", "icon"],
+    "explanation": "행과 열마다 아이콘 유형이 순환합니다. 같은 순환 순서를 유지하는 선택지를 고르면 됩니다.",
+    "version": "1.0.0"
+  },
+  {
+    "id": "professional_shape_color_001",
+    "packId": "professional_pack",
+    "type": "matrix",
+    "domain": "visual_reasoning",
+    "difficulty": "hard",
+    "grid": "3x3",
+    "elements": ["circle", "triangle", "square"],
+    "rule": "color",
+    "answer": 3,
+    "premiumOnly": true,
+    "estimatedTime": 50,
+    "tags": ["professional", "color", "matrix"],
+    "explanation": "도형의 종류와 색상이 서로 다른 주기로 반복됩니다. 두 규칙을 동시에 만족하는 패턴이 정답입니다.",
+    "version": "1.0.0"
+  }
+]

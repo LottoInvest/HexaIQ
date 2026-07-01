@@ -6,7 +6,17 @@ import 'package:provider/provider.dart';
 import '../../../../app/app_routes.dart';
 import '../../../../core/domain/intelligence_domain.dart';
 import '../../../../core/domain/question_difficulty.dart';
-import '../../../question/widgets/scratch_pad_widget.dart';
+import '../../../ads/domain/ad_service.dart';
+import '../../../pattern_grid/domain/pattern_generator.dart';
+import '../../../pattern_grid/presentation/pattern_question_widget.dart';
+import '../../../question_layout/presentation/answer_choice_area.dart';
+import '../../../question_layout/presentation/bottom_action_area.dart';
+import '../../../question_layout/presentation/compact_progress_header.dart';
+import '../../../question_layout/presentation/question_card.dart';
+import '../../../question_layout/presentation/question_scroll_area.dart';
+import '../../../question/widgets/memory_interaction.dart';
+import '../../../question/widgets/spatial_canvas.dart';
+import '../../../question/widgets/speed_test_screen.dart';
 import '../../domain/hexaiq_models.dart';
 import '../state/hexaiq_app_state.dart';
 
@@ -25,14 +35,12 @@ class QuestionScreen extends StatefulWidget {
 }
 
 class _QuestionScreenState extends State<QuestionScreen> {
-  static const _scratchPadConfig = ScratchPadConfig();
+  static const AdService _adService = MockAdService();
 
   final Stopwatch _stopwatch = Stopwatch();
   Timer? _timer;
-  Timer? _hintTimer;
   int _displaySeconds = 0;
   String? _activeQuestionId;
-  bool _showHint = false;
 
   @override
   void initState() {
@@ -43,7 +51,6 @@ class _QuestionScreenState extends State<QuestionScreen> {
   @override
   void dispose() {
     _timer?.cancel();
-    _hintTimer?.cancel();
     _stopwatch.stop();
     super.dispose();
   }
@@ -64,22 +71,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
     });
   }
 
-  void _startHintTimer() {
-    _hintTimer?.cancel();
-    _showHint = false;
-    _hintTimer = Timer(widget.hintDelay, () {
-      if (mounted) {
-        setState(() => _showHint = true);
-      }
-    });
-  }
-
-  void _recordElapsed(HexaIQAppState state, {bool restartHint = true}) {
+  void _recordElapsed(HexaIQAppState state) {
     state.recordElapsedTime(_stopwatch.elapsed.inSeconds);
     _startQuestionTimer();
-    if (restartHint) {
-      _startHintTimer();
-    }
   }
 
   @override
@@ -92,7 +86,6 @@ class _QuestionScreenState extends State<QuestionScreen> {
     if (_activeQuestionId != question.id) {
       _activeQuestionId = question.id;
       _startQuestionTimer();
-      _startHintTimer();
     }
 
     return Scaffold(
@@ -104,21 +97,15 @@ class _QuestionScreenState extends State<QuestionScreen> {
             final isLandscape = size.width > size.height;
             final isTablet = size.shortestSide >= 600;
             final isPhoneLandscape = isLandscape && !isTablet;
-            final showSplitLayout = isPhoneLandscape || isTablet;
-            final showScratchPad =
-                question.domain == IntelligenceDomain.numerical ||
-                _scratchPadConfig.isEnabledFor(question.typeCode);
             final compact =
                 isPhoneLandscape ||
                 (!isLandscape && constraints.maxHeight < 760);
             final content = _QuestionContent(
               state: state,
               question: question,
-              hint: _showHint ? _hintFor(question) : null,
+              hint: null,
               displaySeconds: _displaySeconds,
               compact: compact,
-              useChoiceGrid: isPhoneLandscape,
-              isTablet: isTablet,
               onSelectAnswer: (index) =>
                   context.read<HexaIQAppState>().selectAnswer(index),
               onPrevious: state.questionIndex == 0
@@ -128,16 +115,23 @@ class _QuestionScreenState extends State<QuestionScreen> {
                       _recordElapsed(appState);
                       appState.previousQuestion();
                     },
-              onNext: () {
+              onNext: () async {
                 final appState = context.read<HexaIQAppState>();
                 _recordElapsed(appState);
+                final shouldShowAd = appState
+                    .consumeMidAdBreakForCurrentQuestion();
                 appState.nextQuestion();
+                if (shouldShowAd && context.mounted) {
+                  await _adService.showInterstitialAd(context);
+                }
               },
               onSubmit: () async {
                 final appState = context.read<HexaIQAppState>();
-                _hintTimer?.cancel();
-                _recordElapsed(appState, restartHint: false);
-                await appState.submitTest();
+                _recordElapsed(appState);
+                final proceed = await _runSubmitAdFlow(context, appState);
+                if (!proceed) {
+                  return;
+                }
                 if (context.mounted) {
                   Navigator.of(
                     context,
@@ -146,51 +140,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
               },
             );
 
-            if (showSplitLayout && showScratchPad) {
-              final gap = isPhoneLandscape ? 8.0 : 16.0;
-              return Padding(
-                padding: EdgeInsets.all(gap),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(flex: isPhoneLandscape ? 7 : 3, child: content),
-                    SizedBox(width: gap),
-                    Expanded(
-                      flex: isPhoneLandscape ? 3 : 2,
-                      child: ScratchPadWidget(
-                        resetToken: question.id,
-                        compact: isPhoneLandscape,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            final scratchMinHeight = constraints.maxHeight < 520
-                ? constraints.maxHeight * 0.22
-                : 160.0;
-            final scratchHeight = (constraints.maxHeight * 0.3).clamp(
-              scratchMinHeight,
-              constraints.maxHeight * 0.34,
-            );
             return Padding(
               padding: EdgeInsets.all(compact ? 10 : 16),
-              child: Column(
-                children: [
-                  Expanded(flex: showScratchPad ? 64 : 1, child: content),
-                  if (showScratchPad) ...[
-                    SizedBox(height: compact ? 8 : 12),
-                    SizedBox(
-                      height: scratchHeight,
-                      child: ScratchPadWidget(
-                        resetToken: question.id,
-                        compact: compact,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+              child: Column(children: [Expanded(child: content)]),
             );
           },
         ),
@@ -198,12 +150,34 @@ class _QuestionScreenState extends State<QuestionScreen> {
     );
   }
 
-  String _hintFor(TestQuestion question) {
-    final hint = question.hint?.trim();
-    if (hint != null && hint.isNotEmpty) {
-      return hint;
+  Future<bool> _runSubmitAdFlow(
+    BuildContext context,
+    HexaIQAppState appState,
+  ) async {
+    await appState.submitTest();
+    if (!context.mounted) {
+      return false;
     }
-    return fallbackHintForType(question.typeCode);
+    final adCount = switch (appState.selectedTestType) {
+      TestType.basic => 0,
+      TestType.quickIq => 1,
+      TestType.advanced => 1,
+      TestType.professional => 0,
+    };
+    for (var index = 0; index < adCount; index++) {
+      if (!context.mounted) {
+        return false;
+      }
+      final watched = await _adService.showRewardAd(context);
+      if (!watched || !context.mounted) {
+        return false;
+      }
+      await appState.completeRewardAd();
+      if (!context.mounted) {
+        return false;
+      }
+    }
+    return true;
   }
 }
 
@@ -213,8 +187,6 @@ class _QuestionContent extends StatelessWidget {
     required this.question,
     required this.displaySeconds,
     required this.compact,
-    required this.useChoiceGrid,
-    required this.isTablet,
     required this.onSelectAnswer,
     required this.onNext,
     required this.onSubmit,
@@ -227,11 +199,9 @@ class _QuestionContent extends StatelessWidget {
   final String? hint;
   final int displaySeconds;
   final bool compact;
-  final bool useChoiceGrid;
-  final bool isTablet;
   final ValueChanged<int> onSelectAnswer;
   final VoidCallback? onPrevious;
-  final VoidCallback onNext;
+  final Future<void> Function() onNext;
   final Future<void> Function() onSubmit;
 
   @override
@@ -239,61 +209,51 @@ class _QuestionContent extends StatelessWidget {
     final selectedAnswer = state.selectedAnswerForCurrentQuestion;
     final progressPercent = (state.testProgress * 100).round();
     final isLastQuestion = state.isLastQuestion;
+    final reference = _hasReferenceContent(question, displaySeconds)
+        ? _QuestionReferenceBody(
+            question: question,
+            displaySeconds: displaySeconds,
+            compact: compact,
+          )
+        : null;
     return Column(
       children: [
         LinearProgressIndicator(value: state.testProgress, minHeight: 3),
-        SizedBox(height: compact ? 6 : 12),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                '문제 ${state.questionIndex + 1} / ${state.totalQuestionCount}',
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
-            ),
-            Text('$progressPercent%'),
-            const SizedBox(width: 10),
-            Text(_formatElapsed(displaySeconds)),
-            const SizedBox(width: 10),
-            Text(question.difficulty.labelKo),
-          ],
-        ),
-        SizedBox(height: compact ? 6 : 10),
-        Expanded(
-          child: Card(
-            child: Padding(
-              padding: EdgeInsets.all(compact ? 10 : 16),
-              child: _ScrollableQuestionBody(
-                question: question,
-                selectedAnswer: selectedAnswer,
-                displaySeconds: displaySeconds,
-                compact: compact,
-                useChoiceGrid: useChoiceGrid,
-                isTablet: isTablet,
-                onSelectAnswer: onSelectAnswer,
-              ),
-            ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: compact ? 4 : 8),
+          child: CompactProgressHeader(
+            questionNumber: state.questionIndex + 1,
+            totalQuestions: state.totalQuestionCount,
+            progressPercent: progressPercent,
+            elapsedText: _formatElapsed(displaySeconds),
+            difficultyLabel: question.difficulty.labelKo,
           ),
         ),
-        if (hint != null) ...[
-          SizedBox(height: compact ? 6 : 8),
-          _HintBanner(hint: hint!, compact: compact),
-        ],
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: compact ? 4 : 8),
+          child: _DomainProgressStrip(state: state, compact: compact),
+        ),
         SizedBox(height: compact ? 6 : 10),
-        Row(
+        QuestionScrollArea(
           children: [
-            OutlinedButton.icon(
-              onPressed: onPrevious,
-              icon: const Icon(Icons.chevron_left),
-              label: const Text('이전'),
+            QuestionCard(
+              prompt: _displayPromptFor(question, displaySeconds),
+              reference: reference,
             ),
-            const Spacer(),
-            FilledButton.icon(
-              onPressed: isLastQuestion ? onSubmit : onNext,
-              icon: Icon(isLastQuestion ? Icons.check : Icons.chevron_right),
-              label: Text(isLastQuestion ? '제출' : '다음'),
+            AnswerChoiceArea.text(
+              choices: question.choices,
+              selectedIndex: selectedAnswer,
+              onSelect: onSelectAnswer,
             ),
+            if (hint != null) const SizedBox.shrink(),
           ],
+        ),
+        BottomActionArea(
+          onPrevious: onPrevious,
+          nextLabel: isLastQuestion ? '?쒖텧' : '?ㅼ쓬',
+          onNext: isLastQuestion
+              ? () => unawaited(onSubmit())
+              : () => unawaited(onNext()),
         ),
       ],
     );
@@ -302,202 +262,225 @@ class _QuestionContent extends StatelessWidget {
   String _formatElapsed(int seconds) {
     final minutes = seconds ~/ 60;
     final remaining = seconds % 60;
-    return '${minutes}분 ${remaining.toString().padLeft(2, '0')}초';
+    return '$minutes분 ${remaining.toString().padLeft(2, '0')}초';
   }
 }
 
-class _ScrollableQuestionBody extends StatelessWidget {
-  const _ScrollableQuestionBody({
+String _displayPromptFor(TestQuestion question, int displaySeconds) {
+  final memoryPrompt = _memoryPromptFor(question);
+  if (_isMemoryPreview(question, displaySeconds) && memoryPrompt != null) {
+    final remainingSeconds = _remainingMemorySeconds(question, displaySeconds);
+    return '?ㅼ쓬 ??ぉ??$remainingSeconds珥??숈븞 湲곗뼲?섏꽭??\n$memoryPrompt';
+  }
+  return question.prompt;
+}
+
+String? _memoryPromptFor(TestQuestion question) {
+  return question.stimulus ?? question.variables['memoryPrompt'] as String?;
+}
+
+int _memoryDurationSecondsFor(TestQuestion question) {
+  return question.stimulusDuration?.inSeconds ??
+      ((question.variables['memoryDurationMs'] as int?) ?? 3000) ~/ 1000;
+}
+
+bool _isMemoryPreview(TestQuestion question, int displaySeconds) {
+  final memoryPrompt = _memoryPromptFor(question);
+  return question.requiresMemoryPhase &&
+      question.domain == IntelligenceDomain.memory &&
+      memoryPrompt != null &&
+      displaySeconds < _memoryDurationSecondsFor(question);
+}
+
+int _remainingMemorySeconds(TestQuestion question, int displaySeconds) {
+  final durationSeconds = _memoryDurationSecondsFor(question);
+  return (durationSeconds - displaySeconds).clamp(1, durationSeconds);
+}
+
+bool _hasReferenceContent(TestQuestion question, int displaySeconds) {
+  final usesPattern = switch (question.domain) {
+    IntelligenceDomain.spatial ||
+    IntelligenceDomain.logic ||
+    IntelligenceDomain.memory ||
+    IntelligenceDomain.processing => true,
+    IntelligenceDomain.numerical || IntelligenceDomain.verbal => false,
+  };
+  return usesPattern ||
+      (question.domain == IntelligenceDomain.spatial &&
+          question.variables['requiresCanvas'] == true) ||
+      question.domain == IntelligenceDomain.processing ||
+      _isMemoryPreview(question, displaySeconds);
+}
+
+class _DomainProgressStrip extends StatelessWidget {
+  const _DomainProgressStrip({required this.state, required this.compact});
+
+  final HexaIQAppState state;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = state.domainProgress;
+    final colorScheme = Theme.of(context).colorScheme;
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (
+            var index = 0;
+            index < state.activeDomainSequence.length;
+            index++
+          )
+            Padding(
+              padding: EdgeInsets.only(right: compact ? 6 : 8),
+              child: _DomainStepChip(
+                index: index + 1,
+                label: state.activeDomainSequence[index].shortLabel,
+                status:
+                    progress[state.activeDomainSequence[index]] ??
+                    DomainProgressStatus.pending,
+                colorScheme: colorScheme,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DomainStepChip extends StatelessWidget {
+  const _DomainStepChip({
+    required this.index,
+    required this.label,
+    required this.status,
+    required this.colorScheme,
+  });
+
+  final int index;
+  final String label;
+  final DomainProgressStatus status;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = status == DomainProgressStatus.current;
+    final completed = status == DomainProgressStatus.completed;
+    return Chip(
+      avatar: completed
+          ? Icon(Icons.check_circle, size: 18, color: colorScheme.primary)
+          : CircleAvatar(
+              child: Text('$index', style: const TextStyle(fontSize: 11)),
+            ),
+      label: Text(label),
+      backgroundColor: selected
+          ? colorScheme.primaryContainer
+          : completed
+          ? colorScheme.secondaryContainer
+          : colorScheme.surfaceContainerHighest,
+      side: BorderSide(
+        color: selected ? colorScheme.primary : colorScheme.outlineVariant,
+      ),
+    );
+  }
+}
+
+class _QuestionReferenceBody extends StatelessWidget {
+  const _QuestionReferenceBody({
     required this.question,
-    required this.selectedAnswer,
     required this.displaySeconds,
     required this.compact,
-    required this.useChoiceGrid,
-    required this.isTablet,
-    required this.onSelectAnswer,
   });
 
   final TestQuestion question;
-  final int? selectedAnswer;
   final int displaySeconds;
   final bool compact;
-  final bool useChoiceGrid;
-  final bool isTablet;
-  final ValueChanged<int> onSelectAnswer;
 
   @override
   Widget build(BuildContext context) {
-    final promptStyle = Theme.of(context).textTheme.titleLarge?.copyWith(
-      fontSize: compact ? 18 : 22,
-      height: compact ? 1.15 : 1.35,
-    );
-    final memoryPrompt =
-        question.stimulus ?? question.variables['memoryPrompt'] as String?;
-    final memoryDurationSeconds =
-        question.stimulusDuration?.inSeconds ??
-        ((question.variables['memoryDurationMs'] as int?) ?? 3000) ~/ 1000;
-    final isMemoryPreview =
-        question.requiresMemoryPhase &&
-        question.domain == IntelligenceDomain.memory &&
-        memoryPrompt != null &&
-        displaySeconds < memoryDurationSeconds;
-    final remainingSeconds = (memoryDurationSeconds - displaySeconds).clamp(
-      1,
-      memoryDurationSeconds,
-    );
-    final prompt = isMemoryPreview
-        ? '다음 항목을 $remainingSeconds초 동안 기억하세요.\n$memoryPrompt'
-        : question.prompt;
-    return ListView(
-      padding: EdgeInsets.zero,
+    final memoryPrompt = _memoryPromptFor(question);
+    final isMemoryPreview = _isMemoryPreview(question, displaySeconds);
+    final remainingSeconds = _remainingMemorySeconds(question, displaySeconds);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(prompt, style: promptStyle),
-        SizedBox(height: compact ? 10 : 18),
-        if (isMemoryPreview)
+        if (_usesPatternGrid(question)) ...[
+          PatternQuestionWidget(
+            pattern: _patternFor(question),
+            compact: compact,
+            showChoices: false,
+          ),
+          SizedBox(height: compact ? 10 : 14),
+        ],
+        if (question.domain == IntelligenceDomain.spatial &&
+            question.variables['requiresCanvas'] == true) ...[
+          SpatialCanvas(pattern: _spatialPattern(question.prompt)),
+          SizedBox(height: compact ? 10 : 14),
+        ],
+        if (question.domain == IntelligenceDomain.processing) ...[
+          SpeedInteractionPanel(
+            elapsedSeconds: displaySeconds,
+            timeLimit: question.timeLimit,
+          ),
+          SizedBox(height: compact ? 10 : 14),
+        ],
+        if (isMemoryPreview) ...[
+          MemoryInteraction(
+            stimulus: memoryPrompt ?? '',
+            remainingSeconds: remainingSeconds,
+            isPreview: true,
+          ),
+          SizedBox(height: compact ? 10 : 14),
+        ],
+        if (isMemoryPreview && (memoryPrompt == null || memoryPrompt.isEmpty))
           Text(
-            '제시 항목이 사라진 뒤 보기가 나타납니다.',
+            '?쒖떆 ??ぉ???щ씪吏???蹂닿린媛 ?쒖떆?⑸땲??',
             style: Theme.of(context).textTheme.bodyMedium,
-          )
-        else if (useChoiceGrid)
-          GridView.count(
-            crossAxisCount: 2,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: 5.8,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              for (var i = 0; i < question.choices.length; i++)
-                _ChoiceButton(
-                  text: question.choices[i],
-                  selected: selectedAnswer == i,
-                  compact: compact,
-                  isTablet: isTablet,
-                  onPressed: () => onSelectAnswer(i),
-                ),
-            ],
-          )
-        else
-          for (var i = 0; i < question.choices.length; i++)
-            Padding(
-              padding: EdgeInsets.only(bottom: compact ? 6 : 10),
-              child: _ChoiceButton(
-                text: question.choices[i],
-                selected: selectedAnswer == i,
-                compact: compact,
-                isTablet: isTablet,
-                onPressed: () => onSelectAnswer(i),
-              ),
-            ),
+          ),
       ],
     );
   }
-}
 
-class _HintBanner extends StatelessWidget {
-  const _HintBanner({required this.hint, required this.compact});
-
-  final String hint;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.primaryContainer.withValues(alpha: 0.35),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.28)),
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: compact ? 10 : 12,
-          vertical: compact ? 7 : 9,
-        ),
-        child: Text(
-          hint,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontSize: compact ? 12 : 13,
-            color: colorScheme.onSurface,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ChoiceButton extends StatelessWidget {
-  const _ChoiceButton({
-    required this.text,
-    required this.selected,
-    required this.compact,
-    required this.isTablet,
-    required this.onPressed,
-  });
-
-  final String text;
-  final bool selected;
-  final bool compact;
-  final bool isTablet;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final fontSize = isTablet
-        ? 20.0
-        : compact
-        ? 16.0
-        : 18.0;
-    final textStyle = TextStyle(
-      fontSize: fontSize,
-      fontWeight: FontWeight.w700,
-      color: selected ? colorScheme.onPrimary : colorScheme.onSurface,
-    );
-    final style = ButtonStyle(
-      alignment: Alignment.center,
-      visualDensity: compact ? VisualDensity.compact : VisualDensity.standard,
-      minimumSize: WidgetStatePropertyAll(Size(40, compact ? 40 : 52)),
-      padding: WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: compact ? 12 : 16, vertical: 8),
-      ),
-      side: WidgetStatePropertyAll(
-        BorderSide(
-          color: selected ? colorScheme.primary : colorScheme.outline,
-          width: selected ? 2 : 1.2,
-        ),
-      ),
-      textStyle: WidgetStatePropertyAll(textStyle),
-    );
-    final child = Align(
-      alignment: Alignment.center,
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        style: textStyle,
-      ),
-    );
-    if (selected) {
-      return FilledButton(style: style, onPressed: onPressed, child: child);
+  String _spatialPattern(String prompt) {
+    final symbols = RegExp(r'[?꿎뼹?졻뼞?녳뾿?년뼺?뗢뿈]').allMatches(prompt);
+    final pattern = symbols.map((match) => match.group(0)!).join();
+    if (pattern.isEmpty) {
+      return '?꿎뼹?졻뼞';
     }
-    return OutlinedButton(style: style, onPressed: onPressed, child: child);
+    final end = pattern.length > 8 ? 8 : pattern.length;
+    return pattern.substring(0, end);
   }
-}
 
-String fallbackHintForType(String typeCode) {
-  return switch (typeCode) {
-    'NR01' => '인접한 두 수의 차이를 비교해 보세요.',
-    'NR02' => '앞 숫자에 같은 비율이 적용되는지 살펴보세요.',
-    'NR08' || 'NR09' => '숫자가 일정한 규칙으로 빠르게 증가하는지 확인해 보세요.',
-    'NR15' || 'NR16' => '각 행과 열의 관계를 차례로 살펴보세요.',
-    'NR17' => '대각선이나 묶음 안에서 반복되는 합계를 찾아보세요.',
-    'NR18' => '양쪽에 같은 연산을 적용해 미지수를 남겨 보세요.',
-    'NR20' => '왼쪽과 오른쪽 수 사이의 연결 규칙을 비교해 보세요.',
-    _ => '문제의 규칙을 먼저 찾고, 보기와 하나씩 비교해 보세요.',
-  };
+  bool _usesPatternGrid(TestQuestion question) {
+    return switch (question.domain) {
+      IntelligenceDomain.spatial ||
+      IntelligenceDomain.logic ||
+      IntelligenceDomain.memory ||
+      IntelligenceDomain.processing => true,
+      IntelligenceDomain.numerical || IntelligenceDomain.verbal => false,
+    };
+  }
+
+  PatternQuestionPattern _patternFor(TestQuestion question) {
+    final rule = switch (question.domain) {
+      IntelligenceDomain.spatial => PatternRule.rotation,
+      IntelligenceDomain.logic => PatternRule.shape,
+      IntelligenceDomain.memory => PatternRule.missingBlock,
+      IntelligenceDomain.processing => PatternRule.color,
+      IntelligenceDomain.numerical ||
+      IntelligenceDomain.verbal => PatternRule.movement,
+    };
+    final size = switch (question.domain) {
+      IntelligenceDomain.processing => 2,
+      IntelligenceDomain.memory => 3,
+      IntelligenceDomain.spatial || IntelligenceDomain.logic => 3,
+      IntelligenceDomain.numerical || IntelligenceDomain.verbal => 3,
+    };
+    return const PatternGenerator().question(
+      seed: question.seed == 0 ? question.id.hashCode : question.seed,
+      rule: rule,
+      size: size,
+    );
+  }
 }
 
 class DomainCompleteScreenRedirect extends StatelessWidget {

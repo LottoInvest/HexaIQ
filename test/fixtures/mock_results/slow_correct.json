@@ -1,0 +1,10 @@
+{
+  "name": "slow_correct",
+  "testType": "advanced",
+  "responseTimeMs": 90000,
+  "expectedTimeMs": 30000,
+  "responses": [
+    {"domain": "memory", "correct": true, "difficulty": "hard"},
+    {"domain": "memory", "correct": true, "difficulty": "hard"}
+  ]
+}

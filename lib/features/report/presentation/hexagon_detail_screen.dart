@@ -29,8 +29,8 @@ class HexagonDetailScreen extends StatelessWidget {
             for (final score in scores)
               ListTile(
                 title: Text(domainLabel(score.domain)),
-                subtitle: Text(score.comment),
-                trailing: Text('${score.score}'),
+                subtitle: Text(score.score > 0 ? score.comment : '데이터 없음'),
+                trailing: Text(score.score > 0 ? '${score.score}' : '-'),
               ),
           ],
         ),

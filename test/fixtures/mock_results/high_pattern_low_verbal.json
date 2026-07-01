@@ -1,0 +1,10 @@
+{
+  "name": "high_pattern_low_verbal",
+  "testType": "basic",
+  "responses": [
+    {"domain": "pattern", "correct": true, "difficulty": "hard"},
+    {"domain": "pattern", "correct": true, "difficulty": "expert"},
+    {"domain": "verbal", "correct": false, "difficulty": "easy"},
+    {"domain": "verbal", "correct": false, "difficulty": "normal"}
+  ]
+}

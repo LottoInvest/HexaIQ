@@ -6,8 +6,10 @@ import 'package:hexaiq_app/features/hexaiq/domain/hexaiq_models.dart';
 import 'package:hexaiq_app/features/hexaiq/domain/hexaiq_repository.dart';
 import 'package:hexaiq_app/features/hexaiq/presentation/state/hexaiq_app_state.dart';
 import 'package:hexaiq_app/features/norm/domain/ability_level.dart';
+import 'package:hexaiq_app/features/payment/domain/purchase_status.dart';
 import 'package:hexaiq_app/features/test/application/test_session_controller.dart';
 import 'package:hexaiq_app/features/test/domain/models/test_session.dart';
+import 'package:hexaiq_app/features/training/domain/training_result.dart';
 
 void main() {
   test('TestSession copyWith keeps immutable state updates', () {
@@ -147,17 +149,18 @@ void main() {
   });
 
   test(
-    'AppState dynamically generates five adaptive questions and report history',
+    'AppState dynamically generates Basic IQ adaptive questions and report history',
     () async {
+      const targetQuestionCount = 30;
       final state = HexaIQAppState(repository: _FakeRepository());
       await Future<void>.delayed(Duration.zero);
       await state.startTest();
 
       expect(state.testSession?.generatedQuestions.length, 1);
-      expect(state.totalQuestionCount, 5);
+      expect(state.totalQuestionCount, targetQuestionCount);
 
       final seeds = <int>{state.currentQuestion!.seed};
-      for (var i = 0; i < 4; i++) {
+      for (var i = 0; i < targetQuestionCount - 1; i++) {
         final question = state.currentQuestion!;
         state.selectAnswer(question.answerIndex);
         state.recordElapsedTime(10 + i);
@@ -168,20 +171,26 @@ void main() {
 
       final lastQuestion = state.currentQuestion!;
       state.selectAnswer(lastQuestion.answerIndex);
-      state.recordElapsedTime(14);
+      state.recordElapsedTime(10 + targetQuestionCount - 1);
       await state.submitTest();
 
       expect(state.testSession?.isComplete, isTrue);
-      expect(state.testSession?.questionHistory.length, 5);
+      expect(state.testSession?.questionHistory.length, targetQuestionCount);
       final itemIds = state.testSession!.questionHistory
           .map((record) => record.itemId)
           .toSet();
-      expect(itemIds.length, 5);
-      expect(state.testSession?.usedItemIds.length, 5);
-      expect(state.correctCount, 5);
+      expect(itemIds.length, targetQuestionCount);
+      expect(state.testSession?.usedItemIds.length, targetQuestionCount);
+      expect(state.correctCount, targetQuestionCount);
       expect(state.wrongCount, 0);
       expect(state.accuracy, 1);
-      expect(state.totalElapsedSeconds, 60);
+      expect(
+        state.totalElapsedSeconds,
+        List.generate(
+          targetQuestionCount,
+          (index) => 10 + index,
+        ).reduce((total, value) => total + value),
+      );
       expect(state.testSession?.questionHistory.first.itemId, isNotEmpty);
       expect(
         state.testSession?.questionHistory.first.selectionScore,
@@ -203,9 +212,9 @@ void main() {
         state.testSession?.questionHistory.first.catSelectionScore,
         greaterThan(0),
       );
-      expect(state.testSession?.thetaHistory.length, 5);
+      expect(state.testSession?.thetaHistory.length, targetQuestionCount);
       expect(state.testSession?.thetaEstimate.theta, greaterThan(0));
-      expect(state.testSession?.estimatedIQ, inInclusiveRange(55, 145));
+      expect(state.testSession?.estimatedIQ, inInclusiveRange(40, 160));
       expect(state.testSession?.percentile, inInclusiveRange(1, 99));
       expect(state.testSession?.abilityLevel, isA<AbilityLevel>());
       expect(state.topExposureStatuses, isNotEmpty);
@@ -230,7 +239,7 @@ void main() {
       state.setThetaEstimationMethod(method);
       await state.startTest();
 
-      for (var i = 0; i < 4; i++) {
+      for (var i = 0; i < 29; i++) {
         final question = state.currentQuestion!;
         state.selectAnswer(question.answerIndex);
         state.nextQuestion();
@@ -243,8 +252,8 @@ void main() {
       await state.submitTest();
 
       expect(state.testSession?.isComplete, isTrue);
-      expect(state.testSession?.questionHistory.length, 5);
-      expect(state.testSession?.thetaHistory.length, 5);
+      expect(state.testSession?.questionHistory.length, 30);
+      expect(state.testSession?.thetaHistory.length, 30);
       expect(state.testSession?.thetaEstimate.method, method);
       expect(state.report, isNotNull);
     }
@@ -299,6 +308,32 @@ class _FakeRepository implements HexaIQRepository {
   Future<List<TestResultSummary>> loadTestHistory(String profileId) async {
     return const [];
   }
+
+  @override
+  Future<void> saveTrainingResult(TrainingResult result) async {}
+
+  @override
+  Future<List<TrainingResult>> loadTrainingHistory(String profileId) async {
+    return const [];
+  }
+
+  @override
+  Future<void> saveActiveTestSession({
+    required String profileId,
+    required TestSession session,
+  }) async {}
+
+  @override
+  Future<TestSession?> loadActiveTestSession(String profileId) async => null;
+
+  @override
+  Future<void> clearActiveTestSession(String profileId) async {}
+
+  @override
+  Future<PurchaseStatus> loadPurchaseStatus() async => PurchaseStatus.free;
+
+  @override
+  Future<void> savePurchaseStatus(PurchaseStatus status) async {}
 
   @override
   Future<ReportSummary> buildReport(List<QuestionResponse> responses) async {

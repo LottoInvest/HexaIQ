@@ -7,6 +7,9 @@ import '../../../../core/responsive/layout_breakpoints.dart';
 import '../../../../core/responsive/responsive_page.dart';
 import '../../../../core/widgets/action_card.dart';
 import '../../../../core/widgets/hexagon_chart.dart';
+import '../../../result/domain/result_integrity_validator.dart';
+import '../../../result/domain/test_result_payload.dart';
+import '../../../test/domain/models/test_mode.dart';
 import '../../domain/hexaiq_models.dart';
 import '../state/hexaiq_app_state.dart';
 import '../widgets/dashboard_nav.dart';
@@ -14,6 +17,8 @@ import '../widgets/hexa_iq_intro_card.dart';
 
 class HomeDashboardScreen extends StatelessWidget {
   const HomeDashboardScreen({super.key});
+
+  static const _validator = ResultIntegrityValidator();
 
   @override
   Widget build(BuildContext context) {
@@ -31,145 +36,79 @@ class HomeDashboardScreen extends StatelessWidget {
           icon: const Icon(Icons.settings_outlined),
         ),
       ],
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final screenClass = LayoutBreakpoints.classify(constraints.maxWidth);
-          final isWide = screenClass != ScreenClass.compact;
-          final isShort = MediaQuery.of(context).size.height < 760;
-          final completedSession = state.testSession?.isComplete == true
-              ? state.testSession
-              : null;
-          final hasRecentNorm =
-              completedSession != null || (profile?.testCount ?? 0) > 0;
-          final recentIQ = completedSession?.estimatedIQ ?? profile?.recentIQ;
-          final recentPercentile =
-              completedSession?.percentile ?? profile?.recentPercentile;
-          final recentAbilityLabel =
-              completedSession?.abilityLevel.labelKo ??
-              profile?.recentAbilityLevel;
-          final domainIntro = HexaIQIntroCard(
-            compact: !isWide || isShort,
-            averageExposure: state.averageExposure,
-            onDomainTap: (domain) => _handleDomainTap(context, domain),
-          );
-          final summaryCard = Card(
-            child: Padding(
-              padding: EdgeInsets.all(isShort ? 12 : 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    profile == null ? '프로필을 선택해 주세요' : '${profile.name}의 최근 요약',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  SizedBox(height: isShort ? 10 : 18),
-                  Center(
-                    child: HexagonChart(
-                      values: const [74, 66, 79, 62, 58, 72],
-                      labels: domainCatalog
-                          .map((item) => item.shortLabel)
-                          .toList(),
-                      size: isWide
-                          ? 300
-                          : isShort
-                          ? 160
-                          : 220,
-                    ),
-                  ),
-                  if (hasRecentNorm &&
-                      recentIQ != null &&
-                      recentPercentile != null &&
-                      recentAbilityLabel != null) ...[
-                    SizedBox(height: isShort ? 10 : 16),
-                    _RecentNormCard(
-                      estimatedIQ: recentIQ,
-                      percentile: recentPercentile,
-                      abilityLabel: recentAbilityLabel,
-                    ),
-                  ],
-                ],
-              ),
+      child: profile == null && state.testSession?.isComplete != true
+          ? const Center(child: Text('프로필을 먼저 선택해 주세요.'))
+          : FutureBuilder<List<TestResultSummary>>(
+              future: profile == null
+                  ? Future.value(const <TestResultSummary>[])
+                  : state.repository.loadTestHistory(profile.id),
+              builder: (context, snapshot) {
+                final history = (snapshot.data ?? const <TestResultSummary>[])
+                    .where((result) => _validator.validate(result).isValid)
+                    .toList(growable: false);
+                final latest = history.isNotEmpty ? history.first : null;
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    final screenClass = LayoutBreakpoints.classify(
+                      constraints.maxWidth,
+                    );
+                    final isWide = screenClass != ScreenClass.compact;
+                    final isShort = MediaQuery.of(context).size.height < 760;
+                    final introCard = HexaIQIntroCard(
+                      compact: !isWide || isShort,
+                      averageExposure: state.averageExposure,
+                      onDomainTap: (domain) =>
+                          _handleDomainTap(context, domain),
+                    );
+                    final primaryCard = latest == null
+                        ? introCard
+                        : _RecentResultCard(result: latest, isWide: isWide);
+                    final actions = _HomeActions(isCompact: !isWide);
+
+                    if (isWide) {
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: primaryCard),
+                          const SizedBox(width: 16),
+                          Expanded(child: actions),
+                        ],
+                      );
+                    }
+
+                    return Stack(
+                      children: [
+                        ListView(
+                          padding: const EdgeInsets.only(bottom: 88),
+                          children: [
+                            primaryCard,
+                            const SizedBox(height: 12),
+                            actions,
+                            const SizedBox(height: 24),
+                          ],
+                        ),
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: SafeArea(
+                            top: false,
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: FilledButton.icon(
+                                icon: const Icon(Icons.play_arrow),
+                                label: const Text('검사 시작'),
+                                onPressed: () => Navigator.of(
+                                  context,
+                                ).pushNamed(AppRoutes.testTypeSelect),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
             ),
-          );
-          final startAction = ActionCard(
-            icon: Icons.play_arrow,
-            title: '검사 시작',
-            body: '빠른 IQ 검사로 6개 영역을 함께 확인합니다.',
-            onTap: () =>
-                Navigator.of(context).pushNamed(AppRoutes.testTypeSelect),
-          );
-          final secondaryActions = Column(
-            children: [
-              ActionCard(
-                icon: Icons.insights,
-                title: '성장 기록',
-                body: '최근 점수 변화와 학습 흐름을 확인합니다.',
-                onTap: () =>
-                    Navigator.of(context).pushNamed(AppRoutes.growthDashboard),
-              ),
-              ActionCard(
-                icon: Icons.fitness_center,
-                title: '추천 훈련',
-                body: '약한 영역부터 짧게 반복하는 훈련 계획을 봅니다.',
-                onTap: () => Navigator.of(
-                  context,
-                ).pushNamed(AppRoutes.trainingRecommendation),
-              ),
-            ],
-          );
-          final actions = Column(children: [startAction, secondaryActions]);
-
-          if (isWide) {
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: summaryCard),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    children: [
-                      domainIntro,
-                      const SizedBox(height: 12),
-                      actions,
-                    ],
-                  ),
-                ),
-              ],
-            );
-          }
-
-          return Stack(
-            children: [
-              ListView(
-                padding: const EdgeInsets.only(bottom: 88),
-                children: [
-                  if (!isShort) ...[summaryCard, const SizedBox(height: 12)],
-                  domainIntro,
-                  const SizedBox(height: 12),
-                  secondaryActions,
-                  const SizedBox(height: 24),
-                ],
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: SafeArea(
-                  top: false,
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      icon: const Icon(Icons.play_arrow),
-                      label: const Text('검사 시작'),
-                      onPressed: () => Navigator.of(
-                        context,
-                      ).pushNamed(AppRoutes.testTypeSelect),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
     );
   }
 
@@ -178,49 +117,113 @@ class HomeDashboardScreen extends StatelessWidget {
   }
 }
 
-class _RecentNormCard extends StatelessWidget {
-  const _RecentNormCard({
-    required this.estimatedIQ,
-    required this.percentile,
-    required this.abilityLabel,
-  });
+class _RecentResultCard extends StatelessWidget {
+  const _RecentResultCard({required this.result, required this.isWide});
 
-  final int estimatedIQ;
-  final int percentile;
-  final String abilityLabel;
+  final TestResultSummary result;
+  final bool isWide;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-        borderRadius: BorderRadius.circular(8),
-      ),
+    final payload = TestResultPayload.fromResult(result);
+    return Card(
+      key: const ValueKey('home-recent-result-card'),
       child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: _RecentNormMetric(label: '최근 IQ', value: '$estimatedIQ'),
+            Text('최근 검사 결과', style: theme.textTheme.titleLarge),
+            const SizedBox(height: 4),
+            Text(
+              '${_dateLabel(result.completedAt)} · ${_modeLabel(payload.testMode)}',
+              style: theme.textTheme.bodyMedium,
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _RecentNormMetric(label: '백분위', value: '$percentile%'),
+            const SizedBox(height: 16),
+            Center(
+              child: HexagonChart(
+                values: payload.visibleHexagonValues,
+                labels: domainCatalog.map((item) => item.shortLabel).toList(),
+                size: isWide ? 300 : 220,
+              ),
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _RecentNormMetric(label: '수준', value: abilityLabel),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _MetricTile(label: '최근 IQ', value: '${result.estimatedIQ}'),
+                _MetricTile(label: '상위 비율', value: '${result.percentile}%'),
+                _MetricTile(label: '능력 수준', value: result.abilityLevel),
+                _MetricTile(
+                  label: '정답',
+                  value: '${payload.correctCount} / ${payload.totalQuestions}',
+                ),
+                _MetricTile(label: '정답률', value: '${payload.accuracyPercent}%'),
+                _MetricTile(label: '풀이 시간', value: payload.elapsedLabel),
+              ],
             ),
           ],
         ),
       ),
     );
   }
+
+  String _dateLabel(DateTime date) {
+    return '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
+  }
+
+  String _modeLabel(TestMode mode) {
+    return switch (mode) {
+      TestMode.quickIq => '빠른 IQ',
+      TestMode.fullDiagnostic => '정밀 진단',
+      TestMode.domainTraining => '영역 훈련',
+    };
+  }
 }
 
-class _RecentNormMetric extends StatelessWidget {
-  const _RecentNormMetric({required this.label, required this.value});
+class _HomeActions extends StatelessWidget {
+  const _HomeActions({required this.isCompact});
+
+  final bool isCompact;
+
+  @override
+  Widget build(BuildContext context) {
+    final cards = [
+      ActionCard(
+        icon: Icons.play_arrow,
+        title: '검사 시작',
+        body: '빠른 IQ 또는 정밀 검사를 시작합니다.',
+        onTap: () => Navigator.of(context).pushNamed(AppRoutes.testTypeSelect),
+      ),
+      ActionCard(
+        icon: Icons.insights,
+        title: '성장 기록',
+        body: '저장된 검사 결과를 기준으로 변화 흐름을 확인합니다.',
+        onTap: () => Navigator.of(context).pushNamed(AppRoutes.growthDashboard),
+      ),
+      ActionCard(
+        icon: Icons.fitness_center,
+        title: '추천 훈련',
+        body: '약한 영역을 중심으로 다음 훈련을 확인합니다.',
+        onTap: () =>
+            Navigator.of(context).pushNamed(AppRoutes.trainingRecommendation),
+      ),
+    ];
+    return Column(
+      children: [
+        for (final card in cards) ...[
+          card,
+          if (card != cards.last) SizedBox(height: isCompact ? 8 : 12),
+        ],
+      ],
+    );
+  }
+}
+
+class _MetricTile extends StatelessWidget {
+  const _MetricTile({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -228,13 +231,25 @@ class _RecentNormMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: theme.textTheme.labelMedium),
-        const SizedBox(height: 4),
-        Text(value, style: theme.textTheme.titleMedium),
-      ],
+    return SizedBox(
+      width: 128,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border.all(color: theme.colorScheme.outlineVariant),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: theme.textTheme.labelMedium),
+              const SizedBox(height: 4),
+              Text(value, style: theme.textTheme.titleMedium),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
